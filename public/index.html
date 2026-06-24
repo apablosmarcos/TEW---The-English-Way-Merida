@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TEW - The English Way Mérida</title>
+    <meta
+      name="description"
+      content="Academia de inglés en Mérida con metodologías innovadoras, herramientas digitales y aprendizaje práctico de inglés y competencias informáticas."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
+    <style>
+      :root {
+        --bg: #081120;
+        --bg-soft: #0e1a2f;
+        --surface: rgba(255, 255, 255, 0.08);
+        --surface-strong: rgba(255, 255, 255, 0.12);
+        --text: #f8fafc;
+        --muted: #cbd5e1;
+        --line: rgba(255, 255, 255, 0.14);
+        --primary: #60a5fa;
+        --primary-2: #38bdf8;
+        --accent: #22c55e;
+        --glow: 0 20px 80px rgba(56, 189, 248, 0.18);
+        --radius: 24px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Inter", system-ui, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(
+            circle at top left,
+            rgba(56, 189, 248, 0.18),
+            transparent 28%
+          ),
+          radial-gradient(
+            circle at top right,
+            rgba(34, 197, 94, 0.12),
+            transparent 24%
+          ),
+          linear-gradient(180deg, #09111f 0%, #0a1526 45%, #081120 100%);
+        overflow-x: hidden;
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        inset: auto;
+        width: 340px;
+        height: 340px;
+        border-radius: 50%;
+        filter: blur(80px);
+        z-index: -1;
+        opacity: 0.28;
+        pointer-events: none;
+        animation: drift 14s ease-in-out infinite alternate;
+      }
+
+      body::before {
+        top: 8%;
+        left: -120px;
+        background: #2563eb;
+      }
+
+      body::after {
+        right: -120px;
+        bottom: 8%;
+        background: #06b6d4;
+        animation-duration: 18s;
+      }
+
+      @keyframes drift {
+        from {
+          transform: translateY(0) translateX(0) scale(1);
+        }
+        to {
+          transform: translateY(40px) translateX(20px) scale(1.08);
+        }
+      }
+
+      @keyframes pulse-ring {
+        0% {
+          transform: scale(0.95);
+          opacity: 0.7;
+        }
+        70% {
+          transform: scale(1.08);
+          opacity: 0.2;
+        }
+        100% {
+          transform: scale(1.14);
+          opacity: 0;
+        }
+      }
+
+      @keyframes float-card {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .container {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        backdrop-filter: blur(16px);
+        background: rgba(8, 17, 32, 0.6);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+      }
+
+      .brand-mark {
+        position: relative;
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: linear-gradient(
+          135deg,
+          rgba(96, 165, 250, 0.24),
+          rgba(34, 197, 94, 0.24)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: var(--glow);
+      }
+
+      .brand-mark::after {
+        content: "";
+        position: absolute;
+        inset: -6px;
+        border-radius: 18px;
+        border: 1px solid rgba(96, 165, 250, 0.3);
+        animation: pulse-ring 2.4s infinite;
+      }
+
+      .brand small {
+        display: block;
+        color: var(--muted);
+        font-weight: 600;
+        letter-spacing: 0;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .nav-links a:hover {
+        color: white;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 48px;
+        padding: 0 18px;
+        border-radius: 14px;
+        border: 1px solid transparent;
+        font-weight: 700;
+        transition:
+          transform 0.2s ease,
+          background 0.2s ease,
+          border-color 0.2s ease;
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+      }
+
+      .button.primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        color: #06101d;
+      }
+
+      .button.secondary {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: var(--line);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.06fr 0.94fr;
+        gap: 36px;
+        align-items: center;
+        padding: 72px 0 54px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(96, 165, 250, 0.24);
+        background: rgba(96, 165, 250, 0.1);
+        color: #bfdbfe;
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+
+      h1 {
+        margin: 18px 0 18px;
+        font-size: clamp(2.8rem, 7vw, 5.4rem);
+        line-height: 0.95;
+        letter-spacing: -0.06em;
+      }
+
+      .hero p {
+        margin: 0;
+        max-width: 60ch;
+        color: var(--muted);
+        font-size: 1.08rem;
+        line-height: 1.8;
+      }
+
+      .hero p strong {
+        color: white;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 28px;
+      }
+
+      .hero-points {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .pill {
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #dbeafe;
+        font-size: 0.92rem;
+      }
+
+      .hero-card {
+        position: relative;
+        border-radius: 28px;
+        padding: 22px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.11),
+          rgba(255, 255, 255, 0.06)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: var(--glow);
+        overflow: hidden;
+        animation: float-card 6s ease-in-out infinite;
+      }
+
+      .hero-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(56, 189, 248, 0.12),
+          transparent 40%,
+          rgba(34, 197, 94, 0.1)
+        );
+        pointer-events: none;
+      }
+
+      .window {
+        position: relative;
+        z-index: 1;
+        border-radius: 22px;
+        overflow: hidden;
+        background: #09101b;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .window-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        color: #94a3b8;
+        font-size: 0.86rem;
+      }
+
+      .dots {
+        display: flex;
+        gap: 8px;
+      }
+
+      .dots span {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+
+      .dots span:nth-child(1) {
+        background: #f87171;
+      }
+      .dots span:nth-child(2) {
+        background: #fbbf24;
+      }
+      .dots span:nth-child(3) {
+        background: #34d399;
+      }
+
+      .window-body {
+        display: grid;
+        gap: 16px;
+        padding: 18px;
+      }
+
+      .dashboard {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 14px;
+      }
+
+      .panel,
+      .metric,
+      .lesson,
+      .contact-card,
+      .feature,
+      .cta-box {
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 20px;
+      }
+
+      .panel,
+      .metric,
+      .lesson,
+      .contact-card,
+      .feature {
+        padding: 18px;
+      }
+
+      .panel h3,
+      .contact-card h3,
+      .feature h3,
+      .lesson h3 {
+        margin: 0 0 10px;
+        font-size: 1rem;
+      }
+
+      .panel p,
+      .contact-card p,
+      .feature p,
+      .lesson p,
+      li,
+      .metric span {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.65;
+      }
+
+      .progress {
+        margin-top: 14px;
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+      }
+
+      .progress > span {
+        display: block;
+        width: 78%;
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+      }
+
+      .metrics {
+        display: grid;
+        gap: 14px;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 1.8rem;
+        margin-bottom: 4px;
+      }
+
+      .lesson {
+        display: grid;
+        gap: 10px;
+      }
+
+      .lesson ul,
+      .feature ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      section {
+        padding: 36px 0;
+      }
+
+      .section-head {
+        margin-bottom: 24px;
+      }
+
+      .section-head h2 {
+        margin: 0 0 10px;
+        font-size: clamp(2rem, 4vw, 3rem);
+        letter-spacing: -0.05em;
+      }
+
+      .section-head p {
+        max-width: 64ch;
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.75;
+      }
+
+      .grid-3,
+      .grid-2 {
+        display: grid;
+        gap: 18px;
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .feature {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .feature::after {
+        content: "";
+        position: absolute;
+        inset: auto -60px -60px auto;
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(96, 165, 250, 0.22),
+          transparent 60%
+        );
+      }
+
+      .feature-icon {
+        width: 46px;
+        height: 46px;
+        display: grid;
+        place-items: center;
+        margin-bottom: 14px;
+        border-radius: 14px;
+        background: rgba(96, 165, 250, 0.14);
+        color: #bfdbfe;
+        font-weight: 800;
+      }
+
+      .contact-wrap {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 18px;
+      }
+
+      .contact-card strong {
+        color: white;
+      }
+
+      .contact-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .contact-item {
+        padding: 14px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .cta-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        padding: 28px;
+        background: linear-gradient(
+          135deg,
+          rgba(56, 189, 248, 0.16),
+          rgba(34, 197, 94, 0.12)
+        );
+      }
+
+      .footer {
+        padding: 12px 0 34px;
+        color: #94a3b8;
+        font-size: 0.92rem;
+      }
+
+      @media (max-width: 980px) {
+        .hero,
+        .contact-wrap,
+        .dashboard,
+        .grid-3,
+        .grid-2,
+        .cta-box {
+          grid-template-columns: 1fr;
+        }
+
+        .nav,
+        .nav-links {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .hero {
+          padding-top: 44px;
+        }
+
+        h1 {
+          font-size: 2.6rem;
+        }
+
+        .container {
+          width: min(100% - 24px, 1180px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="container nav">
+        <a class="brand" href="#inicio">
+          <span class="brand-mark">TEW</span>
+          <span>
+            The English Way
+            <small>Mérida · Inglés + competencias digitales</small>
+          </span>
+        </a>
+        <nav class="nav-links">
+          <a href="#metodo">Método</a>
+          <a href="#programa">Programa</a>
+          <a href="#contacto">Contacto</a>
+          <a class="button secondary" href="#contacto">Primera visita</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="container hero" id="inicio">
+        <div data-aos="fade-up" data-aos-duration="900">
+          <span class="eyebrow"
+            >Academia de inglés en Mérida con metodología innovadora</span
+          >
+          <h1>
+            Aprender inglés <br />mientras desarrollan habilidades digitales.
+          </h1>
+          <p>
+            En <strong>TEW - The English Way</strong> combinamos enseñanza de
+            inglés con un uso práctico de herramientas digitales como
+            <strong>Excel</strong>, dinámicas aplicadas y metodologías novedosas
+            para que el alumno gane soltura, autonomía y competencias útiles
+            para su futuro.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#contacto">Solicitar información</a>
+            <a class="button secondary" href="#metodo">Ver metodología</a>
+          </div>
+          <div class="hero-points">
+            <span class="pill">Inglés práctico</span>
+            <span class="pill">Tecnología aplicada</span>
+            <span class="pill">Aprendizaje activo</span>
+          </div>
+        </div>
+
+        <div
+          class="hero-card"
+          data-aos="zoom-in"
+          data-aos-delay="120"
+          data-aos-duration="900"
+        >
+          <div class="window">
+            <div class="window-top">
+              <div class="dots"><span></span><span></span><span></span></div>
+              <span>TEW Learning Dashboard</span>
+            </div>
+            <div class="window-body">
+              <div class="dashboard">
+                <article class="panel">
+                  <h3>Progreso combinado</h3>
+                  <p>
+                    Sesiones que trabajan comprensión, vocabulario y aplicación
+                    de herramientas digitales en contextos reales.
+                  </p>
+                  <div class="progress"><span></span></div>
+                </article>
+                <div class="metrics">
+                  <article class="metric">
+                    <strong>English</strong>
+                    <span
+                      >Speaking, reading, listening y writing con práctica
+                      guiada.</span
+                    >
+                  </article>
+                  <article class="metric">
+                    <strong>Digital</strong>
+                    <span
+                      >Uso funcional de Excel y recursos digitales para reforzar
+                      aprendizaje.</span
+                    >
+                  </article>
+                </div>
+              </div>
+              <article class="lesson">
+                <h3>Ejemplo de sesión</h3>
+                <ul>
+                  <li>Vocabulario aplicado a tareas reales.</li>
+                  <li>
+                    Actividades con hojas de cálculo y razonamiento práctico.
+                  </li>
+                  <li>Expresión oral y comprensión en contexto.</li>
+                </ul>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="container" id="metodo">
+        <div class="section-head" data-aos="fade-up">
+          <h2>Una academia de inglés adaptada al presente</h2>
+          <p>
+            No se trata solo de memorizar inglés. La propuesta de TEW busca que
+            el alumno use el idioma con naturalidad mientras desarrolla
+            competencias digitales, pensamiento práctico y confianza para
+            desenvolverse mejor dentro y fuera del aula.
+          </p>
+        </div>
+        <div class="grid-3">
+          <article class="feature" data-aos="fade-up" data-aos-delay="0">
+            <div class="feature-icon">01</div>
+            <h3>Metodologías novedosas</h3>
+            <p>
+              Clases más activas, comprensibles y útiles, con actividades que
+              conectan el idioma con situaciones reales.
+            </p>
+          </article>
+          <article class="feature" data-aos="fade-up" data-aos-delay="100">
+            <div class="feature-icon">02</div>
+            <h3>Herramientas digitales</h3>
+            <p>
+              Uso de Excel y otros recursos para reforzar lógica, autonomía,
+              comprensión de instrucciones y trabajo práctico.
+            </p>
+          </article>
+          <article class="feature" data-aos="fade-up" data-aos-delay="200">
+            <div class="feature-icon">03</div>
+            <h3>Aprendizaje transversal</h3>
+            <p>
+              El alumno mejora inglés y, al mismo tiempo, gana seguridad con
+              herramientas que hoy forman parte del entorno académico y
+              profesional.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="container" id="programa">
+        <div class="section-head" data-aos="fade-up">
+          <h2>Qué puede encontrar una familia o alumno en TEW</h2>
+          <p>
+            Una propuesta formativa pensada para acompañar el aprendizaje con
+            una base moderna: idioma, práctica, estructura y recursos digitales
+            integrados en la experiencia.
+          </p>
+        </div>
+        <div class="grid-2">
+          <article class="feature" data-aos="fade-right">
+            <div class="feature-icon">A</div>
+            <h3>Inglés con aplicación real</h3>
+            <ul>
+              <li>Refuerzo de comprensión y expresión.</li>
+              <li>Preparación útil para contextos académicos y cotidianos.</li>
+              <li>Clases enfocadas en avanzar con claridad y motivación.</li>
+            </ul>
+          </article>
+          <article class="feature" data-aos="fade-left">
+            <div class="feature-icon">B</div>
+            <h3>Competencias digitales desde el aprendizaje</h3>
+            <ul>
+              <li>Trabajo con Excel como herramienta educativa.</li>
+              <li>Interpretación de información, organización y lógica.</li>
+              <li>Uso natural de recursos digitales como parte del proceso.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="container" id="contacto">
+        <div class="section-head" data-aos="fade-up">
+          <h2>Sobre la academia</h2>
+          <p>
+            <strong>TEW - The English Way Mérida</strong> es una academia
+            orientada a una enseñanza del inglés más actual, cercana y práctica.
+            Su propuesta combina idioma, recursos digitales y una metodología
+            diferente para ayudar a los alumnos a aprender con más sentido, más
+            participación y mejor preparación para el entorno real.
+          </p>
+        </div>
+        <div class="contact-wrap">
+          <article class="contact-card" data-aos="fade-up-right">
+            <h3>Datos de contacto</h3>
+            <p>
+              Centro de inglés en Mérida con orientación práctica y apoyo al
+              desarrollo académico y digital del alumnado.
+            </p>
+            <div class="contact-list">
+              <div class="contact-item">
+                <strong>Dirección</strong><br />
+                C. Severo Ochoa, 20, Local 4, 06800 Mérida, Badajoz
+              </div>
+              <div class="contact-item">
+                <strong>Teléfono</strong><br />
+                924 48 57 13
+              </div>
+              <div class="contact-item">
+                <strong>WhatsApp</strong><br />
+                615 15 30 12
+              </div>
+              <div class="contact-item">
+                <strong>Email</strong><br />
+                theenglishway.tew@gmail.com
+              </div>
+            </div>
+          </article>
+          <div class="cta-box" data-aos="fade-up-left">
+            <div>
+              <h3 style="margin: 0 0 10px; font-size: 1.4rem">
+                Una landing hecha para causar mejor primera impresión
+              </h3>
+              <p style="margin: 0; color: var(--muted); line-height: 1.7">
+                Esta versión ya está adaptada al posicionamiento de una academia
+                de inglés moderna, con foco en innovación educativa y
+                herramientas digitales.
+              </p>
+            </div>
+            <a class="button primary" href="mailto:theenglishway.tew@gmail.com"
+              >Escribir ahora</a
+            >
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        TEW - The English Way Mérida · Landing preliminar para validación visual
+        y comercial.
+      </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+      AOS.init({
+        once: true,
+        duration: 850,
+        easing: "ease-out-cubic",
+      });
+    </script>
+  </body>
+</html>

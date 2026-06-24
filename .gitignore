@@ -1,0 +1,7 @@
+# Local Pi runtime state
+.atl/
+.pi/
+
+# Local planning material not needed in the public landing repo
+docs/
+reviews/
