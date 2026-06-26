@@ -11,132 +11,69 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
     <style>
+      /* Paleta extraída del logo: blanco, negro y rojo institucional */
       :root {
-        --bg: #081120;
-        --bg-soft: #0e1a2f;
-        --surface: rgba(255, 255, 255, 0.08);
-        --surface-strong: rgba(255, 255, 255, 0.12);
-        --text: #f8fafc;
-        --muted: #cbd5e1;
-        --line: rgba(255, 255, 255, 0.14);
-        --primary: #60a5fa;
-        --primary-2: #38bdf8;
-        --accent: #22c55e;
-        --glow: 0 20px 80px rgba(56, 189, 248, 0.18);
-        --radius: 24px;
+        --bg: #f5f4f0;
+        --bg-soft: #ffffff;
+        --surface: #ffffff;
+        --surface-strong: #f0eeea;
+        --text: #111111;
+        --muted: #555555;
+        --line: #d4d0c8;
+        --primary: #cc0000;   /* rojo "Make it happen!" */
+        --primary-dark: #990000;
+        --accent: #111111;
+        --shadow: 0 4px 24px rgba(0,0,0,0.10);
+        --radius: 6px;        /* señal de calle: esquinas poco redondeadas */
       }
 
-      * {
-        box-sizing: border-box;
-      }
-
-      html {
-        scroll-behavior: smooth;
-      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
 
       body {
         margin: 0;
         font-family: "Inter", system-ui, sans-serif;
         color: var(--text);
-        background:
-          radial-gradient(
-            circle at top left,
-            rgba(56, 189, 248, 0.18),
-            transparent 28%
-          ),
-          radial-gradient(
-            circle at top right,
-            rgba(34, 197, 94, 0.12),
-            transparent 24%
-          ),
-          linear-gradient(180deg, #09111f 0%, #0a1526 45%, #081120 100%);
+        background: var(--bg);
         overflow-x: hidden;
       }
 
-      body::before,
-      body::after {
-        content: "";
-        position: fixed;
-        inset: auto;
-        width: 340px;
-        height: 340px;
-        border-radius: 50%;
-        filter: blur(80px);
-        z-index: -1;
-        opacity: 0.28;
-        pointer-events: none;
-        animation: drift 14s ease-in-out infinite alternate;
-      }
-
+      /* Franja roja decorativa top — referencia al logo */
       body::before {
-        top: 8%;
-        left: -120px;
-        background: #2563eb;
-      }
-
-      body::after {
-        right: -120px;
-        bottom: 8%;
-        background: #06b6d4;
-        animation-duration: 18s;
-      }
-
-      @keyframes drift {
-        from {
-          transform: translateY(0) translateX(0) scale(1);
-        }
-        to {
-          transform: translateY(40px) translateX(20px) scale(1.08);
-        }
-      }
-
-      @keyframes pulse-ring {
-        0% {
-          transform: scale(0.95);
-          opacity: 0.7;
-        }
-        70% {
-          transform: scale(1.08);
-          opacity: 0.2;
-        }
-        100% {
-          transform: scale(1.14);
-          opacity: 0;
-        }
+        content: "";
+        display: block;
+        height: 6px;
+        background: var(--primary);
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 100;
       }
 
       @keyframes float-card {
-        0%,
-        100% {
-          transform: translateY(0);
-        }
-        50% {
-          transform: translateY(-10px);
-        }
+        0%, 100% { transform: translateY(0); }
+        50%       { transform: translateY(-8px); }
       }
 
-      a {
-        color: inherit;
-        text-decoration: none;
-      }
+      a { color: inherit; text-decoration: none; }
 
       .container {
         width: min(1180px, calc(100% - 32px));
         margin: 0 auto;
       }
 
+      /* ── HEADER ── */
       .header {
         position: sticky;
-        top: 0;
+        top: 6px; /* debajo de la franja roja */
         z-index: 20;
-        backdrop-filter: blur(16px);
-        background: rgba(8, 17, 32, 0.6);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        background: #ffffff;
+        border-bottom: 3px solid var(--text);
+        box-shadow: 0 2px 0 var(--primary);
       }
 
       .nav {
@@ -144,130 +81,140 @@
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        padding: 16px 0;
+        padding: 14px 0;
       }
 
+      /* Logo real en el nav */
       .brand {
         display: flex;
         align-items: center;
         gap: 12px;
-        font-weight: 800;
-        letter-spacing: -0.04em;
       }
 
-      .brand-mark {
-        position: relative;
-        width: 44px;
-        height: 44px;
-        display: grid;
-        place-items: center;
-        border-radius: 14px;
-        background: linear-gradient(
-          135deg,
-          rgba(96, 165, 250, 0.24),
-          rgba(34, 197, 94, 0.24)
-        );
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        box-shadow: var(--glow);
-      }
-
-      .brand-mark::after {
-        content: "";
-        position: absolute;
-        inset: -6px;
-        border-radius: 18px;
-        border: 1px solid rgba(96, 165, 250, 0.3);
-        animation: pulse-ring 2.4s infinite;
-      }
-
-      .brand small {
+      .brand img {
+        height: 48px;
+        width: auto;
         display: block;
+      }
+
+      .brand-text {
+        display: flex;
+        flex-direction: column;
+        font-family: "Oswald", sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        line-height: 1.1;
+        text-transform: uppercase;
+        letter-spacing: 0.01em;
+      }
+
+      .brand-text small {
+        font-family: "Inter", sans-serif;
+        font-weight: 400;
+        font-size: 0.72rem;
+        text-transform: none;
         color: var(--muted);
-        font-weight: 600;
         letter-spacing: 0;
       }
 
       .nav-links {
         display: flex;
         align-items: center;
-        gap: 18px;
+        gap: 22px;
         color: var(--muted);
-        font-size: 0.95rem;
+        font-size: 0.93rem;
+        font-weight: 500;
       }
 
-      .nav-links a:hover {
-        color: white;
-      }
+      .nav-links a:hover { color: var(--primary); }
 
+      /* ── BOTONES ── */
       .button {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 10px;
-        min-height: 48px;
-        padding: 0 18px;
-        border-radius: 14px;
-        border: 1px solid transparent;
-        font-weight: 700;
-        transition:
-          transform 0.2s ease,
-          background 0.2s ease,
-          border-color 0.2s ease;
+        min-height: 46px;
+        padding: 0 20px;
+        border-radius: var(--radius);
+        border: 2px solid transparent;
+        font-family: "Oswald", sans-serif;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
       }
 
-      .button:hover {
-        transform: translateY(-2px);
-      }
+      .button:hover { transform: translateY(-2px); }
 
       .button.primary {
-        background: linear-gradient(135deg, var(--primary), var(--primary-2));
-        color: #06101d;
+        background: var(--primary);
+        color: #ffffff;
+        border-color: var(--primary);
       }
+
+      .button.primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
 
       .button.secondary {
-        background: rgba(255, 255, 255, 0.04);
-        border-color: var(--line);
+        background: transparent;
+        color: var(--text);
+        border-color: var(--text);
       }
 
+      .button.secondary:hover { background: var(--text); color: #fff; }
+
+      /* ── HERO ── */
       .hero {
         display: grid;
         grid-template-columns: 1.06fr 0.94fr;
-        gap: 36px;
+        gap: 40px;
         align-items: center;
-        padding: 72px 0 54px;
+        padding: 80px 0 60px;
       }
 
+      /* Eyebrow estilo cartel de calle */
       .eyebrow {
         display: inline-flex;
         align-items: center;
         gap: 10px;
-        padding: 10px 14px;
-        border-radius: 999px;
-        border: 1px solid rgba(96, 165, 250, 0.24);
-        background: rgba(96, 165, 250, 0.1);
-        color: #bfdbfe;
-        font-size: 0.92rem;
-        font-weight: 700;
+        padding: 8px 16px;
+        border: 2px solid var(--text);
+        border-radius: 3px;
+        background: var(--text);
+        color: #ffffff;
+        font-family: "Oswald", sans-serif;
+        font-size: 0.88rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
       }
 
       h1 {
-        margin: 18px 0 18px;
-        font-size: clamp(2.8rem, 7vw, 5.4rem);
-        line-height: 0.95;
-        letter-spacing: -0.06em;
+        margin: 20px 0 18px;
+        font-family: "Oswald", sans-serif;
+        font-size: clamp(2.6rem, 6.5vw, 5rem);
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: -0.01em;
+        text-transform: uppercase;
+        color: var(--text);
+      }
+
+      h1 em {
+        font-style: normal;
+        color: var(--primary);
       }
 
       .hero p {
         margin: 0;
-        max-width: 60ch;
+        max-width: 58ch;
         color: var(--muted);
-        font-size: 1.08rem;
+        font-size: 1.06rem;
         line-height: 1.8;
       }
 
-      .hero p strong {
-        color: white;
-      }
+      .hero p strong { color: var(--text); }
 
       .hero-actions {
         display: flex;
@@ -279,142 +226,119 @@
       .hero-points {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
-        margin-top: 24px;
+        gap: 10px;
+        margin-top: 22px;
       }
 
+      /* Pills estilo etiqueta */
       .pill {
-        padding: 10px 14px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        color: #dbeafe;
-        font-size: 0.92rem;
+        padding: 8px 14px;
+        border-radius: 3px;
+        background: #ffffff;
+        border: 1.5px solid var(--line);
+        color: var(--text);
+        font-size: 0.88rem;
+        font-weight: 600;
       }
 
+      /* ── TARJETA HERO — señal de calle ── */
       .hero-card {
         position: relative;
-        border-radius: 28px;
-        padding: 22px;
-        background: linear-gradient(
-          180deg,
-          rgba(255, 255, 255, 0.11),
-          rgba(255, 255, 255, 0.06)
-        );
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        box-shadow: var(--glow);
-        overflow: hidden;
-        animation: float-card 6s ease-in-out infinite;
+        border-radius: 8px;
+        padding: 24px;
+        background: #ffffff;
+        border: 3px solid var(--text);
+        box-shadow: 6px 6px 0 var(--primary);
+        animation: float-card 7s ease-in-out infinite;
       }
 
-      .hero-card::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          135deg,
-          rgba(56, 189, 248, 0.12),
-          transparent 40%,
-          rgba(34, 197, 94, 0.1)
-        );
-        pointer-events: none;
+      /* Franja de título tipo señal */
+      .sign-plate {
+        background: var(--text);
+        color: #ffffff;
+        font-family: "Oswald", sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 8px 14px;
+        margin: -24px -24px 20px -24px;
+        border-radius: 4px 4px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .sign-plate .tew-badge {
+        color: var(--primary);
+        font-weight: 700;
       }
 
       .window {
         position: relative;
-        z-index: 1;
-        border-radius: 22px;
+        border-radius: 4px;
         overflow: hidden;
-        background: #09101b;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: var(--bg);
+        border: 1.5px solid var(--line);
       }
 
       .window-top {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 14px 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        color: #94a3b8;
-        font-size: 0.86rem;
+        padding: 10px 14px;
+        border-bottom: 1.5px solid var(--line);
+        background: #ffffff;
+        color: var(--muted);
+        font-size: 0.83rem;
+        font-weight: 500;
       }
 
-      .dots {
-        display: flex;
-        gap: 8px;
-      }
+      .dots { display: flex; gap: 6px; }
+      .dots span { width: 10px; height: 10px; border-radius: 50%; }
+      .dots span:nth-child(1) { background: #f87171; }
+      .dots span:nth-child(2) { background: #fbbf24; }
+      .dots span:nth-child(3) { background: #34d399; }
 
-      .dots span {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-      }
-
-      .dots span:nth-child(1) {
-        background: #f87171;
-      }
-      .dots span:nth-child(2) {
-        background: #fbbf24;
-      }
-      .dots span:nth-child(3) {
-        background: #34d399;
-      }
-
-      .window-body {
-        display: grid;
-        gap: 16px;
-        padding: 18px;
-      }
+      .window-body { display: grid; gap: 14px; padding: 16px; }
 
       .dashboard {
         display: grid;
         grid-template-columns: 1.05fr 0.95fr;
-        gap: 14px;
+        gap: 12px;
       }
 
-      .panel,
-      .metric,
-      .lesson,
-      .contact-card,
-      .feature,
-      .cta-box {
-        border: 1px solid rgba(255, 255, 255, 0.09);
-        background: rgba(255, 255, 255, 0.04);
-        border-radius: 20px;
+      .panel, .metric, .lesson,
+      .contact-card, .feature, .cta-box {
+        border: 1.5px solid var(--line);
+        background: #ffffff;
+        border-radius: 4px;
       }
 
-      .panel,
-      .metric,
-      .lesson,
-      .contact-card,
-      .feature {
-        padding: 18px;
-      }
+      .panel, .metric, .lesson, .contact-card, .feature { padding: 16px; }
 
-      .panel h3,
-      .contact-card h3,
-      .feature h3,
-      .lesson h3 {
-        margin: 0 0 10px;
+      .panel h3, .contact-card h3, .feature h3, .lesson h3 {
+        margin: 0 0 8px;
+        font-family: "Oswald", sans-serif;
         font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text);
       }
 
-      .panel p,
-      .contact-card p,
-      .feature p,
-      .lesson p,
-      li,
-      .metric span {
+      .panel p, .contact-card p, .feature p, .lesson p, li, .metric span {
         margin: 0;
         color: var(--muted);
         line-height: 1.65;
+        font-size: 0.93rem;
       }
 
       .progress {
-        margin-top: 14px;
-        height: 10px;
+        margin-top: 12px;
+        height: 8px;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.08);
+        background: var(--line);
         overflow: hidden;
       }
 
@@ -422,43 +346,49 @@
         display: block;
         width: 78%;
         height: 100%;
-        background: linear-gradient(90deg, var(--primary), var(--accent));
+        background: var(--primary);
       }
 
-      .metrics {
-        display: grid;
-        gap: 14px;
-      }
+      .metrics { display: grid; gap: 12px; }
 
       .metric strong {
         display: block;
-        font-size: 1.8rem;
+        font-family: "Oswald", sans-serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text);
         margin-bottom: 4px;
       }
 
-      .lesson {
-        display: grid;
-        gap: 10px;
-      }
+      .lesson { display: grid; gap: 8px; }
+      .lesson ul, .feature ul { margin: 0; padding-left: 18px; }
 
-      .lesson ul,
-      .feature ul {
-        margin: 0;
-        padding-left: 18px;
-      }
+      /* ── SECTIONS ── */
+      section { padding: 60px 0; }
 
-      section {
-        padding: 36px 0;
-      }
+      section:nth-child(even) { background: #ffffff; }
 
-      .section-head {
-        margin-bottom: 24px;
-      }
+      .section-head { margin-bottom: 28px; }
 
       .section-head h2 {
-        margin: 0 0 10px;
-        font-size: clamp(2rem, 4vw, 3rem);
-        letter-spacing: -0.05em;
+        margin: 0 0 12px;
+        font-family: "Oswald", sans-serif;
+        font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: -0.01em;
+        color: var(--text);
+      }
+
+      /* Línea roja bajo el h2 — referencia al logo */
+      .section-head h2::after {
+        content: "";
+        display: block;
+        width: 48px;
+        height: 4px;
+        background: var(--primary);
+        margin-top: 10px;
+        border-radius: 2px;
       }
 
       .section-head p {
@@ -468,122 +398,127 @@
         line-height: 1.75;
       }
 
-      .grid-3,
-      .grid-2 {
-        display: grid;
-        gap: 18px;
-      }
-
-      .grid-3 {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .grid-2 {
-        grid-template-columns: repeat(2, 1fr);
-      }
+      .grid-3, .grid-2 { display: grid; gap: 18px; }
+      .grid-3 { grid-template-columns: repeat(3, 1fr); }
+      .grid-2 { grid-template-columns: repeat(2, 1fr); }
 
       .feature {
         position: relative;
         overflow: hidden;
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
       }
 
+      .feature:hover {
+        box-shadow: 4px 4px 0 var(--primary);
+        transform: translateY(-2px);
+      }
+
+      /* Esquina decorativa roja — guiño al logo */
       .feature::after {
         content: "";
         position: absolute;
-        inset: auto -60px -60px auto;
-        width: 140px;
-        height: 140px;
-        border-radius: 50%;
-        background: radial-gradient(
-          circle,
-          rgba(96, 165, 250, 0.22),
-          transparent 60%
-        );
+        top: 0; right: 0;
+        width: 0; height: 0;
+        border-style: solid;
+        border-width: 0 28px 28px 0;
+        border-color: transparent var(--primary) transparent transparent;
       }
 
       .feature-icon {
-        width: 46px;
-        height: 46px;
-        display: grid;
-        place-items: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
         margin-bottom: 14px;
-        border-radius: 14px;
-        background: rgba(96, 165, 250, 0.14);
-        color: #bfdbfe;
-        font-weight: 800;
+        border-radius: 3px;
+        background: var(--text);
+        color: #ffffff;
+        font-family: "Oswald", sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
       }
 
+      /* ── CONTACTO ── */
       .contact-wrap {
         display: grid;
         grid-template-columns: 1.1fr 0.9fr;
         gap: 18px;
       }
 
-      .contact-card strong {
-        color: white;
-      }
+      .contact-card strong { color: var(--text); font-weight: 700; }
 
-      .contact-list {
-        display: grid;
-        gap: 12px;
-        margin-top: 16px;
-      }
+      .contact-list { display: grid; gap: 10px; margin-top: 16px; }
 
       .contact-item {
         padding: 14px;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 4px;
+        background: var(--bg);
+        border: 1.5px solid var(--line);
+        font-size: 0.93rem;
       }
 
+      /* ── CTA ── */
       .cta-box {
         display: flex;
         justify-content: space-between;
         align-items: center;
         gap: 20px;
         padding: 28px;
-        background: linear-gradient(
-          135deg,
-          rgba(56, 189, 248, 0.16),
-          rgba(34, 197, 94, 0.12)
-        );
+        background: var(--text);
+        color: #ffffff;
+        border-color: var(--text);
       }
 
+      .cta-box p { color: rgba(255,255,255,0.7) !important; }
+
+      /* Make it happen! — tagline del logo */
+      .make-it-happen {
+        display: inline-block;
+        font-family: "Oswald", sans-serif;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 6px;
+      }
+
+      /* ── FOOTER ── */
       .footer {
-        padding: 12px 0 34px;
-        color: #94a3b8;
-        font-size: 0.92rem;
+        padding: 20px 0 32px;
+        color: var(--muted);
+        font-size: 0.88rem;
+        border-top: 3px solid var(--text);
+        box-shadow: 0 -2px 0 var(--primary);
+        background: #ffffff;
       }
 
+      .footer-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .footer img { height: 32px; width: auto; opacity: 0.85; }
+
+      /* ── RESPONSIVE ── */
       @media (max-width: 980px) {
-        .hero,
-        .contact-wrap,
-        .dashboard,
-        .grid-3,
-        .grid-2,
-        .cta-box {
+        .hero, .contact-wrap, .dashboard, .grid-3, .grid-2, .cta-box {
           grid-template-columns: 1fr;
         }
-
-        .nav,
-        .nav-links {
+        .nav, .nav-links {
           flex-direction: column;
           align-items: flex-start;
         }
       }
 
       @media (max-width: 640px) {
-        .hero {
-          padding-top: 44px;
-        }
-
-        h1 {
-          font-size: 2.6rem;
-        }
-
-        .container {
-          width: min(100% - 24px, 1180px);
-        }
+        .hero { padding-top: 48px; }
+        h1 { font-size: 2.4rem; }
+        .container { width: min(100% - 24px, 1180px); }
       }
     </style>
   </head>
@@ -591,17 +526,18 @@
     <header class="header">
       <div class="container nav">
         <a class="brand" href="#inicio">
-          <span class="brand-mark">TEW</span>
-          <span>
+          <img src="assets/img/the-english-way-academia-ingles-merida.jpg" alt="The English Way — TEW" />
+          <span class="brand-text">
             The English Way
-            <small>Mérida · Inglés + competencias digitales</small>
+            <small>Mérida · Inglés, TIC y aprendizaje práctico</small>
           </span>
         </a>
         <nav class="nav-links">
           <a href="#metodo">Método</a>
-          <a href="#programa">Programa</a>
+          <a href="#programa">Propuesta</a>
+          <a href="#dia-a-dia">Día a día</a>
           <a href="#contacto">Contacto</a>
-          <a class="button secondary" href="#contacto">Primera visita</a>
+          <a class="button secondary" href="#contacto">Reservar visita</a>
         </nav>
       </div>
     </header>
@@ -609,27 +545,26 @@
     <main>
       <section class="container hero" id="inicio">
         <div data-aos="fade-up" data-aos-duration="900">
-          <span class="eyebrow"
-            >Academia de inglés en Mérida con metodología innovadora</span
-          >
+          <span class="make-it-happen">Make it happen!</span>
+          <span class="eyebrow">Academia de inglés en Mérida con enfoque digital real</span>
           <h1>
-            Aprender inglés <br />mientras desarrollan habilidades digitales.
+            Inglés,<br />herramientas digitales<br /><em>y resultados reales.</em>
           </h1>
           <p>
-            En <strong>TEW - The English Way</strong> combinamos enseñanza de
-            inglés con un uso práctico de herramientas digitales como
-            <strong>Excel</strong>, dinámicas aplicadas y metodologías novedosas
-            para que el alumno gane soltura, autonomía y competencias útiles
-            para su futuro.
+            En <strong>TEW - The English Way</strong> trabajamos el inglés con
+            una metodología práctica apoyada en
+            <strong>Google Classroom</strong>, documentos compartidos, recursos
+            digitales y material propio para que cada alumno avance con más
+            autonomía, orden y confianza.
           </p>
           <div class="hero-actions">
             <a class="button primary" href="#contacto">Solicitar información</a>
             <a class="button secondary" href="#metodo">Ver metodología</a>
           </div>
           <div class="hero-points">
-            <span class="pill">Inglés práctico</span>
-            <span class="pill">Tecnología aplicada</span>
-            <span class="pill">Aprendizaje activo</span>
+            <span class="pill">Classroom + Drive</span>
+            <span class="pill">Documentos compartidos</span>
+            <span class="pill">Pensado para tablets</span>
           </div>
         </div>
 
@@ -639,6 +574,7 @@
           data-aos-delay="120"
           data-aos-duration="900"
         >
+          <div class="sign-plate">TEW Learning Dashboard <span class="tew-badge">T.E.W.</span></div>
           <div class="window">
             <div class="window-top">
               <div class="dots"><span></span><span></span><span></span></div>
@@ -649,8 +585,8 @@
                 <article class="panel">
                   <h3>Progreso combinado</h3>
                   <p>
-                    Sesiones que trabajan comprensión, vocabulario y aplicación
-                    de herramientas digitales en contextos reales.
+                    Sesiones que unen comprensión, expresión y uso natural de
+                    herramientas digitales en tareas reales.
                   </p>
                   <div class="progress"><span></span></div>
                 </article>
@@ -659,14 +595,14 @@
                     <strong>English</strong>
                     <span
                       >Speaking, reading, listening y writing con práctica
-                      guiada.</span
+                      guiada y objetivos claros.</span
                     >
                   </article>
                   <article class="metric">
                     <strong>Digital</strong>
                     <span
-                      >Uso funcional de Excel y recursos digitales para reforzar
-                      aprendizaje.</span
+                      >Classroom, Drive, PDFs interactivos y recursos propios
+                      como parte del aprendizaje.</span
                     >
                   </article>
                 </div>
@@ -674,11 +610,13 @@
               <article class="lesson">
                 <h3>Ejemplo de sesión</h3>
                 <ul>
-                  <li>Vocabulario aplicado a tareas reales.</li>
                   <li>
-                    Actividades con hojas de cálculo y razonamiento práctico.
+                    Unidad compartida en Classroom con recursos descargables.
                   </li>
-                  <li>Expresión oral y comprensión en contexto.</li>
+                  <li>
+                    Actividad guiada con documento rellenable o compartido.
+                  </li>
+                  <li>Avisos, seguimiento y práctica en contexto real.</li>
                 </ul>
               </article>
             </div>
@@ -688,38 +626,37 @@
 
       <section class="container" id="metodo">
         <div class="section-head" data-aos="fade-up">
-          <h2>Una academia de inglés adaptada al presente</h2>
+          <h2>Una academia de inglés adaptada a cómo se aprende hoy</h2>
           <p>
             No se trata solo de memorizar inglés. La propuesta de TEW busca que
-            el alumno use el idioma con naturalidad mientras desarrolla
-            competencias digitales, pensamiento práctico y confianza para
-            desenvolverse mejor dentro y fuera del aula.
+            el alumno use el idioma con naturalidad mientras trabaja con
+            herramientas digitales, documentos compartidos y dinámicas que le
+            resulten útiles dentro y fuera del aula.
           </p>
         </div>
         <div class="grid-3">
           <article class="feature" data-aos="fade-up" data-aos-delay="0">
             <div class="feature-icon">01</div>
-            <h3>Metodologías novedosas</h3>
+            <h3>Metodología aplicada</h3>
             <p>
-              Clases más activas, comprensibles y útiles, con actividades que
-              conectan el idioma con situaciones reales.
+              Clases activas, claras y útiles, con actividades que conectan el
+              idioma con situaciones reales y trabajo guiado.
             </p>
           </article>
           <article class="feature" data-aos="fade-up" data-aos-delay="100">
             <div class="feature-icon">02</div>
-            <h3>Herramientas digitales</h3>
+            <h3>Ecosistema Google</h3>
             <p>
-              Uso de Excel y otros recursos para reforzar lógica, autonomía,
-              comprensión de instrucciones y trabajo práctico.
+              Classroom, Drive, Sheets y documentos compartidos como base para
+              organizar materiales, tareas y seguimiento.
             </p>
           </article>
           <article class="feature" data-aos="fade-up" data-aos-delay="200">
             <div class="feature-icon">03</div>
-            <h3>Aprendizaje transversal</h3>
+            <h3>Material propio y futuro Moodle</h3>
             <p>
-              El alumno mejora inglés y, al mismo tiempo, gana seguridad con
-              herramientas que hoy forman parte del entorno académico y
-              profesional.
+              La academia prepara contenido propio y una evolución progresiva
+              hacia Moodle para ganar orden, personalización y continuidad.
             </p>
           </article>
         </div>
@@ -727,30 +664,70 @@
 
       <section class="container" id="programa">
         <div class="section-head" data-aos="fade-up">
-          <h2>Qué puede encontrar una familia o alumno en TEW</h2>
+          <h2>Qué hace diferente a TEW</h2>
           <p>
-            Una propuesta formativa pensada para acompañar el aprendizaje con
-            una base moderna: idioma, práctica, estructura y recursos digitales
-            integrados en la experiencia.
+            Una propuesta pensada para familias y alumnado que buscan algo más
+            que clases sueltas: estructura, cercanía, recursos digitales y una
+            experiencia de aprendizaje más ordenada.
           </p>
         </div>
         <div class="grid-2">
           <article class="feature" data-aos="fade-right">
             <div class="feature-icon">A</div>
-            <h3>Inglés con aplicación real</h3>
+            <h3>Más claridad para aprender</h3>
             <ul>
-              <li>Refuerzo de comprensión y expresión.</li>
-              <li>Preparación útil para contextos académicos y cotidianos.</li>
-              <li>Clases enfocadas en avanzar con claridad y motivación.</li>
+              <li>
+                Unidades, materiales y tareas con una organización más clara.
+              </li>
+              <li>Recursos privados o compartidos según cada clase.</li>
+              <li>Seguimiento pensado para avanzar con menos ruido.</li>
             </ul>
           </article>
           <article class="feature" data-aos="fade-left">
             <div class="feature-icon">B</div>
-            <h3>Competencias digitales desde el aprendizaje</h3>
+            <h3>Más valor en el día a día</h3>
             <ul>
-              <li>Trabajo con Excel como herramienta educativa.</li>
-              <li>Interpretación de información, organización y lógica.</li>
-              <li>Uso natural de recursos digitales como parte del proceso.</li>
+              <li>
+                Documentos compartidos, PDFs interactivos y avisos útiles.
+              </li>
+              <li>
+                Compatibilidad con móvil, ordenador y especialmente tablets.
+              </li>
+              <li>Una imagen de academia actual, ordenada y diferencial.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="container" id="dia-a-dia">
+        <div class="section-head" data-aos="fade-up">
+          <h2>Una academia digital, pero con los pies en el día a día</h2>
+          <p>
+            TEW ya trabaja con Classroom, Drive, PDFs formulario y herramientas
+            como Canva, Kahoot o Quizizz. El siguiente paso es ordenar mejor la
+            experiencia, reducir tareas duplicadas y reforzar la identidad de la
+            academia desde el primer contacto.
+          </p>
+        </div>
+        <div class="grid-2">
+          <article class="feature" data-aos="fade-right">
+            <div class="feature-icon">Hoy</div>
+            <ul>
+              <li>Envío semanal de unidades por Classroom.</li>
+              <li>Revisión de materiales y creación de actividades nuevas.</li>
+              <li>Información repartida entre Drive, PC y disco externo.</li>
+              <li>Gestión administrativa y de pagos todavía muy manual.</li>
+            </ul>
+          </article>
+          <article class="feature" data-aos="fade-left">
+            <div class="feature-icon">Próximo</div>
+            <ul>
+              <li>Web más sólida para captar y explicar la metodología.</li>
+              <li>
+                Canales claros de contacto por email, WhatsApp y Telegram.
+              </li>
+              <li>Más automatización y menos duplicidad de tareas.</li>
+              <li>Moodle como siguiente fase para mediados de julio.</li>
             </ul>
           </article>
         </div>
@@ -760,19 +737,20 @@
         <div class="section-head" data-aos="fade-up">
           <h2>Sobre la academia</h2>
           <p>
-            <strong>TEW - The English Way Mérida</strong> es una academia
-            orientada a una enseñanza del inglés más actual, cercana y práctica.
-            Su propuesta combina idioma, recursos digitales y una metodología
-            diferente para ayudar a los alumnos a aprender con más sentido, más
-            participación y mejor preparación para el entorno real.
+            <strong>TEW - The English Way Mérida</strong> es una academia de
+            inglés que quiere ofrecer una experiencia más actual, práctica y
+            organizada. Su propuesta combina idioma, recursos digitales,
+            documentos compartidos y una metodología propia para ayudar al
+            alumnado a aprender con más sentido y transmitir una imagen clara de
+            calidad.
           </p>
         </div>
         <div class="contact-wrap">
           <article class="contact-card" data-aos="fade-up-right">
             <h3>Datos de contacto</h3>
             <p>
-              Centro de inglés en Mérida con orientación práctica y apoyo al
-              desarrollo académico y digital del alumnado.
+              Centro de inglés en Mérida con orientación práctica, apoyo digital
+              y atención cercana para familias y alumnado.
             </p>
             <div class="contact-list">
               <div class="contact-item">
@@ -796,12 +774,12 @@
           <div class="cta-box" data-aos="fade-up-left">
             <div>
               <h3 style="margin: 0 0 10px; font-size: 1.4rem">
-                Una landing hecha para causar mejor primera impresión
+                Primera impresión ahora. Plataforma académica después.
               </h3>
               <p style="margin: 0; color: var(--muted); line-height: 1.7">
-                Esta versión ya está adaptada al posicionamiento de una academia
-                de inglés moderna, con foco en innovación educativa y
-                herramientas digitales.
+                Esta versión ya refuerza la identidad de TEW como academia de
+                inglés digital y práctica. La siguiente fase preparará la base
+                operativa y la implantación de Moodle.
               </p>
             </div>
             <a class="button primary" href="mailto:theenglishway.tew@gmail.com"
@@ -813,9 +791,10 @@
     </main>
 
     <footer class="footer">
-      <div class="container">
-        TEW - The English Way Mérida · Landing preliminar para validación visual
-        y comercial.
+      <div class="container footer-inner">
+        <img src="assets/img/the-english-way-academia-ingles-merida.jpg" alt="TEW" />
+        <span>TEW - The English Way Mérida · <em style="font-style:normal;color:#cc0000;font-weight:600">Make it happen!</em></span>
+        <span>C. Severo Ochoa 20, Local 4 · 06800 Mérida</span>
       </div>
     </footer>
 
