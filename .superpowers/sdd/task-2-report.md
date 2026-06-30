@@ -7,7 +7,7 @@ DONE_WITH_CONCERNS
 ## Commits
 
 - `d72dbb7` `feat: add express backend shell`
-- `TBD` `fix: align backend dev imports with ts runtime`
+- `881d176` `fix: align backend dev imports with ts runtime`
 
 ## Review fix
 
