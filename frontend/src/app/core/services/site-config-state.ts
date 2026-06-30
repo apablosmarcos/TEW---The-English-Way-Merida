@@ -13,6 +13,8 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
 export const SITE_CONFIG_LOAD_ERROR_MESSAGE =
   'No hemos podido cargar la configuracion del sitio. Recarga la pagina o contacta con TEW.';
 
+export const SITE_CONFIG_URL = '/assets/config/site.config.json';
+
 export type SiteConfigState =
   | {
       status: 'ready';

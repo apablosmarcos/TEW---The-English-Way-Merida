@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
+  SITE_CONFIG_URL,
   SITE_CONFIG_LOAD_ERROR_MESSAGE,
   toSiteConfigErrorState,
   toSiteConfigReadyState,
@@ -24,4 +26,14 @@ test('site config load errors stay distinct from demo mode', () => {
   assert.equal(result.status, 'error');
   assert.equal(result.message, SITE_CONFIG_LOAD_ERROR_MESSAGE);
   assert.equal(result.config.apiBaseUrl, '');
+});
+
+test('site config uses a root-relative asset url', () => {
+  assert.equal(SITE_CONFIG_URL, '/assets/config/site.config.json');
+});
+
+test('index.html defines a root base href so assets work on admin routes', () => {
+  const indexHtml = readFileSync(new URL('../../../index.html', import.meta.url), 'utf8');
+
+  assert.match(indexHtml, /<base href="\/"\s*\/>/);
 });

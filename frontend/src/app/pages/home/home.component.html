@@ -67,6 +67,9 @@
           <label class="field">
             <span>Nombre</span>
             <input formControlName="name" type="text" />
+            <small class="field-note" *ngIf="form.controls.name.touched && form.controls.name.hasError('minlength')">
+              Minimo 2 caracteres.
+            </small>
           </label>
 
           <label class="field">
@@ -82,6 +85,9 @@
           <label class="field">
             <span>Mensaje</span>
             <textarea formControlName="message"></textarea>
+            <small class="field-note" *ngIf="form.controls.message.touched && form.controls.message.hasError('minlength')">
+              Minimo 5 caracteres.
+            </small>
           </label>
 
           <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
@@ -123,7 +129,7 @@
         </article>
         <article class="panel">
           <h3>Mas confianza</h3>
-          <p>Una primera impresion comercial limpia antes de la futura capa admin.</p>
+          <p>Una primera impresion comercial limpia con seguimiento interno basico ya preparado.</p>
         </article>
       </div>
     </section>
@@ -160,7 +166,7 @@
         <ul style="margin-top: 12px">
           <li>Landing publica y formulario operativo o en demo, segun configuracion.</li>
           <li>Base preparada para conectar el backend real sin fingir persistencia en Pages.</li>
-          <li>Admin fuera de alcance por ahora, tal como marca el MVP.</li>
+          <li>Seguimiento interno minimo de leads ya contemplado dentro del MVP.</li>
         </ul>
       </article>
     </section>

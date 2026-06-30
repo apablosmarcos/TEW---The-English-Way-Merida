@@ -2,11 +2,18 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of, shareReplay } from 'rxjs';
 
-import { toSiteConfigErrorState, toSiteConfigReadyState, type SiteConfig, type SiteConfigState } from './site-config-state';
+import {
+  SITE_CONFIG_URL,
+  toSiteConfigErrorState,
+  toSiteConfigReadyState,
+  type SiteConfig,
+  type SiteConfigState,
+} from './site-config-state';
 
 export {
   DEFAULT_SITE_CONFIG,
   SITE_CONFIG_LOAD_ERROR_MESSAGE,
+  SITE_CONFIG_URL,
   type SiteConfig,
   type SiteConfigState,
 } from './site-config-state';
@@ -19,7 +26,7 @@ export class SiteConfigService {
   load() {
     if (!this.config$) {
       this.config$ = this.http
-        .get<Partial<SiteConfig>>('assets/config/site.config.json')
+        .get<Partial<SiteConfig>>(SITE_CONFIG_URL)
         .pipe(
           map((config) => toSiteConfigReadyState(config)),
           catchError(() => of(toSiteConfigErrorState())),

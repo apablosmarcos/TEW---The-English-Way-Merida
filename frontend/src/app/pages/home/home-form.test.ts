@@ -1,12 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import '@angular/compiler';
+import { HttpErrorResponse } from '@angular/common/http';
 import { of } from 'rxjs';
 
 import { buildLeadsEndpoint } from '../../core/services/leads-endpoint.ts';
 import {
+  LEAD_VALIDATION_ERROR_MESSAGE,
   createLeadForm,
   submitLeadForm,
+  toLeadSubmitErrorMessage,
 } from './home-form.ts';
 
 test('lead form is invalid without required fields', () => {
@@ -16,6 +19,20 @@ test('lead form is invalid without required fields', () => {
   assert.equal(form.controls.name.valid, false);
   assert.equal(form.controls.email.valid, false);
   assert.equal(form.controls.message.valid, false);
+});
+
+test('lead form matches backend minimum lengths for name and message', () => {
+  const form = createLeadForm();
+  form.setValue({
+    name: 'A',
+    email: 'ada@example.com',
+    phone: '',
+    message: 'Hola',
+  });
+
+  assert.equal(form.valid, false);
+  assert.equal(form.controls.name.hasError('minlength'), true);
+  assert.equal(form.controls.message.hasError('minlength'), true);
 });
 
 test('lead form calls API when apiBaseUrl exists', async () => {
@@ -64,4 +81,10 @@ test('lead endpoint supports relative apiBaseUrl values like /api', () => {
 
 test('lead endpoint keeps absolute apiBaseUrl support', () => {
   assert.equal(buildLeadsEndpoint('https://api.example.com'), 'https://api.example.com/leads');
+});
+
+test('lead submit keeps backend validation errors out of the generic technical message', () => {
+  const error = new HttpErrorResponse({ status: 400 });
+
+  assert.equal(toLeadSubmitErrorMessage(error), LEAD_VALIDATION_ERROR_MESSAGE);
 });

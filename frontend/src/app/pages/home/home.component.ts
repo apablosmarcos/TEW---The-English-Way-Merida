@@ -230,10 +230,15 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
     .panel p,
     .info-card p,
     .copy-muted,
+    .field-note,
     li,
     label {
       color: var(--muted);
       line-height: 1.65;
+    }
+
+    .field-note {
+      font-size: 0.88rem;
     }
 
     ul {
