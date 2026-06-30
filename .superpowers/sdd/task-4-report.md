@@ -99,6 +99,33 @@ pnpm --filter tew-frontend build
 
 Result: passed and generated the Angular app bundle in `frontend/dist/tew-frontend`.
 
+## Review follow-up
+
+- Corrected the review finding in `LeadsApiService`: endpoint construction no longer depends on `apiBaseUrl` being absolute.
+- Added `frontend/src/app/core/services/leads-endpoint.ts` so both relative bases like `/api` and absolute bases like `https://api.example.com` resolve to the expected `.../leads` endpoint without changing demo-mode behavior.
+- Extended the lightweight test coverage with explicit checks for relative and absolute base URLs.
+
+### Follow-up verification
+
+Ran after the review fix:
+
+```bash
+pnpm --filter tew-frontend test
+pnpm --filter tew-frontend build
+```
+
+Result:
+
+```text
+✔ lead form is invalid without required fields
+✔ lead form calls API when apiBaseUrl exists
+✔ lead form shows demo-mode message when apiBaseUrl is empty
+✔ lead endpoint supports relative apiBaseUrl values like /api
+✔ lead endpoint keeps absolute apiBaseUrl support
+
+Angular build completed successfully.
+```
+
 ## Self-review
 
 - Confirmed the app reads runtime config from `assets/config/site.config.json`.

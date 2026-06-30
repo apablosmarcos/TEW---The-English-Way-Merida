@@ -3,6 +3,7 @@ import test from 'node:test';
 import '@angular/compiler';
 import { of } from 'rxjs';
 
+import { buildLeadsEndpoint } from '../../core/services/leads-endpoint.ts';
 import {
   createLeadForm,
   submitLeadForm,
@@ -55,4 +56,12 @@ test('lead form shows demo-mode message when apiBaseUrl is empty', () => {
     result.message,
     'Demo visual: este formulario no envia datos en GitHub Pages.',
   );
+});
+
+test('lead endpoint supports relative apiBaseUrl values like /api', () => {
+  assert.equal(buildLeadsEndpoint('/api'), '/api/leads');
+});
+
+test('lead endpoint keeps absolute apiBaseUrl support', () => {
+  assert.equal(buildLeadsEndpoint('https://api.example.com'), 'https://api.example.com/leads');
 });
