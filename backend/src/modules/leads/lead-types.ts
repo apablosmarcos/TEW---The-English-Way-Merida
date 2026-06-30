@@ -1,3 +1,12 @@
+export const leadStatuses = [
+  'new',
+  'contacted',
+  'pending_info',
+  'interview',
+  'enrolled',
+  'discarded',
+] as const;
+
 export type LeadStatus =
   | 'new'
   | 'contacted'
@@ -27,4 +36,9 @@ export type CreateLeadInput = {
   message: string;
   interestType: string | null;
   source: string;
+};
+
+export type UpdateLeadInput = {
+  status?: LeadStatus;
+  notes?: string;
 };

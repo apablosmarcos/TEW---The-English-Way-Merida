@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "node --watch --experimental-strip-types src/server.ts"
+    "dev": "node --watch --experimental-strip-types src/server.ts",
+    "test": "node --test --experimental-strip-types src/modules/leads/lead-repository.test.ts src/routes/leads.test.ts src/routes/admin.test.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

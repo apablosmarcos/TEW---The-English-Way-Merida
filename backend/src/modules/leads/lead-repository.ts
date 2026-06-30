@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-import type { CreateLeadInput, Lead } from './lead-types.ts';
+import type { CreateLeadInput, Lead, UpdateLeadInput } from './lead-types.ts';
 
 const defaultLeadsFileUrl = new URL('../../../data/leads.json', import.meta.url);
 
@@ -31,6 +31,30 @@ export function createLead(input: CreateLeadInput): Promise<{ id: string }> {
 
 export async function listLeads(): Promise<Lead[]> {
   return readLeads();
+}
+
+export function updateLead(id: string, input: UpdateLeadInput): Promise<Lead | null> {
+  return enqueueWrite(async () => {
+    const leads = await readLeads();
+    const index = leads.findIndex((lead) => lead.id === id);
+
+    if (index === -1) {
+      return null;
+    }
+
+    const currentLead = leads[index];
+    const updatedLead: Lead = {
+      ...currentLead,
+      status: input.status ?? currentLead.status,
+      notes: input.notes ?? currentLead.notes,
+      updatedAt: new Date().toISOString(),
+    };
+
+    leads[index] = updatedLead;
+    await writeLeads(leads);
+
+    return updatedLead;
+  });
 }
 
 function enqueueWrite<T>(operation: () => Promise<T>) {

@@ -5,7 +5,7 @@
   "scripts": {
     "build": "ng build",
     "dev": "ng serve",
-    "test": "node --test --experimental-strip-types src/app/pages/home/home-form.test.ts src/app/core/services/site-config.service.test.ts"
+    "test": "node --test --experimental-strip-types src/app/core/services/site-config.service.test.ts src/app/core/services/admin-endpoint.test.ts src/app/core/services/admin-session.test.ts src/app/pages/home/home-form.test.ts"
   },
   "dependencies": {
     "@angular/common": "^20.0.0",
