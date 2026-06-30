@@ -23,10 +23,13 @@ Hostinger is the functional deployment.
 
 - Build the frontend and backend with `pnpm build`.
 - Before the production frontend build, copy `frontend/src/assets/config/site.config.hostinger.json` over `frontend/src/assets/config/site.config.json` so the app points to `/api`.
-- Serve the Angular build from `frontend/dist/tew-frontend/browser`.
-- Run the Express backend from `backend/dist/server.js`.
-- Route `/api` to the backend so the frontend and API share the same origin.
+- Run the Express backend from `backend/dist/server.js` and let it serve `frontend/dist/tew-frontend/browser` on the same origin.
+- Keep `/api` on that same process so the frontend calls the real backend through `/api`.
 
 ## Dockerfile note
 
-The repository Dockerfile now builds the real workspace and runs the backend. It is not the GitHub Pages artifact; Pages only needs the built frontend files.
+The repository `Dockerfile` builds the Hostinger-style artifact, not the GitHub Pages demo artifact.
+
+- During `docker build`, it swaps in `frontend/src/assets/config/site.config.hostinger.json`, so the compiled frontend targets `/api`.
+- The final container runs `backend/dist/server.js` and serves the compiled Angular files from the same runtime.
+- A successful container should answer both `/` and `/api/health`.
