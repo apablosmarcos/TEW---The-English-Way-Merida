@@ -9,3 +9,6 @@ reviews/
 # Node workspace artifacts
 node_modules/
 backend/dist/
+frontend/.angular/
+frontend/dist/
+frontend/out-tsc/

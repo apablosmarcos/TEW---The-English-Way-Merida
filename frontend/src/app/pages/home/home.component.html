@@ -1,0 +1,168 @@
+<div class="page">
+  <header class="topbar">
+    <div class="shell">
+      <a class="brand" href="#inicio">
+        <span class="brand-mark">TEW</span>
+        <span>{{ siteConfig.brandName }}</span>
+      </a>
+
+      <nav>
+        <a href="#metodo">Metodo</a>
+        <a href="#propuesta">Propuesta</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero" id="inicio">
+      <article class="hero-copy">
+        <span class="eyebrow">Make it happen</span>
+        <h1>Ingles practico, digital y cercano en Merida.</h1>
+        <p>
+          TEW combina metodologia propia, trabajo guiado y herramientas como
+          Classroom, Drive y documentos compartidos para que el aprendizaje sea
+          mas claro, mas ordenado y mas util desde el primer dia.
+        </p>
+
+        <div class="hero-actions">
+          <a class="button primary" href="#contacto">Solicitar informacion</a>
+          <a class="button secondary" href="#metodo">Ver metodologia</a>
+        </div>
+
+        <div class="hero-points">
+          <div class="point">
+            <strong>Classroom real</strong>
+            <p>Materiales, tareas y seguimiento en un unico flujo.</p>
+          </div>
+          <div class="point">
+            <strong>Aprendizaje aplicado</strong>
+            <p>Menos teoria aislada y mas uso practico del idioma.</p>
+          </div>
+          <div class="point">
+            <strong>Imagen profesional</strong>
+            <p>Una academia clara desde la primera visita.</p>
+          </div>
+        </div>
+      </article>
+
+      <aside class="form-card" id="contacto">
+        <span class="mode-pill" [class.live]="!!siteConfig.apiBaseUrl">
+          {{ siteConfig.apiBaseUrl ? 'Formulario conectado' : 'Demo visual' }}
+        </span>
+        <h2 style="margin-top: 16px">Cuentanos que necesitas</h2>
+        <p class="copy-muted" style="margin-top: 10px">
+          Resolvemos dudas sobre clases, metodologia, horarios o una visita a la academia.
+        </p>
+
+        <div class="helper" *ngIf="!siteConfig.apiBaseUrl">
+          {{ demoMessage }}
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <label class="field">
+            <span>Nombre</span>
+            <input formControlName="name" type="text" />
+          </label>
+
+          <label class="field">
+            <span>Email</span>
+            <input formControlName="email" type="email" />
+          </label>
+
+          <label class="field">
+            <span>Telefono (opcional)</span>
+            <input formControlName="phone" type="text" />
+          </label>
+
+          <label class="field">
+            <span>Mensaje</span>
+            <textarea formControlName="message"></textarea>
+          </label>
+
+          <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+          <div class="success" *ngIf="successMessage">{{ successMessage }}</div>
+
+          <button class="button primary" type="submit" [disabled]="isSubmitting || isLoadingConfig">
+            {{ isSubmitting ? 'Enviando...' : 'Enviar solicitud' }}
+          </button>
+        </form>
+      </aside>
+    </section>
+
+    <section class="sections" id="metodo">
+      <div class="mini-grid">
+        <article class="panel">
+          <h3>Una metodologia que baja a tierra</h3>
+          <p>
+            Las clases conectan speaking, reading, writing y listening con tareas
+            que el alumno entiende y puede continuar fuera del aula.
+          </p>
+        </article>
+        <article class="panel">
+          <h3>Entorno digital ordenado</h3>
+          <p>
+            TEW ya trabaja con Classroom, Drive, PDFs y material propio. La web
+            nueva lo explica mejor y abre un canal simple para captar leads.
+          </p>
+        </article>
+      </div>
+
+      <div class="grid-3" id="propuesta">
+        <article class="panel">
+          <h3>Mas claridad</h3>
+          <p>Unidades, avisos y recursos mas faciles de seguir para familias y alumnado.</p>
+        </article>
+        <article class="panel">
+          <h3>Mas continuidad</h3>
+          <p>Recursos compartidos y seguimiento que reducen ruido y duplicidad.</p>
+        </article>
+        <article class="panel">
+          <h3>Mas confianza</h3>
+          <p>Una primera impresion comercial limpia antes de la futura capa admin.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="contact">
+      <article class="info-card">
+        <h2>Contacto TEW</h2>
+        <p style="margin-top: 12px">
+          Academia de ingles en Merida con enfoque practico, herramientas digitales y acompanamiento cercano.
+        </p>
+
+        <div class="contact-grid" style="margin-top: 18px">
+          <div>
+            <strong>Email</strong>
+            <p>{{ siteConfig.contactEmail }}</p>
+          </div>
+          <div>
+            <strong>Telefono</strong>
+            <p>924 48 57 13</p>
+          </div>
+          <div>
+            <strong>WhatsApp</strong>
+            <p>615 15 30 12</p>
+          </div>
+          <div>
+            <strong>Direccion</strong>
+            <p>C. Severo Ochoa, 20, Local 4, 06800 Merida</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="info-card">
+        <h2>Que viene despues</h2>
+        <ul style="margin-top: 12px">
+          <li>Landing publica y formulario operativo o en demo, segun configuracion.</li>
+          <li>Base preparada para conectar el backend real sin fingir persistencia en Pages.</li>
+          <li>Admin fuera de alcance por ahora, tal como marca el MVP.</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+
+  <footer class="shell">
+    {{ siteConfig.brandName }} - {{ siteConfig.contactEmail }}
+  </footer>
+</div>

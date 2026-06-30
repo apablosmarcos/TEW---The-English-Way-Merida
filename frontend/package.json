@@ -1,8 +1,28 @@
 {
   "name": "tew-frontend",
   "private": true,
+  "type": "module",
   "scripts": {
-    "build": "node -e \"console.error('Frontend not implemented yet'); process.exit(1)\"",
-    "dev": "node -e \"console.error('Frontend not implemented yet'); process.exit(1)\""
+    "build": "ng build",
+    "dev": "ng serve",
+    "test": "node --test --experimental-strip-types src/app/pages/home/home-form.test.ts"
+  },
+  "dependencies": {
+    "@angular/common": "^20.0.0",
+    "@angular/compiler": "^20.0.0",
+    "@angular/core": "^20.0.0",
+    "@angular/forms": "^20.0.0",
+    "@angular/platform-browser": "^20.0.0",
+    "@angular/router": "^20.0.0",
+    "rxjs": "^7.8.2",
+    "tslib": "^2.8.1",
+    "zone.js": "^0.15.1"
+  },
+  "devDependencies": {
+    "@angular/cli": "^20.0.0",
+    "@angular-devkit/build-angular": "^20.0.0",
+    "@angular/compiler-cli": "^20.0.0",
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2"
   }
 }
