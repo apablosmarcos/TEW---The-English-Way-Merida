@@ -8,3 +8,4 @@ reviews/
 
 # Node workspace artifacts
 node_modules/
+backend/dist/
