@@ -41,7 +41,9 @@ Implemented the minimum workspace structure:
 - Minimal `frontend/package.json`
 - Minimal `backend/package.json`
 
-Both package manifests include placeholder `build`/`dev` scripts that fail explicitly with `not implemented yet` so root workspace commands resolve correctly while real apps still do not exist.
+Both package manifests include placeholder `build`/`dev` scripts that fail explicitly with `not implemented yet`.
+
+The root `dev:backend` and `dev:frontend` commands both delegate to those placeholder package scripts, so the bootstrap stays app-agnostic and does not assume Angular CLI or a real frontend app yet.
 
 ### Verification after implementation
 
@@ -61,6 +63,34 @@ Observed results:
 
 This is the expected post-bootstrap state from the task brief and ambiguity note.
 
+## Review correction
+
+- Adjusted root `dev:frontend` from `pnpm --filter tew-frontend exec ng serve` to `pnpm --filter tew-frontend dev`.
+- Reason: Task 1 only includes placeholder packages, so the root frontend dev command must follow the same minimal placeholder pattern as `dev:backend`.
+
+## Verification after review correction
+
+Ran:
+
+```bash
+pnpm install
+pnpm build
+pnpm dev:frontend
+```
+
+Observed results:
+
+- `pnpm install` succeeded and reported all 3 workspace projects up to date.
+- `pnpm build` still resolves the workspace and then fails inside the placeholder package scripts:
+  - `Backend not implemented yet`
+  - `Frontend not implemented yet`
+- `pnpm dev:frontend` now resolves through the `tew-frontend` package script and fails with:
+  - `Frontend not implemented yet`
+- Both commands still emit the existing engine warning because the environment is running `Node v26.4.0` while the project declares `22.x`.
+- pnpm also warns that the placeholder package folders do not have local `node_modules/`; this is non-blocking here because those packages intentionally have no dependencies yet.
+
+This now matches the intended bootstrap-only behavior for Task 1.
+
 ## Extra minimal adjustment
 
 - Added `node_modules/` to `.gitignore` because `pnpm install` created a local `node_modules/` directory that was previously unignored.
@@ -70,12 +100,14 @@ This is the expected post-bootstrap state from the task brief and ambiguity note
 
 - Checked the created manifests against the brief's required root scripts and package names.
 - Confirmed the workspace failure moved from missing root manifest to package-level placeholder failure.
+- Confirmed `dev:frontend` no longer assumes Angular CLI and now matches the backend placeholder pattern.
 - Confirmed no frontend/backend implementation was added beyond minimal manifests.
 
 ## Concerns
 
 - Verification shows an engine warning because the local environment runs `Node v26.4.0` while the root manifest declares `22.x`. This did not block the bootstrap and matches the intended project constraint, but the warning will remain until commands run under Node 22.
+- Placeholder package commands also warn about local `node_modules/` being absent. This is expected with dependency-free placeholder packages and does not affect the bootstrap behavior.
 
 ## Commit
 
-- Intended commit message: `chore: bootstrap tew workspace`
+- Correction commit message: `fix: align frontend dev bootstrap placeholder`
