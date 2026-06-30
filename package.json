@@ -1,0 +1,14 @@
+{
+  "name": "tew-the-english-way-merida",
+  "private": true,
+  "packageManager": "pnpm@11.5.1",
+  "engines": {
+    "node": "22.x",
+    "pnpm": "11.x"
+  },
+  "scripts": {
+    "dev:backend": "pnpm --filter tew-backend dev",
+    "dev:frontend": "pnpm --filter tew-frontend exec ng serve",
+    "build": "pnpm --recursive run build"
+  }
+}

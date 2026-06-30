@@ -5,3 +5,6 @@
 # Local planning material not needed in the public landing repo
 docs/
 reviews/
+
+# Node workspace artifacts
+node_modules/
