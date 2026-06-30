@@ -23,13 +23,14 @@ Hostinger is the functional deployment.
 
 - Build the frontend and backend with `pnpm build`.
 - Before the production frontend build, copy `frontend/src/assets/config/site.config.hostinger.json` over `frontend/src/assets/config/site.config.json` so the app points to `/api`.
-- Run the Express backend from `backend/dist/server.js` and let it serve `frontend/dist/tew-frontend/browser` on the same origin.
-- Keep `/api` on that same process so the frontend calls the real backend through `/api`.
+- Deploy the Angular build from `frontend/dist/tew-frontend/browser` and the Express backend from `backend/dist/server.js` on the same site or behind the same domain.
+- Keep `/api` routed to the backend so the frontend can call the real API through `/api`.
+- The exact Hostinger wiring is intentionally pending; this repo only leaves the config files and build outputs ready for that follow-up.
 
 ## Dockerfile note
 
-The repository `Dockerfile` builds the Hostinger-style artifact, not the GitHub Pages demo artifact.
+The repository `Dockerfile` is only a neutral backend artifact plus workspace build check. It does not represent the final Hostinger deployment.
 
-- During `docker build`, it swaps in `frontend/src/assets/config/site.config.hostinger.json`, so the compiled frontend targets `/api`.
-- The final container runs `backend/dist/server.js` and serves the compiled Angular files from the same runtime.
-- A successful container should answer both `/` and `/api/health`.
+- `docker build .` verifies that the monorepo builds cleanly under Node 22.
+- The final container runs `backend/dist/server.js` only.
+- GitHub Pages remains the temporary demo path, and the real frontend hosting setup for Hostinger stays as a later task.
