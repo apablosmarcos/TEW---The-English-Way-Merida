@@ -2,34 +2,27 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of, shareReplay } from 'rxjs';
 
-export interface SiteConfig {
-  brandName: string;
-  apiBaseUrl: string;
-  contactEmail: string;
-}
+import { toSiteConfigErrorState, toSiteConfigReadyState, type SiteConfig, type SiteConfigState } from './site-config-state';
 
-export const DEFAULT_SITE_CONFIG: SiteConfig = {
-  brandName: 'TEW - The English Way Merida',
-  apiBaseUrl: '',
-  contactEmail: 'theenglishway.tew@gmail.com',
-};
+export {
+  DEFAULT_SITE_CONFIG,
+  SITE_CONFIG_LOAD_ERROR_MESSAGE,
+  type SiteConfig,
+  type SiteConfigState,
+} from './site-config-state';
 
 @Injectable({ providedIn: 'root' })
 export class SiteConfigService {
   private readonly http = inject(HttpClient);
-  private config$?: Observable<SiteConfig>;
+  private config$?: Observable<SiteConfigState>;
 
   load() {
     if (!this.config$) {
       this.config$ = this.http
         .get<Partial<SiteConfig>>('assets/config/site.config.json')
         .pipe(
-          map((config) => ({
-            ...DEFAULT_SITE_CONFIG,
-            ...config,
-            apiBaseUrl: (config.apiBaseUrl ?? '').trim(),
-          })),
-          catchError(() => of(DEFAULT_SITE_CONFIG)),
+          map((config) => toSiteConfigReadyState(config)),
+          catchError(() => of(toSiteConfigErrorState())),
           shareReplay(1),
         );
     }

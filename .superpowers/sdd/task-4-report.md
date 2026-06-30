@@ -126,10 +126,41 @@ Result:
 Angular build completed successfully.
 ```
 
+## Second review follow-up
+
+- Corrected the silent fallback in `SiteConfigService`: a fetch or parse error in `assets/config/site.config.json` now stays as an explicit configuration error state instead of being converted into demo mode.
+- Kept demo mode only for the explicit valid-config case where `apiBaseUrl` resolves to an empty string.
+- Updated `HomeComponent` so config-load failures surface a visible message, change the mode label to `Configuracion no disponible`, and keep the submit button disabled until the config issue is resolved.
+- Added a small pure helper module for site-config state mapping so the distinction between ready/demo and load-error states is covered by lightweight Node tests without adding full Angular test infrastructure.
+
+### Second follow-up verification
+
+Ran after the second review fix:
+
+```bash
+pnpm --filter tew-frontend test
+pnpm --filter tew-frontend build
+```
+
+Result:
+
+```text
+✔ site config keeps demo mode only for a valid config with empty apiBaseUrl
+✔ site config load errors stay distinct from demo mode
+✔ lead form is invalid without required fields
+✔ lead form calls API when apiBaseUrl exists
+✔ lead form shows demo-mode message when apiBaseUrl is empty
+✔ lead endpoint supports relative apiBaseUrl values like /api
+✔ lead endpoint keeps absolute apiBaseUrl support
+
+Application bundle generation complete.
+```
+
 ## Self-review
 
 - Confirmed the app reads runtime config from `assets/config/site.config.json`.
-- Confirmed demo mode does not call the API and does not claim persistence.
+- Confirmed demo mode now only applies when config loads successfully with an empty `apiBaseUrl`.
+- Confirmed a config-load failure no longer degrades silently into demo mode.
 - Confirmed API mode delegates to `POST /api/leads` via `LeadsApiService`.
 - Confirmed only public landing + lead form were implemented; no admin UI was added.
 - Added ignore rules for Angular-generated local artifacts.

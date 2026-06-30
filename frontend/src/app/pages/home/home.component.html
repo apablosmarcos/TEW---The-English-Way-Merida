@@ -47,15 +47,19 @@
       </article>
 
       <aside class="form-card" id="contacto">
-        <span class="mode-pill" [class.live]="!!siteConfig.apiBaseUrl">
-          {{ siteConfig.apiBaseUrl ? 'Formulario conectado' : 'Demo visual' }}
+        <span class="mode-pill" [class.live]="!!siteConfig.apiBaseUrl && !configErrorMessage">
+          {{ configErrorMessage ? 'Configuracion no disponible' : siteConfig.apiBaseUrl ? 'Formulario conectado' : 'Demo visual' }}
         </span>
         <h2 style="margin-top: 16px">Cuentanos que necesitas</h2>
         <p class="copy-muted" style="margin-top: 10px">
           Resolvemos dudas sobre clases, metodologia, horarios o una visita a la academia.
         </p>
 
-        <div class="helper" *ngIf="!siteConfig.apiBaseUrl">
+        <div class="error" *ngIf="configErrorMessage">
+          {{ configErrorMessage }}
+        </div>
+
+        <div class="helper" *ngIf="!siteConfig.apiBaseUrl && !configErrorMessage">
           {{ demoMessage }}
         </div>
 
@@ -83,7 +87,7 @@
           <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
           <div class="success" *ngIf="successMessage">{{ successMessage }}</div>
 
-          <button class="button primary" type="submit" [disabled]="isSubmitting || isLoadingConfig">
+          <button class="button primary" type="submit" [disabled]="isSubmitting || isLoadingConfig || !!configErrorMessage">
             {{ isSubmitting ? 'Enviando...' : 'Enviar solicitud' }}
           </button>
         </form>

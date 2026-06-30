@@ -5,6 +5,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { LeadsApiService } from '../../core/services/leads-api.service';
 import {
   DEFAULT_SITE_CONFIG,
+  SITE_CONFIG_LOAD_ERROR_MESSAGE,
   SiteConfigService,
   type SiteConfig,
 } from '../../core/services/site-config.service';
@@ -336,12 +337,14 @@ export class HomeComponent implements OnInit {
   protected siteConfig: SiteConfig = DEFAULT_SITE_CONFIG;
   protected isLoadingConfig = true;
   protected isSubmitting = false;
+  protected configErrorMessage = '';
   protected successMessage = '';
   protected errorMessage = '';
 
   ngOnInit() {
-    this.siteConfigService.load().subscribe((config) => {
-      this.siteConfig = config;
+    this.siteConfigService.load().subscribe((state) => {
+      this.siteConfig = state.config;
+      this.configErrorMessage = state.status === 'error' ? state.message : '';
       this.isLoadingConfig = false;
     });
   }
@@ -354,6 +357,11 @@ export class HomeComponent implements OnInit {
 
     this.successMessage = '';
     this.errorMessage = '';
+
+    if (this.configErrorMessage) {
+      this.errorMessage = SITE_CONFIG_LOAD_ERROR_MESSAGE;
+      return;
+    }
 
     const result = submitLeadForm(this.form, this.siteConfig.apiBaseUrl, (payload) =>
       this.leadsApi.createLead(this.siteConfig.apiBaseUrl, payload),
