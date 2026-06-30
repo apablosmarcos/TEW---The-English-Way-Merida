@@ -3,8 +3,8 @@ import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
-import { healthRouter } from './routes/health.js';
-import { leadsRouter } from './routes/leads.js';
+import { healthRouter } from './routes/health.ts';
+import { leadsRouter } from './routes/leads.ts';
 
 export function createApp() {
   const app = express();
