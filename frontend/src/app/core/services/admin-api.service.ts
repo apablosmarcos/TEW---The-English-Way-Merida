@@ -23,6 +23,23 @@ export type AdminLead = {
   message: string;
   interestType: string | null;
   source: string;
+  studentName: string;
+  studentSurname: string;
+  birthDate: string;
+  address: string;
+  school: string;
+  currentCourse: string;
+  primaryContactName: string;
+  primaryContactSurname: string;
+  primaryContactRelationship: string;
+  secondaryContactName: string | null;
+  secondaryContactSurname: string | null;
+  secondaryContactRelationship: string | null;
+  pickupContact: string | null;
+  paymentMethod: string;
+  paymentAccountHolder: string | null;
+  paymentIban: string | null;
+  observations: string;
   status: AdminLeadStatus;
   notes: string;
   createdAt: string;
@@ -57,6 +74,14 @@ export class AdminApiService {
 
   listLeads(apiBaseUrl: string, token: string) {
     return this.http.get<AdminLeadsResponse>(buildAdminLeadsEndpoint(apiBaseUrl), {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+
+  deleteLead(apiBaseUrl: string, token: string, leadId: string) {
+    return this.http.delete<{ ok: true }>(buildAdminLeadDetailEndpoint(apiBaseUrl, leadId), {
       headers: {
         Authorization: `Bearer ${token}`,
       },

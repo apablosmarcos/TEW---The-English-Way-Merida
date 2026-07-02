@@ -25,10 +25,10 @@ export class SiteConfigService {
 
   load() {
     if (!this.config$) {
-      this.config$ = this.http
-        .get<Partial<SiteConfig>>(SITE_CONFIG_URL)
-        .pipe(
-          map((config) => toSiteConfigReadyState(config)),
+        this.config$ = this.http
+          .get<Partial<SiteConfig>>(SITE_CONFIG_URL)
+          .pipe(
+          map((config) => toSiteConfigReadyState(config, globalThis.location?.hostname ?? '')),
           catchError(() => of(toSiteConfigErrorState())),
           shareReplay(1),
         );

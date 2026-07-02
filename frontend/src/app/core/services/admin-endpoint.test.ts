@@ -16,4 +16,5 @@ test('admin endpoints support relative apiBaseUrl values like /api', () => {
 test('admin endpoints keep absolute apiBaseUrl support', () => {
   assert.equal(buildAdminLoginEndpoint('https://api.example.com'), 'https://api.example.com/admin/login');
   assert.equal(buildAdminLeadsEndpoint('https://api.example.com'), 'https://api.example.com/admin/leads');
+  assert.equal(buildAdminLeadDetailEndpoint('https://api.example.com', 'lead_123'), 'https://api.example.com/admin/leads/lead_123');
 });

@@ -16,32 +16,78 @@ test('lead form is invalid without required fields', () => {
   const form = createLeadForm();
 
   assert.equal(form.valid, false);
-  assert.equal(form.controls.name.valid, false);
+  assert.equal(form.controls.studentName.valid, false);
+  assert.equal(form.controls.studentSurname.valid, false);
+  assert.equal(form.controls.birthDate.valid, false);
+  assert.equal(form.controls.address.valid, false);
   assert.equal(form.controls.email.valid, false);
-  assert.equal(form.controls.message.valid, false);
+  assert.equal(form.controls.school.valid, false);
+  assert.equal(form.controls.currentCourse.valid, false);
+  assert.equal(form.controls.primaryContactName.valid, false);
+  assert.equal(form.controls.primaryContactSurname.valid, false);
+  assert.equal(form.controls.primaryContactRelationship.valid, false);
+  assert.equal(form.controls.paymentMethod.valid, false);
+  assert.equal(form.controls.observations.valid, true);
 });
 
-test('lead form matches backend minimum lengths for name and message', () => {
+test('lead form matches backend minimum lengths for student and family text fields', () => {
   const form = createLeadForm();
   form.setValue({
-    name: 'A',
+    studentName: 'A',
+    studentSurname: 'B',
+    birthDate: '2014-05-10',
+    address: 'C',
     email: 'ada@example.com',
     phone: '',
-    message: 'Hola',
+    school: 'D',
+    currentCourse: 'E',
+    primaryContactName: 'F',
+    primaryContactSurname: 'G',
+    primaryContactRelationship: 'H',
+    secondaryContactName: '',
+    secondaryContactSurname: '',
+    secondaryContactRelationship: '',
+    pickupContact: '',
+    paymentMethod: 'bizum',
+    paymentAccountHolder: '',
+    paymentIban: '',
+    observations: '',
   });
 
   assert.equal(form.valid, false);
-  assert.equal(form.controls.name.hasError('minlength'), true);
-  assert.equal(form.controls.message.hasError('minlength'), true);
+  assert.equal(form.controls.studentName.hasError('minlength'), true);
+  assert.equal(form.controls.studentSurname.hasError('minlength'), true);
+  assert.equal(form.controls.address.hasError('minlength'), true);
+  assert.equal(form.controls.school.hasError('minlength'), true);
+  assert.equal(form.controls.currentCourse.hasError('minlength'), true);
+  assert.equal(form.controls.primaryContactName.hasError('minlength'), true);
+  assert.equal(form.controls.primaryContactSurname.hasError('minlength'), true);
+  assert.equal(form.controls.primaryContactRelationship.hasError('minlength'), true);
+  assert.equal(form.controls.observations.valid, true);
 });
 
 test('lead form calls API when apiBaseUrl exists', async () => {
   const form = createLeadForm();
   form.setValue({
-    name: 'Ada Lovelace',
+    studentName: 'Ada',
+    studentSurname: 'Lovelace',
+    birthDate: '2014-05-10',
+    address: 'Calle Mayor 1, Merida',
     email: 'ada@example.com',
-    phone: '',
-    message: 'Quiero informacion sobre clases.',
+    phone: '600000000',
+    school: 'Colegio Ejemplo',
+    currentCourse: '5 Primaria',
+    primaryContactName: 'Laura',
+    primaryContactSurname: 'Lovelace',
+    primaryContactRelationship: 'Madre',
+    secondaryContactName: 'Juan',
+    secondaryContactSurname: 'Lovelace',
+    secondaryContactRelationship: 'Padre',
+    pickupContact: 'Rocio Lovelace - Tia',
+    paymentMethod: 'bizum',
+    paymentAccountHolder: 'Laura Lovelace',
+    paymentIban: 'ES7620770024003102575766',
+    observations: 'Alergia alimentaria',
   });
 
   let calledWith: unknown;
@@ -58,10 +104,25 @@ test('lead form calls API when apiBaseUrl exists', async () => {
 test('lead form shows demo-mode message when apiBaseUrl is empty', () => {
   const form = createLeadForm();
   form.setValue({
-    name: 'Ada Lovelace',
+    studentName: 'Ada',
+    studentSurname: 'Lovelace',
+    birthDate: '2014-05-10',
+    address: 'Calle Mayor 1, Merida',
     email: 'ada@example.com',
-    phone: '',
-    message: 'Quiero informacion sobre clases.',
+    phone: '600000000',
+    school: 'Colegio Ejemplo',
+    currentCourse: '5 Primaria',
+    primaryContactName: 'Laura',
+    primaryContactSurname: 'Lovelace',
+    primaryContactRelationship: 'Madre',
+    secondaryContactName: '',
+    secondaryContactSurname: '',
+    secondaryContactRelationship: '',
+    pickupContact: '',
+    paymentMethod: 'bizum',
+    paymentAccountHolder: '',
+    paymentIban: '',
+    observations: 'Sin observaciones relevantes',
   });
 
   const result = submitLeadForm(form, '', () => {

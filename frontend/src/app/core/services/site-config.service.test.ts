@@ -20,6 +20,20 @@ test('site config keeps demo mode only for a valid config with empty apiBaseUrl'
   assert.equal(result.config.apiBaseUrl, '');
 });
 
+test('site config falls back to local backend on localhost when apiBaseUrl is empty', () => {
+  const result = toSiteConfigReadyState(
+    {
+      brandName: 'TEW',
+      apiBaseUrl: '   ',
+      contactEmail: 'team@example.com',
+    },
+    'localhost',
+  );
+
+  assert.equal(result.status, 'ready');
+  assert.equal(result.config.apiBaseUrl, 'http://localhost:3000/api');
+});
+
 test('site config load errors stay distinct from demo mode', () => {
   const result = toSiteConfigErrorState();
 

@@ -26,13 +26,15 @@ export type SiteConfigState =
       message: string;
     };
 
-export function toSiteConfigReadyState(config: Partial<SiteConfig>): SiteConfigState {
+export function toSiteConfigReadyState(config: Partial<SiteConfig>, hostname = ''): SiteConfigState {
+  const apiBaseUrl = (config.apiBaseUrl ?? '').trim() || inferLocalApiBaseUrl(hostname);
+
   return {
     status: 'ready',
     config: {
       ...DEFAULT_SITE_CONFIG,
       ...config,
-      apiBaseUrl: (config.apiBaseUrl ?? '').trim(),
+      apiBaseUrl,
     },
   };
 }
@@ -43,4 +45,10 @@ export function toSiteConfigErrorState(): SiteConfigState {
     config: DEFAULT_SITE_CONFIG,
     message: SITE_CONFIG_LOAD_ERROR_MESSAGE,
   };
+}
+
+function inferLocalApiBaseUrl(hostname: string) {
+  return hostname === 'localhost' || hostname === '127.0.0.1'
+    ? 'http://localhost:3000/api'
+    : '';
 }

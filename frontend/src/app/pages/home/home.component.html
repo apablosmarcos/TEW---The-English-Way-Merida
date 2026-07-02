@@ -1,178 +1,415 @@
 <div class="page">
   <header class="topbar">
-    <div class="shell">
-      <a class="brand" href="#inicio">
-        <span class="brand-mark">TEW</span>
-        <span>{{ siteConfig.brandName }}</span>
+    <div class="shell topbar-shell">
+      <a class="brand" href="#inicio" aria-label="Ir al inicio de TEW">
+        <img class="brand-logo" src="assets/img/Robot Head with TEW Logo.png" alt="Logo robot de The English Way" />
+        <span class="brand-copy">
+          <strong>The English Way</strong>
+          <small>Academia de inglés en Mérida</small>
+        </span>
       </a>
 
-      <nav>
-        <a href="#metodo">Metodo</a>
-        <a href="#propuesta">Propuesta</a>
-        <a href="#contacto">Contacto</a>
+      <nav [class.nav-open]="menuOpen">
+        <a href="#metodo"     (click)="menuOpen = false">Método</a>
+        <a href="#clases"     (click)="menuOpen = false">Clases</a>
+        <a href="#formulario" (click)="menuOpen = false">Matrícula</a>
+        <a href="#contacto"   (click)="menuOpen = false">Contacto</a>
       </nav>
+
+      <button
+        class="hamburger"
+        type="button"
+        (click)="menuOpen = !menuOpen"
+        [attr.aria-expanded]="menuOpen"
+        aria-label="Abrir menú de navegación"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </div>
   </header>
 
-  <main class="shell">
-    <section class="hero" id="inicio">
+  <main>
+    <section class="hero shell" id="inicio">
       <article class="hero-copy">
         <span class="eyebrow">Make it happen</span>
-        <h1>Ingles practico, digital y cercano en Merida.</h1>
-        <p>
-          TEW combina metodologia propia, trabajo guiado y herramientas como
-          Classroom, Drive y documentos compartidos para que el aprendizaje sea
-          mas claro, mas ordenado y mas util desde el primer dia.
+        <div class="hero-brand-pair" aria-label="Identidad visual TEW">
+          <img class="hero-brand-robot" src="assets/img/Robot Head with TEW Logo.png" alt="Logo robot de TEW" />
+          <img class="hero-brand-official" src="assets/img/TEW.png" alt="Logo oficial de The English Way" />
+        </div>
+        <h1>
+          <span class="hero-line-fixed">Aprender inglés</span>
+          <span>nunca fue tan entretenido</span>
+        </h1>
+        <p class="hero-text">
+          En TEW trabajamos un inglés práctico, cercano y útil para el día a día, con seguimiento real, materiales claros
+          y una experiencia que motiva desde la primera clase.
         </p>
 
         <div class="hero-actions">
-          <a class="button primary" href="#contacto">Solicitar informacion</a>
-          <a class="button secondary" href="#metodo">Ver metodologia</a>
+          <a class="button primary" href="#formulario">Solicitar matrícula</a>
+          <a class="button secondary" href="#clases">Cómo es una clase</a>
         </div>
 
-        <div class="hero-points">
-          <div class="point">
-            <strong>Classroom real</strong>
-            <p>Materiales, tareas y seguimiento en un unico flujo.</p>
-          </div>
-          <div class="point">
-            <strong>Aprendizaje aplicado</strong>
-            <p>Menos teoria aislada y mas uso practico del idioma.</p>
-          </div>
-          <div class="point">
-            <strong>Imagen profesional</strong>
-            <p>Una academia clara desde la primera visita.</p>
-          </div>
+      </article>
+
+      <aside class="hero-stage" aria-label="Escena visual TEW">
+        <div class="hero-stage-notes">
+          <div class="floating-note note-top">Motivación · Mérida</div>
+          <div class="floating-note note-bottom">Aula digital · Seguimiento real</div>
+        </div>
+        <div class="glow glow-red"></div>
+        <div class="glow glow-blue"></div>
+        <img class="stage-banner" src="assets/img/TEW 3D Logo with Robot and Flags.png" alt="Banner visual principal de TEW" />
+        <figure class="stage-card robot-card">
+          <img src="assets/img/Robot Head with TEW Logo.png" alt="Logo robot de TEW" loading="lazy" decoding="async" />
+        </figure>
+        <figure class="stage-card teacher-card">
+          <img src="assets/img/english%20teacher%2003.png" alt="Profesorado de TEW" />
+        </figure>
+      </aside>
+    </section>
+
+    <section class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span class="marquee-logo-red">MAKE IT HAPPEN</span>
+        <span class="marquee-logo-black">THE ENGLISH WAY</span>
+        <span class="marquee-logo-soft">APRENDER INGLÉS NUNCA FUE TAN ENTRETENIDO</span>
+        <span class="marquee-logo-red">MÉRIDA · AULA DIGITAL · SEGUIMIENTO REAL</span>
+        <span class="marquee-logo-red">MAKE IT HAPPEN</span>
+        <span class="marquee-logo-black">THE ENGLISH WAY</span>
+        <span class="marquee-logo-soft">APRENDER INGLÉS NUNCA FUE TAN ENTRETENIDO</span>
+        <span class="marquee-logo-red">MÉRIDA · AULA DIGITAL · SEGUIMIENTO REAL</span>
+      </div>
+    </section>
+
+    <section class="shell overview" id="metodo">
+      <article class="section-copy card">
+        <span class="section-kicker">Método TEW</span>
+        <h2>Una metodología que baja el inglés al mundo real.</h2>
+        <p>
+          Nuestro enfoque combina explicación clara, práctica guiada y continuidad fuera del aula para que el alumnado
+          gane seguridad usando el idioma con sentido.
+        </p>
+        <ul class="feature-list">
+          <li>Clases con aplicación real del idioma desde el primer día.</li>
+          <li>Seguimiento ordenado para familias y alumnado.</li>
+          <li>Material propio, apoyo visual y ritmo adaptado.</li>
+        </ul>
+      </article>
+
+      <article class="section-visual card image-card">
+        <img src="assets/img/MOVERS CLASSROOM LOGO.png" alt="Metodología visual de TEW" loading="lazy" decoding="async" />
+      </article>
+    </section>
+
+    <section class="shell benefits">
+      <article class="benefit card benefit-explain">
+        <img class="benefit-visual" src="assets/img/Robot Head with TEW Logo.png" alt="" aria-hidden="true" />
+        <span class="benefit-tag">Explicación</span>
+        <h3>Inglés con sentido</h3>
+        <p>El alumno entiende qué está trabajando y para qué sirve dentro y fuera del aula.</p>
+      </article>
+
+      <article class="benefit card benefit-practice">
+        <img class="benefit-visual" src="assets/img/MOVERS CLASSROOM LOGO.png" alt="" aria-hidden="true" />
+        <span class="benefit-tag">Práctica</span>
+        <h3>Actividades que enganchan</h3>
+        <p>Recursos visuales, tareas útiles y una dinámica que mantiene la motivación clase a clase.</p>
+      </article>
+
+      <article class="benefit card benefit-follow">
+        <img class="benefit-visual" src="assets/img/TEW CLASSROOM LOGO.png" alt="" aria-hidden="true" />
+        <span class="benefit-tag">Seguimiento</span>
+        <h3>Avance visible</h3>
+        <p>Familias y alumnado tienen una referencia clara del trabajo semanal y del progreso real.</p>
+      </article>
+    </section>
+
+    <section class="shell testimonials">
+      <div class="testimonials-header">
+        <span class="section-kicker">Lo que dicen las familias</span>
+        <div class="testimonials-stars" aria-label="5 estrellas en Google">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          <span class="testimonials-score">5,0 · Google</span>
+        </div>
+      </div>
+      <div class="testimonials-grid">
+        <blockquote class="testimonial-card card">
+          <p class="testimonial-text">
+            "La mejor academia, mis dos hijos están encantados con su metodología, por encima del nivel que les corresponde, excelentes resultados en sus notas de inglés. La recomiendo 100x100."
+          </p>
+          <footer class="testimonial-author">
+            <div class="testimonial-initials">O</div>
+            <div>
+              <strong>Olivia</strong>
+              <span>Madre de dos alumnos · Google</span>
+            </div>
+          </footer>
+        </blockquote>
+
+        <blockquote class="testimonial-card card">
+          <p class="testimonial-text">
+            "Mi hija tenía la asignatura de inglés de 1.º y 2.º de bachillerato suspensas y a un mes de la recuperación contacto con Juanfran. Su respuesta: «vamos súper justos… iremos a full»."
+          </p>
+          <footer class="testimonial-author">
+            <div class="testimonial-initials">J</div>
+            <div>
+              <strong>Jesús</strong>
+              <span>Padre de alumna de bachillerato · Google</span>
+            </div>
+          </footer>
+        </blockquote>
+
+        <blockquote class="testimonial-card card">
+          <p class="testimonial-text">
+            "We are extremely happy with this English academy. The lessons are dynamic, fun, and easy to follow. This is probably the most digitalized academy in Mérida, allowing all the pupils to learn English while having fun."
+          </p>
+          <footer class="testimonial-author">
+            <div class="testimonial-initials">M</div>
+            <div>
+              <strong>María F.H. Villegas</strong>
+              <span>Google</span>
+            </div>
+          </footer>
+        </blockquote>
+      </div>
+    </section>
+
+    <section class="shell tech-showcase" id="clases">
+      <article class="tech-copy card">
+        <span class="section-kicker">Cómo es una clase</span>
+        <h2>Trabajo en clase, apoyo digital y material listo para seguir avanzando.</h2>
+        <p>
+          Las unidades se entregan a través de Classroom y el alumnado recibe PDFs, cuadernos de trabajo y material del
+          curso para tener todo organizado desde el principio.
+        </p>
+
+        <div class="check-grid">
+          <div>Unidades y tareas organizadas en Classroom</div>
+          <div>PDFs y materiales claros para repasar en casa</div>
+          <div>Seguimiento práctico para familias</div>
+          <div>La academia cuenta con sus propios equipos informáticos para dejar al alumnado si lo necesita</div>
         </div>
       </article>
 
-      <aside class="form-card" id="contacto">
-        <span class="mode-pill" [class.live]="!!siteConfig.apiBaseUrl && !configErrorMessage">
-          {{ configErrorMessage ? 'Configuracion no disponible' : siteConfig.apiBaseUrl ? 'Formulario conectado' : 'Demo visual' }}
-        </span>
-        <h2 style="margin-top: 16px">Cuentanos que necesitas</h2>
-        <p class="copy-muted" style="margin-top: 10px">
-          Resolvemos dudas sobre clases, metodologia, horarios o una visita a la academia.
+      <article class="tech-stack">
+        <div class="card classroom-card">
+          <img src="assets/img/TEW CLASSROOM LOGO.png" alt="Visual de TEW Classroom" loading="lazy" decoding="async" />
+        </div>
+        <div class="card mini-banner-card">
+          <img src="assets/img/TEW.png" alt="Identidad oficial de TEW" />
+        </div>
+      </article>
+    </section>
+
+    <section class="shell contact" id="contacto">
+      <article class="info-card card">
+        <span class="section-kicker">Contacto TEW</span>
+        <h2>¿Dudas sobre grupos o horarios? Escríbenos.</h2>
+        <p>
+          Puedes escribirnos por Telegram o email, y también encontrarnos directamente en la academia para resolver dudas
+          sobre grupos, horarios y matrícula.
         </p>
 
-        <div class="error" *ngIf="configErrorMessage">
+        <div class="contact-grid">
+          <div>
+            <strong>Email</strong>
+            <p>secretaria.tew@gmail.com</p>
+          </div>
+          <div>
+            <strong>Telegram</strong>
+            <p><a href="https://t.me/34615153012" target="_blank" rel="noreferrer">615 15 30 12</a></p>
+          </div>
+          <div>
+            <strong>Dirección</strong>
+            <p>C. Severo Ochoa, 20, Local 4, 06800 Mérida</p>
+          </div>
+        </div>
+
+        <div class="map-card">
+          <iframe
+            title="Ubicación de TEW en Google Maps"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps?q=C.%20Severo%20Ochoa%2C%2020%2C%20Local%204%2C%2006800%20M%C3%A9rida&z=16&output=embed"
+          ></iframe>
+        </div>
+      </article>
+    </section>
+
+    <section class="enroll" id="formulario">
+      <div class="shell">
+      <aside class="form-card card">
+        <span class="mode-pill" [class.live]="!!siteConfig.apiBaseUrl && !configErrorMessage">
+          {{ configErrorMessage ? 'Configuración no disponible' : siteConfig.apiBaseUrl ? 'Formulario conectado' : 'Demo visual' }}
+        </span>
+        <h2>Matrícula y solicitud de información</h2>
+        <p class="copy-muted">
+          Completa esta ficha y te ayudaremos a encontrar el grupo, horario y seguimiento que mejor encajen con vuestra
+          situación.
+        </p>
+
+        <div class="error" *ngIf="configErrorMessage" role="alert" aria-live="assertive">
           {{ configErrorMessage }}
         </div>
 
-        <div class="helper" *ngIf="!siteConfig.apiBaseUrl && !configErrorMessage">
+        <div class="helper" *ngIf="!siteConfig.apiBaseUrl && !configErrorMessage" role="status" aria-live="polite">
           {{ demoMessage }}
         </div>
 
         <form [formGroup]="form" (ngSubmit)="submit()">
-          <label class="field">
-            <span>Nombre</span>
-            <input formControlName="name" type="text" />
-            <small class="field-note" *ngIf="form.controls.name.touched && form.controls.name.hasError('minlength')">
-              Minimo 2 caracteres.
-            </small>
-          </label>
+          <section class="form-section">
+            <h3 class="form-section-title">INFORMACIÓN DEL ALUMNO</h3>
 
-          <label class="field">
-            <span>Email</span>
-            <input formControlName="email" type="email" />
-          </label>
+            <label class="field">
+              <span>Nombre del alumno *</span>
+              <input id="student-name" name="studentName" formControlName="studentName" type="text" autocomplete="given-name" />
+            </label>
 
-          <label class="field">
-            <span>Telefono (opcional)</span>
-            <input formControlName="phone" type="text" />
-          </label>
+            <label class="field">
+              <span>Apellidos del alumno *</span>
+              <input id="student-surname" name="studentSurname" formControlName="studentSurname" type="text" autocomplete="family-name" />
+            </label>
 
-          <label class="field">
-            <span>Mensaje</span>
-            <textarea formControlName="message"></textarea>
-            <small class="field-note" *ngIf="form.controls.message.touched && form.controls.message.hasError('minlength')">
-              Minimo 5 caracteres.
-            </small>
-          </label>
+            <label class="field">
+              <span>Fecha de nacimiento *</span>
+              <input id="birth-date" name="birthDate" formControlName="birthDate" type="date" />
+            </label>
 
-          <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
-          <div class="success" *ngIf="successMessage">{{ successMessage }}</div>
+            <label class="field field-full">
+              <span>Domicilio habitual *</span>
+              <textarea id="student-address" name="address" formControlName="address" placeholder="En casos de dos domicilios, si lo desean pueden indicar ambos."></textarea>
+            </label>
+
+            <label class="field">
+              <span>Email *</span>
+              <input id="lead-email" name="email" formControlName="email" type="email" autocomplete="email" />
+            </label>
+
+            <label class="field">
+              <span>Teléfono de contacto</span>
+              <input id="lead-phone" name="phone" formControlName="phone" type="text" autocomplete="tel" />
+            </label>
+          </section>
+
+          <section class="form-section">
+            <h3 class="form-section-title">INFORMACIÓN ACADÉMICA</h3>
+
+            <label class="field">
+              <span>Centro educativo *</span>
+              <input id="student-school" name="school" formControlName="school" type="text" />
+            </label>
+
+            <label class="field">
+              <span>Curso actual *</span>
+              <input id="student-current-course" name="currentCourse" formControlName="currentCourse" type="text" placeholder="Curso en el que se encuentra actualmente matriculado" />
+            </label>
+          </section>
+
+          <section class="form-section">
+            <h3 class="form-section-title">INFORMACIÓN DE PADRE/MADRE/TUTOR</h3>
+
+            <label class="field">
+              <span>Nombre *</span>
+              <input name="primaryContactName" formControlName="primaryContactName" type="text" />
+            </label>
+
+            <label class="field">
+              <span>Apellidos *</span>
+              <input name="primaryContactSurname" formControlName="primaryContactSurname" type="text" />
+            </label>
+
+            <label class="field field-full">
+              <span>Parentesco *</span>
+              <input name="primaryContactRelationship" formControlName="primaryContactRelationship" type="text" placeholder="Madre, padre, pareja, tutor..." />
+            </label>
+
+            <label class="field">
+              <span>Nombre</span>
+              <input name="secondaryContactName" formControlName="secondaryContactName" type="text" />
+            </label>
+
+            <label class="field">
+              <span>Apellidos</span>
+              <input name="secondaryContactSurname" formControlName="secondaryContactSurname" type="text" />
+            </label>
+
+            <label class="field field-full">
+              <span>Parentesco</span>
+              <input name="secondaryContactRelationship" formControlName="secondaryContactRelationship" type="text" placeholder="Madre, padre, pareja, tutor..." />
+            </label>
+
+            <label class="field field-full">
+              <span>Nombre y apellidos del familiar</span>
+              <textarea name="pickupContact" formControlName="pickupContact" placeholder="Si en alguna ocasión vendrá algún familiar a recoger al alumno, indíquelo aquí junto a su parentesco."></textarea>
+            </label>
+          </section>
+
+          <section class="form-section">
+            <h3 class="form-section-title">CUOTA</h3>
+            <p class="copy-muted section-note">
+              No se paga matrícula. El primer mes se aplica el coste del material del curso: copias, cuadernos de trabajo y material escolar. La academia cuenta con sus propios equipos informáticos para dejar al alumnado si lo necesita.
+            </p>
+
+            <label class="field field-full">
+              <span>Forma de pago *</span>
+              <select name="paymentMethod" formControlName="paymentMethod">
+                <option value="">Seleccione la forma de pago</option>
+                <option value="efectivo">Efectivo (los 5 primeros días del mes en curso)</option>
+                <option value="domiciliacion">Domiciliación bancaria</option>
+                <option value="bizum">Bizum</option>
+              </select>
+            </label>
+
+            <ng-container *ngIf="form.get('paymentMethod')?.value === 'domiciliacion'">
+              <label class="field">
+                <span>Titular</span>
+                <input name="paymentAccountHolder" formControlName="paymentAccountHolder" type="text" />
+              </label>
+
+              <label class="field">
+                <span>IBAN</span>
+                <input name="paymentIban" formControlName="paymentIban" type="text" placeholder="ES..." />
+              </label>
+            </ng-container>
+          </section>
+
+          <section class="form-section">
+            <h3 class="form-section-title">OBSERVACIONES</h3>
+            <label class="field field-full">
+              <span>Comentarios adicionales relevantes</span>
+              <textarea name="observations" formControlName="observations" placeholder="Alergias, comentarios importantes o cualquier información que quieran incluir de forma privada."></textarea>
+            </label>
+          </section>
+
+          <div class="error" *ngIf="errorMessage" role="alert" aria-live="assertive">{{ errorMessage }}</div>
+          <div class="success success-celebrate" *ngIf="successMessage" role="status" aria-live="polite">
+            <img class="success-robot" src="assets/img/Robot Head with TEW Logo.png" alt="" aria-hidden="true" />
+            <span>{{ successMessage }}</span>
+          </div>
+
+          <p class="privacy-notice">
+            Al enviar este formulario aceptas el tratamiento de tus datos para la gestión de la matrícula según nuestra
+            <a href="/privacidad" target="_blank">política de privacidad</a>.
+          </p>
 
           <button class="button primary" type="submit" [disabled]="isSubmitting || isLoadingConfig || !!configErrorMessage">
-            {{ isSubmitting ? 'Enviando...' : 'Enviar solicitud' }}
+            {{ isSubmitting ? 'Enviando...' : 'Enviar matrícula' }}
           </button>
         </form>
       </aside>
-    </section>
-
-    <section class="sections" id="metodo">
-      <div class="mini-grid">
-        <article class="panel">
-          <h3>Una metodologia que baja a tierra</h3>
-          <p>
-            Las clases conectan speaking, reading, writing y listening con tareas
-            que el alumno entiende y puede continuar fuera del aula.
-          </p>
-        </article>
-        <article class="panel">
-          <h3>Entorno digital ordenado</h3>
-          <p>
-            TEW ya trabaja con Classroom, Drive, PDFs y material propio. La web
-            nueva lo explica mejor y abre un canal simple para captar leads.
-          </p>
-        </article>
       </div>
-
-      <div class="grid-3" id="propuesta">
-        <article class="panel">
-          <h3>Mas claridad</h3>
-          <p>Unidades, avisos y recursos mas faciles de seguir para familias y alumnado.</p>
-        </article>
-        <article class="panel">
-          <h3>Mas continuidad</h3>
-          <p>Recursos compartidos y seguimiento que reducen ruido y duplicidad.</p>
-        </article>
-        <article class="panel">
-          <h3>Mas confianza</h3>
-          <p>Una primera impresion comercial limpia con seguimiento interno basico ya preparado.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="contact">
-      <article class="info-card">
-        <h2>Contacto TEW</h2>
-        <p style="margin-top: 12px">
-          Academia de ingles en Merida con enfoque practico, herramientas digitales y acompanamiento cercano.
-        </p>
-
-        <div class="contact-grid" style="margin-top: 18px">
-          <div>
-            <strong>Email</strong>
-            <p>{{ siteConfig.contactEmail }}</p>
-          </div>
-          <div>
-            <strong>Telefono</strong>
-            <p>924 48 57 13</p>
-          </div>
-          <div>
-            <strong>WhatsApp</strong>
-            <p>615 15 30 12</p>
-          </div>
-          <div>
-            <strong>Direccion</strong>
-            <p>C. Severo Ochoa, 20, Local 4, 06800 Merida</p>
-          </div>
-        </div>
-      </article>
-
-      <article class="info-card">
-        <h2>Que viene despues</h2>
-        <ul style="margin-top: 12px">
-          <li>Landing publica y formulario operativo o en demo, segun configuracion.</li>
-          <li>Base preparada para conectar el backend real sin fingir persistencia en Pages.</li>
-          <li>Seguimiento interno minimo de leads ya contemplado dentro del MVP.</li>
-        </ul>
-      </article>
     </section>
   </main>
 
-  <footer class="shell">
-    {{ siteConfig.brandName }} - {{ siteConfig.contactEmail }}
+  <footer class="shell footer">
+    <img class="footer-logo" src="assets/img/TEW.png" alt="Marca oficial TEW" />
+    <p>The English Way · secretaria.tew@gmail.com</p>
+    <p class="footer-legal">
+      © 2025 The English Way ·
+      <a href="/privacidad">Política de privacidad</a>
+    </p>
   </footer>
 </div>
