@@ -219,6 +219,16 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
       box-shadow: 4px 4px 0 var(--accent);
     }
 
+    .hero-copy::after,
+    .button.primary::after,
+    .glow,
+    .robot-card,
+    .teacher-card,
+    .floating-note,
+    .marquee-track {
+      will-change: transform;
+    }
+
     .hero-copy {
       position: relative;
       overflow: hidden;
