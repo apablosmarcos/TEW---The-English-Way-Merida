@@ -20,7 +20,7 @@ import {
       <section class="card">
         <div class="brand-lockup">
           <div class="brand-mark">
-            <img src="assets/img/2.png" alt="Identidad TEW" />
+            <img src="assets/img/Robot Head with TEW Logo.png" alt="Identidad TEW" />
           </div>
           <img class="brand-logo" src="assets/img/TEW.png" alt="The English Way" />
         </div>

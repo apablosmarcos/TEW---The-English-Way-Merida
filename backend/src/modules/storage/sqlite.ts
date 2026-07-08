@@ -56,6 +56,26 @@ export function initializeDatabase(database: DatabaseSync) {
       expiresAt TEXT NOT NULL
     ) STRICT;
   `);
+
+  ensureLeadsSoftDeleteColumns(database);
+}
+
+function ensureLeadsSoftDeleteColumns(database: DatabaseSync) {
+  const columns = database
+    .prepare('PRAGMA table_info(leads)')
+    .all() as Array<{ name: string }>;
+  const existingColumns = new Set(columns.map((column) => column.name));
+  const columnsToAdd = [
+    { name: 'deletedAt', type: 'TEXT' },
+    { name: 'deletedBy', type: 'TEXT' },
+    { name: 'deletedReason', type: 'TEXT' },
+  ];
+
+  for (const column of columnsToAdd) {
+    if (!existingColumns.has(column.name)) {
+      database.exec(`ALTER TABLE leads ADD COLUMN ${column.name} ${column.type}`);
+    }
+  }
 }
 
 export function importLegacyLeadsIfNeeded(database: DatabaseSync, env: NodeJS.ProcessEnv) {

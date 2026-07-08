@@ -81,11 +81,14 @@ export class AdminApiService {
     });
   }
 
-  deleteLead(apiBaseUrl: string, token: string, leadId: string) {
-    return this.http.delete<{ ok: true }>(buildAdminLeadDetailEndpoint(apiBaseUrl, leadId), {
+  deleteLead(apiBaseUrl: string, token: string, leadId: string, reason?: string) {
+    return this.http.delete(buildAdminLeadDetailEndpoint(apiBaseUrl, leadId), {
       headers: {
         Authorization: `Bearer ${token}`,
+        'content-type': 'application/json',
       },
+      body: reason ? { reason } : undefined,
+      responseType: 'text',
     });
   }
 

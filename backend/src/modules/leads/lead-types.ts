@@ -73,3 +73,8 @@ export type UpdateLeadInput = {
   status?: LeadStatus;
   notes?: string;
 };
+
+export type LeadDeleteContext = {
+  username: string;
+  reason?: string;
+};

@@ -13,7 +13,8 @@ test('admin templates include branded login, delete confirmation and success fee
   const leadsSource = readFileSync(leadsPath, 'utf8');
 
   assert.match(loginSource, /assets\/img\/TEW\.png/);
-  assert.match(loginSource, /assets\/img\/2\.png/);
+  assert.match(loginSource, /assets\/img\/Robot Head with TEW Logo\.png/);
+  assert.doesNotMatch(loginSource, /assets\/img\/2\.png/);
   assert.match(leadsSource, /confirm\(/);
   assert.match(leadsSource, /successMessage/);
   assert.match(leadsSource, /previewMessage\(lead\.message\)/);

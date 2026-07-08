@@ -159,11 +159,13 @@ test('authenticated admin can list, update and delete leads', async () => {
       method: 'DELETE',
       headers: {
         authorization: `Bearer ${loginBody.token}`,
+        'content-type': 'application/json',
       },
+      body: JSON.stringify({ reason: 'matricula duplicada' }),
     });
 
-    assert.equal(deleteResponse.status, 200);
-    assert.deepEqual(await deleteResponse.json(), { ok: true });
+    assert.equal(deleteResponse.status, 204);
+    assert.equal(await deleteResponse.text(), '');
 
     const listAfterDeleteResponse = await fetch(`${baseUrl}/api/admin/leads`, {
       headers: {
@@ -179,6 +181,128 @@ test('authenticated admin can list, update and delete leads', async () => {
 
     assert.equal(listAfterDeleteBody.ok, true);
     assert.deepEqual(listAfterDeleteBody.leads, []);
+  } finally {
+    delete process.env.SQLITE_DB_PATH;
+    delete process.env.LEGACY_LEADS_FILE_PATH;
+    delete process.env.ADMIN_USERNAME;
+    delete process.env.ADMIN_PASSWORD;
+    await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+    await rm(sqliteDbPath, { force: true });
+  }
+});
+
+test('authenticated admin can delete a lead without a reason body', async () => {
+  const sqliteDbPath = join(tmpdir(), `tew-admin-leads-${randomUUID()}.sqlite`);
+  process.env.SQLITE_DB_PATH = sqliteDbPath;
+  process.env.LEGACY_LEADS_FILE_PATH = join(tmpdir(), `tew-legacy-missing-${randomUUID()}.json`);
+  process.env.ADMIN_USERNAME = 'admin';
+  process.env.ADMIN_PASSWORD = 'secret';
+
+  const server = createServer(createApp());
+
+  try {
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+
+    if (!address || typeof address === 'string') {
+      throw new Error('Test server did not expose a port');
+    }
+
+    const baseUrl = `http://127.0.0.1:${address.port}`;
+
+    const createResponse = await fetch(`${baseUrl}/api/leads`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        studentName: 'Ana',
+        studentSurname: 'Perez',
+        birthDate: '2014-05-10',
+        address: 'Calle Mayor 1, Merida',
+        email: 'ana@example.com',
+        phone: '600000000',
+        school: 'Colegio Ejemplo',
+        currentCourse: '5 Primaria',
+        primaryContactName: 'Laura',
+        primaryContactSurname: 'Perez',
+        primaryContactRelationship: 'Madre',
+        secondaryContactName: null,
+        secondaryContactSurname: null,
+        secondaryContactRelationship: null,
+        pickupContact: null,
+        paymentMethod: 'bizum',
+        paymentAccountHolder: null,
+        paymentIban: null,
+        observations: 'Sin observaciones',
+        source: 'public-site',
+      }),
+    });
+
+    const createdBody = (await createResponse.json()) as { leadId: string };
+
+    const loginResponse = await fetch(`${baseUrl}/api/admin/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ username: 'admin', password: 'secret' }),
+    });
+
+    const loginBody = (await loginResponse.json()) as { token: string };
+
+    const deleteResponse = await fetch(`${baseUrl}/api/admin/leads/${createdBody.leadId}`, {
+      method: 'DELETE',
+      headers: {
+        authorization: `Bearer ${loginBody.token}`,
+      },
+    });
+
+    assert.equal(deleteResponse.status, 204);
+  } finally {
+    delete process.env.SQLITE_DB_PATH;
+    delete process.env.LEGACY_LEADS_FILE_PATH;
+    delete process.env.ADMIN_USERNAME;
+    delete process.env.ADMIN_PASSWORD;
+    await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+    await rm(sqliteDbPath, { force: true });
+  }
+});
+
+test('admin delete lead returns 400 for an invalid reason payload', async () => {
+  const sqliteDbPath = join(tmpdir(), `tew-admin-leads-${randomUUID()}.sqlite`);
+  process.env.SQLITE_DB_PATH = sqliteDbPath;
+  process.env.LEGACY_LEADS_FILE_PATH = join(tmpdir(), `tew-legacy-missing-${randomUUID()}.json`);
+  process.env.ADMIN_USERNAME = 'admin';
+  process.env.ADMIN_PASSWORD = 'secret';
+
+  const server = createServer(createApp());
+
+  try {
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+
+    if (!address || typeof address === 'string') {
+      throw new Error('Test server did not expose a port');
+    }
+
+    const baseUrl = `http://127.0.0.1:${address.port}`;
+
+    const loginResponse = await fetch(`${baseUrl}/api/admin/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ username: 'admin', password: 'secret' }),
+    });
+
+    const loginBody = (await loginResponse.json()) as { token: string };
+
+    const deleteResponse = await fetch(`${baseUrl}/api/admin/leads/any-lead`, {
+      method: 'DELETE',
+      headers: {
+        authorization: `Bearer ${loginBody.token}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ reason: 123 }),
+    });
+
+    assert.equal(deleteResponse.status, 400);
+    assert.deepEqual(await deleteResponse.json(), { ok: false, error: 'Invalid delete payload' });
   } finally {
     delete process.env.SQLITE_DB_PATH;
     delete process.env.LEGACY_LEADS_FILE_PATH;

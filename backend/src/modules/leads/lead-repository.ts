@@ -2,14 +2,14 @@ import { randomUUID } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 
 import { ensureDatabaseDirectory, importLegacyLeadsIfNeeded, initializeDatabase, openDatabase } from '../storage/sqlite.ts';
-import type { CreateLeadInput, Lead, UpdateLeadInput } from './lead-types.ts';
+import type { CreateLeadInput, Lead, LeadDeleteContext, UpdateLeadInput } from './lead-types.ts';
 
 let writeQueue = Promise.resolve();
 
 export async function listLeads(): Promise<Lead[]> {
   return withDatabase((database) =>
     database
-      .prepare('SELECT * FROM leads ORDER BY createdAt DESC')
+      .prepare('SELECT * FROM leads WHERE deletedAt IS NULL ORDER BY createdAt DESC')
       .all()
       .map((row) => row as Lead),
   );
@@ -45,10 +45,14 @@ export function updateLead(id: string, input: UpdateLeadInput): Promise<Lead | n
   });
 }
 
-export function deleteLead(id: string): Promise<boolean> {
+export function deleteLead(id: string, context: LeadDeleteContext): Promise<boolean> {
   return enqueueWrite(async () => {
     return withDatabase((database) => {
-      const result = database.prepare('DELETE FROM leads WHERE id = ?').run(id);
+      const result = database
+        .prepare(
+          'UPDATE leads SET deletedAt = ?, deletedBy = ?, deletedReason = ? WHERE id = ? AND deletedAt IS NULL',
+        )
+        .run(new Date().toISOString(), context.username, context.reason ?? null, id);
       return Number(result.changes ?? 0) > 0;
     });
   });

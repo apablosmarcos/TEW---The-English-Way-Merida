@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 import { createLead, deleteLead, listLeads, updateLead } from './lead-repository.ts';
+import { initializeDatabase, openDatabase } from '../storage/sqlite.ts';
 
 test('createLead stores a new lead with empty notes', async () => {
   const sqliteDbPath = configureSqliteTestEnv();
@@ -125,8 +126,18 @@ test('deleteLead removes an existing lead from storage', async () => {
       source: 'public-site',
     });
 
-    assert.equal(await deleteLead(created.id), true);
-    assert.deepEqual(await listLeads(), []);
+    const deleted = await deleteLead(created.id, { username: 'admin', reason: 'duplicado' });
+    assert.equal(deleted, true);
+
+    const [remainingLead] = await listLeads();
+    assert.equal(remainingLead, undefined);
+
+    const allRows = readAllLeadRows(sqliteDbPath);
+    assert.equal(allRows.length, 1);
+    assert.equal(allRows[0].id, created.id);
+    assert.equal(typeof allRows[0].deletedAt, 'string');
+    assert.equal(allRows[0].deletedBy, 'admin');
+    assert.equal(allRows[0].deletedReason, 'duplicado');
     await assert.rejects(access(deletedLeadsFilePath));
   } finally {
     resetSqliteTestEnv();
@@ -139,12 +150,63 @@ test('deleteLead returns false when the lead does not exist', async () => {
   const sqliteDbPath = configureSqliteTestEnv();
 
   try {
-    assert.equal(await deleteLead('missing-lead'), false);
+    assert.equal(await deleteLead('missing-lead', { username: 'admin' }), false);
   } finally {
     resetSqliteTestEnv();
     await rm(sqliteDbPath, { force: true });
   }
 });
+
+test('deleteLead is idempotent for an already deleted lead', async () => {
+  const sqliteDbPath = configureSqliteTestEnv();
+
+  try {
+    const created = await createLead({
+      studentName: 'Ana',
+      studentSurname: 'Perez',
+      birthDate: '2014-05-10',
+      address: 'Calle Mayor 1, Merida',
+      email: 'ana@example.com',
+      phone: '600000000',
+      school: 'Colegio Ejemplo',
+      currentCourse: '5 Primaria',
+      primaryContactName: 'Laura',
+      primaryContactSurname: 'Perez',
+      primaryContactRelationship: 'Madre',
+      secondaryContactName: null,
+      secondaryContactSurname: null,
+      secondaryContactRelationship: null,
+      pickupContact: null,
+      paymentMethod: 'bizum',
+      paymentAccountHolder: null,
+      paymentIban: null,
+      observations: 'Sin observaciones',
+      source: 'public-site',
+    });
+
+    assert.equal(await deleteLead(created.id, { username: 'admin' }), true);
+    assert.equal(await deleteLead(created.id, { username: 'admin' }), false);
+    assert.deepEqual(await listLeads(), []);
+  } finally {
+    resetSqliteTestEnv();
+    await rm(sqliteDbPath, { force: true });
+  }
+});
+
+function readAllLeadRows(sqliteDbPath: string) {
+  const database = openDatabase({ SQLITE_DB_PATH: sqliteDbPath });
+  initializeDatabase(database);
+  try {
+    return database.prepare('SELECT * FROM leads').all() as Array<{
+      id: string;
+      deletedAt: string | null;
+      deletedBy: string | null;
+      deletedReason: string | null;
+    }>;
+  } finally {
+    database.close();
+  }
+}
 
 function configureSqliteTestEnv() {
   const sqliteDbPath = join(tmpdir(), `tew-leads-${randomUUID()}.sqlite`);

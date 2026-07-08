@@ -52,20 +52,43 @@ adminLeadsRouter.patch('/admin/leads/:id', async (req, res) => {
 
 adminLeadsRouter.delete('/admin/leads/:id', async (req, res) => {
   try {
-    const deleted = await deleteLead(req.params.id);
+    const context = parseDeleteLeadContext(req.body);
+    const deleted = await deleteLead(req.params.id, context);
 
     if (!deleted) {
       res.status(404).json({ ok: false, error: 'Lead not found' });
       return;
     }
 
-    res.json({ ok: true });
-  } catch {
+    res.status(204).send();
+  } catch (error) {
+    if (error instanceof InvalidDeleteLeadPayloadError) {
+      res.status(400).json({ ok: false, error: 'Invalid delete payload' });
+      return;
+    }
+
     res.status(500).json({ ok: false, error: 'Internal server error' });
   }
 });
 
 class InvalidAdminLeadPayloadError extends Error {}
+class InvalidDeleteLeadPayloadError extends Error {}
+
+function parseDeleteLeadContext(input: unknown) {
+  const username = process.env.ADMIN_USERNAME ?? '';
+
+  if (!input || typeof input !== 'object') {
+    return { username };
+  }
+
+  const data = input as Record<string, unknown>;
+
+  if (data.reason !== undefined && typeof data.reason !== 'string') {
+    throw new InvalidDeleteLeadPayloadError('Invalid reason');
+  }
+
+  return { username, reason: data.reason };
+}
 
 function readBearerToken(header: string | undefined) {
   return header?.startsWith('Bearer ') ? header.slice('Bearer '.length).trim() : '';
