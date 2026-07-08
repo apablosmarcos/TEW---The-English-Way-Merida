@@ -1,23 +1,36 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { rm } from 'node:fs/promises';
+import { access, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-import { createLead, listLeads, updateLead } from './lead-repository.ts';
+import { createLead, deleteLead, listLeads, updateLead } from './lead-repository.ts';
 
 test('createLead stores a new lead with empty notes', async () => {
-  const leadsFilePath = join(tmpdir(), `tew-leads-${randomUUID()}.json`);
-  process.env.LEADS_FILE_PATH = leadsFilePath;
+  const sqliteDbPath = configureSqliteTestEnv();
 
   try {
     const result = await createLead({
-      name: 'Ana Perez',
+      studentName: 'Ana',
+      studentSurname: 'Perez',
+      birthDate: '2014-05-10',
+      address: 'Calle Mayor 1, Merida',
       email: 'ana@example.com',
       phone: '600000000',
-      message: 'Quiero informacion',
-      interestType: 'primary',
+      school: 'Colegio Ejemplo',
+      currentCourse: '5 Primaria',
+      primaryContactName: 'Laura',
+      primaryContactSurname: 'Perez',
+      primaryContactRelationship: 'Madre',
+      secondaryContactName: null,
+      secondaryContactSurname: null,
+      secondaryContactRelationship: null,
+      pickupContact: null,
+      paymentMethod: 'bizum',
+      paymentAccountHolder: null,
+      paymentIban: null,
+      observations: 'Sin observaciones',
       source: 'public-site',
     });
 
@@ -27,26 +40,39 @@ test('createLead stores a new lead with empty notes', async () => {
     const leads = await listLeads();
     const lead = leads.find((entry: { id: string }) => entry.id === result.id);
 
-    assert.ok(lead);
-    assert.equal(lead.status, 'new');
-    assert.equal(lead.notes, '');
+     assert.ok(lead);
+     assert.equal(lead.status, 'new');
+     assert.equal(lead.notes, '');
   } finally {
-    delete process.env.LEADS_FILE_PATH;
-    await rm(leadsFilePath, { force: true });
+    resetSqliteTestEnv();
+    await rm(sqliteDbPath, { force: true });
   }
 });
 
 test('updateLead persists status and notes for an existing lead', async () => {
-  const leadsFilePath = join(tmpdir(), `tew-leads-${randomUUID()}.json`);
-  process.env.LEADS_FILE_PATH = leadsFilePath;
+  const sqliteDbPath = configureSqliteTestEnv();
 
   try {
     const created = await createLead({
-      name: 'Ana Perez',
+      studentName: 'Ana',
+      studentSurname: 'Perez',
+      birthDate: '2014-05-10',
+      address: 'Calle Mayor 1, Merida',
       email: 'ana@example.com',
       phone: '600000000',
-      message: 'Quiero informacion',
-      interestType: 'primary',
+      school: 'Colegio Ejemplo',
+      currentCourse: '5 Primaria',
+      primaryContactName: 'Laura',
+      primaryContactSurname: 'Perez',
+      primaryContactRelationship: 'Madre',
+      secondaryContactName: null,
+      secondaryContactSurname: null,
+      secondaryContactRelationship: null,
+      pickupContact: null,
+      paymentMethod: 'bizum',
+      paymentAccountHolder: null,
+      paymentIban: null,
+      observations: 'Sin observaciones',
       source: 'public-site',
     });
 
@@ -62,11 +88,72 @@ test('updateLead persists status and notes for an existing lead', async () => {
     const [storedLead] = await listLeads();
 
     assert.equal(storedLead.id, created.id);
-    assert.equal(storedLead.status, 'contacted');
-    assert.equal(storedLead.notes, 'Llamada realizada');
-    assert.notEqual(storedLead.updatedAt, storedLead.createdAt);
+     assert.equal(storedLead.status, 'contacted');
+     assert.equal(storedLead.notes, 'Llamada realizada');
+     assert.notEqual(storedLead.updatedAt, storedLead.createdAt);
   } finally {
-    delete process.env.LEADS_FILE_PATH;
-    await rm(leadsFilePath, { force: true });
+    resetSqliteTestEnv();
+    await rm(sqliteDbPath, { force: true });
   }
 });
+
+test('deleteLead removes an existing lead from storage', async () => {
+  const sqliteDbPath = configureSqliteTestEnv();
+  const deletedLeadsFilePath = join(tmpdir(), `tew-deleted-leads-${randomUUID()}.json`);
+
+  try {
+    const created = await createLead({
+      studentName: 'Ana',
+      studentSurname: 'Perez',
+      birthDate: '2014-05-10',
+      address: 'Calle Mayor 1, Merida',
+      email: 'ana@example.com',
+      phone: '600000000',
+      school: 'Colegio Ejemplo',
+      currentCourse: '5 Primaria',
+      primaryContactName: 'Laura',
+      primaryContactSurname: 'Perez',
+      primaryContactRelationship: 'Madre',
+      secondaryContactName: null,
+      secondaryContactSurname: null,
+      secondaryContactRelationship: null,
+      pickupContact: null,
+      paymentMethod: 'bizum',
+      paymentAccountHolder: null,
+      paymentIban: null,
+      observations: 'Sin observaciones',
+      source: 'public-site',
+    });
+
+    assert.equal(await deleteLead(created.id), true);
+    assert.deepEqual(await listLeads(), []);
+    await assert.rejects(access(deletedLeadsFilePath));
+  } finally {
+    resetSqliteTestEnv();
+    await rm(sqliteDbPath, { force: true });
+    await rm(deletedLeadsFilePath, { force: true });
+  }
+});
+
+test('deleteLead returns false when the lead does not exist', async () => {
+  const sqliteDbPath = configureSqliteTestEnv();
+
+  try {
+    assert.equal(await deleteLead('missing-lead'), false);
+  } finally {
+    resetSqliteTestEnv();
+    await rm(sqliteDbPath, { force: true });
+  }
+});
+
+function configureSqliteTestEnv() {
+  const sqliteDbPath = join(tmpdir(), `tew-leads-${randomUUID()}.sqlite`);
+  process.env.SQLITE_DB_PATH = sqliteDbPath;
+  process.env.LEGACY_LEADS_FILE_PATH = join(tmpdir(), `tew-legacy-missing-${randomUUID()}.json`);
+  return sqliteDbPath;
+}
+
+function resetSqliteTestEnv() {
+  delete process.env.SQLITE_DB_PATH;
+  delete process.env.LEGACY_LEADS_FILE_PATH;
+}

@@ -10,16 +10,27 @@ export function parseCreateLeadInput(input: unknown): CreateLeadInput {
   }
 
   const data = input as Record<string, unknown>;
-  const name = readRequiredString(data.name, 2, 'name');
-  const email = readEmail(data.email);
-  const message = readRequiredString(data.message, 5, 'message');
 
   return {
-    name,
-    email,
+    studentName: readRequiredString(data.studentName, 2, 'studentName'),
+    studentSurname: readRequiredString(data.studentSurname, 2, 'studentSurname'),
+    birthDate: readRequiredString(data.birthDate, 4, 'birthDate'),
+    address: readRequiredString(data.address, 5, 'address'),
+    email: readEmail(data.email),
     phone: readOptionalString(data.phone),
-    message,
-    interestType: readOptionalString(data.interestType),
+    school: readRequiredString(data.school, 2, 'school'),
+    currentCourse: readRequiredString(data.currentCourse, 2, 'currentCourse'),
+    primaryContactName: readRequiredString(data.primaryContactName, 2, 'primaryContactName'),
+    primaryContactSurname: readRequiredString(data.primaryContactSurname, 2, 'primaryContactSurname'),
+    primaryContactRelationship: readRequiredString(data.primaryContactRelationship, 2, 'primaryContactRelationship'),
+    secondaryContactName: readOptionalString(data.secondaryContactName),
+    secondaryContactSurname: readOptionalString(data.secondaryContactSurname),
+    secondaryContactRelationship: readOptionalString(data.secondaryContactRelationship),
+    pickupContact: readOptionalString(data.pickupContact),
+    paymentMethod: readRequiredString(data.paymentMethod, 2, 'paymentMethod'),
+    paymentAccountHolder: readOptionalString(data.paymentAccountHolder),
+    paymentIban: readOptionalString(data.paymentIban),
+    observations: readOptionalString(data.observations),
     source: readSource(data.source),
   };
 }

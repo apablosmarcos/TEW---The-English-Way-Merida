@@ -49,6 +49,7 @@ export type AdminLead = {
 export type AdminLoginResponse = {
   ok: true;
   token: string;
+  expiresAt: string;
 };
 
 export type AdminLeadsResponse = {

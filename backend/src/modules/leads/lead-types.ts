@@ -23,6 +23,23 @@ export type Lead = {
   message: string;
   interestType: string | null;
   source: string;
+  studentName: string;
+  studentSurname: string;
+  birthDate: string;
+  address: string;
+  school: string;
+  currentCourse: string;
+  primaryContactName: string;
+  primaryContactSurname: string;
+  primaryContactRelationship: string;
+  secondaryContactName: string | null;
+  secondaryContactSurname: string | null;
+  secondaryContactRelationship: string | null;
+  pickupContact: string | null;
+  paymentMethod: string;
+  paymentAccountHolder: string | null;
+  paymentIban: string | null;
+  observations: string | null;
   status: LeadStatus;
   notes: string;
   createdAt: string;
@@ -30,11 +47,25 @@ export type Lead = {
 };
 
 export type CreateLeadInput = {
-  name: string;
+  studentName: string;
+  studentSurname: string;
+  birthDate: string;
+  address: string;
   email: string;
   phone: string | null;
-  message: string;
-  interestType: string | null;
+  school: string;
+  currentCourse: string;
+  primaryContactName: string;
+  primaryContactSurname: string;
+  primaryContactRelationship: string;
+  secondaryContactName: string | null;
+  secondaryContactSurname: string | null;
+  secondaryContactRelationship: string | null;
+  pickupContact: string | null;
+  paymentMethod: string;
+  paymentAccountHolder: string | null;
+  paymentIban: string | null;
+  observations: string | null;
   source: string;
 };
 

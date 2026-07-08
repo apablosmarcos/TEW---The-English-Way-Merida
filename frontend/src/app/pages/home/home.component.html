@@ -1,7 +1,7 @@
 <div class="page">
   <header class="topbar">
     <div class="shell topbar-shell">
-      <a class="brand" href="#inicio" aria-label="Ir al inicio de TEW">
+      <a class="brand" href="#inicio" aria-label="Ir al inicio de TEW" (click)="scrollToSection($event, 'inicio')">
         <img class="brand-logo" src="assets/img/Robot Head with TEW Logo.png" alt="Logo robot de The English Way" />
         <span class="brand-copy">
           <strong>The English Way</strong>
@@ -10,10 +10,10 @@
       </a>
 
       <nav [class.nav-open]="menuOpen">
-        <a href="#metodo"     (click)="menuOpen = false">Método</a>
-        <a href="#clases"     (click)="menuOpen = false">Clases</a>
-        <a href="#formulario" (click)="menuOpen = false">Matrícula</a>
-        <a href="#contacto"   (click)="menuOpen = false">Contacto</a>
+        <a href="#metodo"     (click)="scrollToSection($event, 'metodo')">Método</a>
+        <a href="#clases"     (click)="scrollToSection($event, 'clases')">Clases</a>
+        <a href="#formulario" (click)="scrollToSection($event, 'formulario')">Matrícula</a>
+        <a href="#contacto"   (click)="scrollToSection($event, 'contacto')">Contacto</a>
       </nav>
 
       <button
@@ -40,11 +40,12 @@
         </div>
         <h1>
           <span class="hero-line-fixed">Aprender inglés</span>
-          <span>nunca fue tan entretenido</span>
+          <span>nunca fue tan motivador</span>
         </h1>
         <p class="hero-text">
-          En TEW trabajamos un inglés práctico, cercano y útil para el día a día, con seguimiento real, materiales claros
-          y una experiencia que motiva desde la primera clase.
+          En TEW trabajamos un inglés real, práctico, cercano y útil para el día a día. Con seguimiento real y continuado.
+          Materiales claros, creados por nosotros y por nuestros alumnos, lo que aporta una experiencia motivadora desde el
+          principio.
         </p>
 
         <div class="hero-actions">
@@ -56,7 +57,7 @@
 
       <aside class="hero-stage" aria-label="Escena visual TEW">
         <div class="hero-stage-notes">
-          <div class="floating-note note-top">Motivación · Mérida</div>
+          <div class="floating-note note-top">Aprendizaje + tecnología = motivación</div>
           <div class="floating-note note-bottom">Aula digital · Seguimiento real</div>
         </div>
         <div class="glow glow-red"></div>
@@ -75,38 +76,66 @@
       <div class="marquee-track">
         <span class="marquee-logo-red">MAKE IT HAPPEN</span>
         <span class="marquee-logo-black">THE ENGLISH WAY</span>
-        <span class="marquee-logo-soft">APRENDER INGLÉS NUNCA FUE TAN ENTRETENIDO</span>
+        <span class="marquee-logo-soft">APRENDER INGLÉS NUNCA FUE TAN MOTIVADOR</span>
         <span class="marquee-logo-red">MÉRIDA · AULA DIGITAL · SEGUIMIENTO REAL</span>
         <span class="marquee-logo-red">MAKE IT HAPPEN</span>
         <span class="marquee-logo-black">THE ENGLISH WAY</span>
-        <span class="marquee-logo-soft">APRENDER INGLÉS NUNCA FUE TAN ENTRETENIDO</span>
+        <span class="marquee-logo-soft">APRENDER INGLÉS NUNCA FUE TAN MOTIVADOR</span>
         <span class="marquee-logo-red">MÉRIDA · AULA DIGITAL · SEGUIMIENTO REAL</span>
       </div>
     </section>
 
     <section class="shell overview" id="metodo">
-      <article class="section-copy card">
-        <span class="section-kicker">Método TEW</span>
-        <h2>Una metodología que baja el inglés al mundo real.</h2>
-        <p>
-          Nuestro enfoque combina explicación clara, práctica guiada y continuidad fuera del aula para que el alumnado
-          gane seguridad usando el idioma con sentido.
-        </p>
-        <ul class="feature-list">
-          <li>Clases con aplicación real del idioma desde el primer día.</li>
-          <li>Seguimiento ordenado para familias y alumnado.</li>
-          <li>Material propio, apoyo visual y ritmo adaptado.</li>
-        </ul>
+      <article class="section-copy card overview-copy">
+        <div class="overview-heading">
+          <span class="section-kicker">Método TEW</span>
+          <h2>Una metodología que baja el inglés al mundo real.</h2>
+          <p>
+            Nuestro enfoque combina explicación clara, práctica guiada y continuidad fuera del aula para que el alumnado
+            gane seguridad usando el idioma con sentido.
+          </p>
+        </div>
+
+        <div class="overview-summary">
+          <strong>Aprender, practicar y seguir avanzando sin perder el hilo.</strong>
+          <span>
+            Convertimos el inglés en una rutina clara, útil y visual para que cada clase tenga continuidad dentro y fuera
+            del aula.
+          </span>
+        </div>
+
+        <div class="proof-grid">
+          <article class="proof-card">
+            <small>01</small>
+            <strong>Aplicación real</strong>
+            <span>Clases con inglés conectado al mundo real desde el primer día.</span>
+          </article>
+          <article class="proof-card">
+            <small>02</small>
+            <strong>Seguimiento claro</strong>
+            <span>Familias y alumnado saben en todo momento qué se trabaja y cómo avanza.</span>
+          </article>
+          <article class="proof-card">
+            <small>03</small>
+            <strong>Material propio</strong>
+            <span>Apoyo visual, ritmo adaptado y recursos diseñados por TEW.</span>
+          </article>
+        </div>
       </article>
 
-      <article class="section-visual card image-card">
+      <article class="section-visual overview-image">
+        <div class="overview-image-badge">Metodología visual · ritmo claro</div>
         <img src="assets/img/MOVERS CLASSROOM LOGO.png" alt="Metodología visual de TEW" loading="lazy" decoding="async" />
+        <div class="overview-image-note">
+          <strong>TEW</strong>
+          <span>Explicación cercana, práctica guiada y seguimiento real.</span>
+        </div>
       </article>
     </section>
 
     <section class="shell benefits">
       <article class="benefit card benefit-explain">
-        <img class="benefit-visual" src="assets/img/Robot Head with TEW Logo.png" alt="" aria-hidden="true" />
+        <img class="benefit-visual" src="assets/img/MOVERS CLASSROOM LOGO.png" alt="" aria-hidden="true" />
         <span class="benefit-tag">Explicación</span>
         <h3>Inglés con sentido</h3>
         <p>El alumno entiende qué está trabajando y para qué sirve dentro y fuera del aula.</p>
@@ -190,7 +219,7 @@
           <div>Unidades y tareas organizadas en Classroom</div>
           <div>PDFs y materiales claros para repasar en casa</div>
           <div>Seguimiento práctico para familias</div>
-          <div>La academia cuenta con sus propios equipos informáticos para dejar al alumnado si lo necesita</div>
+          <div>El alumno debe contar con algún dispositivo y nosotros nos encargamos de prepararle la plataforma</div>
         </div>
       </article>
 
@@ -207,7 +236,7 @@
     <section class="shell contact" id="contacto">
       <article class="info-card card">
         <span class="section-kicker">Contacto TEW</span>
-        <h2>¿Dudas sobre grupos o horarios? Escríbenos.</h2>
+        <h2>¿Dudas sobre grupos y horarios? Escríbenos.</h2>
         <p>
           Puedes escribirnos por Telegram o email, y también encontrarnos directamente en la academia para resolver dudas
           sobre grupos, horarios y matrícula.
@@ -224,7 +253,7 @@
           </div>
           <div>
             <strong>Dirección</strong>
-            <p>C. Severo Ochoa, 20, Local 4, 06800 Mérida</p>
+            <p>C/ Severo Ochoa, 20, Local 4, 06800 Mérida</p>
           </div>
         </div>
 
@@ -350,7 +379,7 @@
           <section class="form-section">
             <h3 class="form-section-title">CUOTA</h3>
             <p class="copy-muted section-note">
-              No se paga matrícula. El primer mes se aplica el coste del material del curso: copias, cuadernos de trabajo y material escolar. La academia cuenta con sus propios equipos informáticos para dejar al alumnado si lo necesita.
+              No se paga matrícula. El primer mes se aplica el coste del material del curso: copias, cuadernos de trabajo y material escolar. El alumno debe contar con algún dispositivo y nosotros nos encargamos de prepararle la plataforma.
             </p>
 
             <label class="field field-full">
@@ -407,6 +436,7 @@
   <footer class="shell footer">
     <img class="footer-logo" src="assets/img/TEW.png" alt="Marca oficial TEW" />
     <p>The English Way · secretaria.tew@gmail.com</p>
+    <p>C/ Severo Ochoa, 20, Local 4, 06800 Mérida</p>
     <p class="footer-legal">
       © 2025 The English Way ·
       <a href="/privacidad">Política de privacidad</a>

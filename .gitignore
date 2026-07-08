@@ -8,7 +8,12 @@ reviews/
 
 # Node workspace artifacts
 node_modules/
+backend/.env
 backend/dist/
 frontend/.angular/
 frontend/dist/
 frontend/out-tsc/
+
+# Local backend data
+backend/data/*.sqlite
+backend/data/*.sqlite-*

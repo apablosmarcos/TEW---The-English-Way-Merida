@@ -16,6 +16,14 @@ export function createApp() {
   app.use(express.json());
   app.use(morgan('dev'));
 
+  app.get('/', (_req, res) => {
+    res.json({
+      ok: true,
+      service: 'tew-backend',
+      health: '/api/health',
+    });
+  });
+
   app.use('/api', healthRouter);
   app.use('/api', leadsRouter);
   app.use('/api', adminAuthRouter);

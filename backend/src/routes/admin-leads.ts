@@ -1,20 +1,24 @@
 import { Router } from 'express';
 
-import { isValidAdminToken } from '../modules/auth/admin-auth.ts';
+import { isValidAdminSessionToken } from '../modules/auth/admin-session-repository.ts';
+import { deleteLead, listLeads, updateLead } from '../modules/leads/lead-repository.ts';
 import { leadStatuses, type LeadStatus } from '../modules/leads/lead-types.ts';
-import { listLeads, updateLead } from '../modules/leads/lead-repository.ts';
 
 export const adminLeadsRouter = Router();
 
 adminLeadsRouter.use('/admin/leads', (req, res, next) => {
-  const token = readBearerToken(req.headers.authorization);
+  try {
+    const token = readBearerToken(req.headers.authorization);
 
-  if (!isValidAdminToken(token, process.env)) {
-    res.status(401).json({ ok: false });
-    return;
+    if (!isValidAdminSessionToken(token, process.env)) {
+      res.status(401).json({ ok: false });
+      return;
+    }
+
+    next();
+  } catch {
+    res.status(500).json({ ok: false, error: 'Internal server error' });
   }
-
-  next();
 });
 
 adminLeadsRouter.get('/admin/leads', async (_req, res) => {
@@ -42,6 +46,21 @@ adminLeadsRouter.patch('/admin/leads/:id', async (req, res) => {
       return;
     }
 
+    res.status(500).json({ ok: false, error: 'Internal server error' });
+  }
+});
+
+adminLeadsRouter.delete('/admin/leads/:id', async (req, res) => {
+  try {
+    const deleted = await deleteLead(req.params.id);
+
+    if (!deleted) {
+      res.status(404).json({ ok: false, error: 'Lead not found' });
+      return;
+    }
+
+    res.json({ ok: true });
+  } catch {
     res.status(500).json({ ok: false, error: 'Internal server error' });
   }
 });

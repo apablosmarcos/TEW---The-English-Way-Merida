@@ -1,59 +1,56 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
-import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { DatabaseSync } from 'node:sqlite';
 
+import { ensureDatabaseDirectory, importLegacyLeadsIfNeeded, initializeDatabase, openDatabase } from '../storage/sqlite.ts';
 import type { CreateLeadInput, Lead, UpdateLeadInput } from './lead-types.ts';
-
-const defaultLeadsFileUrl = new URL('../../../data/leads.json', import.meta.url);
 
 let writeQueue = Promise.resolve();
 
-export function createLead(input: CreateLeadInput): Promise<{ id: string }> {
-  return enqueueWrite(async () => {
-    const leads = await readLeads();
-    const timestamp = new Date().toISOString();
-    const lead: Lead = {
-      id: randomUUID(),
-      ...input,
-      status: 'new',
-      notes: '',
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    };
-
-    leads.push(lead);
-    await writeLeads(leads);
-
-    return { id: lead.id };
-  });
-}
-
 export async function listLeads(): Promise<Lead[]> {
-  return readLeads();
+  return withDatabase((database) =>
+    database
+      .prepare('SELECT * FROM leads ORDER BY createdAt DESC')
+      .all()
+      .map((row) => row as Lead),
+  );
 }
 
 export function updateLead(id: string, input: UpdateLeadInput): Promise<Lead | null> {
   return enqueueWrite(async () => {
-    const leads = await readLeads();
-    const index = leads.findIndex((lead) => lead.id === id);
+    return withDatabase((database) => {
+      const currentLead = database.prepare('SELECT * FROM leads WHERE id = ?').get(id) as Lead | undefined;
 
-    if (index === -1) {
-      return null;
-    }
+      if (!currentLead) {
+        return null;
+      }
 
-    const currentLead = leads[index];
-    const updatedLead: Lead = {
-      ...currentLead,
-      status: input.status ?? currentLead.status,
-      notes: input.notes ?? currentLead.notes,
-      updatedAt: new Date().toISOString(),
-    };
+      const updatedLead: Lead = {
+        ...currentLead,
+        status: input.status ?? currentLead.status,
+        notes: input.notes ?? currentLead.notes,
+        updatedAt: new Date().toISOString(),
+      };
 
-    leads[index] = updatedLead;
-    await writeLeads(leads);
+      database.prepare(
+        'UPDATE leads SET status = @status, notes = @notes, updatedAt = @updatedAt WHERE id = @id',
+      ).run({
+        id,
+        status: updatedLead.status,
+        notes: updatedLead.notes,
+        updatedAt: updatedLead.updatedAt,
+      });
 
-    return updatedLead;
+      return updatedLead;
+    });
+  });
+}
+
+export function deleteLead(id: string): Promise<boolean> {
+  return enqueueWrite(async () => {
+    return withDatabase((database) => {
+      const result = database.prepare('DELETE FROM leads WHERE id = ?').run(id);
+      return Number(result.changes ?? 0) > 0;
+    });
   });
 }
 
@@ -66,31 +63,75 @@ function enqueueWrite<T>(operation: () => Promise<T>) {
   return next;
 }
 
-async function readLeads() {
+async function withDatabase<T>(action: (database: DatabaseSync) => T) {
+  await ensureDatabaseDirectory(process.env);
+  const database = openDatabase(process.env);
+
   try {
-    const file = await readFile(resolveLeadsFilePath(), 'utf8');
-    const parsed = JSON.parse(file);
-
-    return Array.isArray(parsed) ? (parsed as Lead[]) : [];
-  } catch (error) {
-    if (isMissingFileError(error)) {
-      return [];
-    }
-
-    throw error;
+    initializeDatabase(database);
+    importLegacyLeadsIfNeeded(database, process.env);
+    return action(database);
+  } finally {
+    database.close();
   }
 }
 
-async function writeLeads(leads: Lead[]) {
-  const filePath = resolveLeadsFilePath();
-  await mkdir(dirname(filePath), { recursive: true });
-  await writeFile(filePath, JSON.stringify(leads, null, 2));
+async function writeLead(lead: Lead) {
+  return withDatabase((database) => {
+    database.prepare(`
+      INSERT INTO leads (
+        id, name, email, phone, message, interestType, source,
+        studentName, studentSurname, birthDate, address, school, currentCourse,
+        primaryContactName, primaryContactSurname, primaryContactRelationship,
+        secondaryContactName, secondaryContactSurname, secondaryContactRelationship,
+        pickupContact, paymentMethod, paymentAccountHolder, paymentIban, observations,
+        status, notes, createdAt, updatedAt
+      ) VALUES (
+        @id, @name, @email, @phone, @message, @interestType, @source,
+        @studentName, @studentSurname, @birthDate, @address, @school, @currentCourse,
+        @primaryContactName, @primaryContactSurname, @primaryContactRelationship,
+        @secondaryContactName, @secondaryContactSurname, @secondaryContactRelationship,
+        @pickupContact, @paymentMethod, @paymentAccountHolder, @paymentIban, @observations,
+        @status, @notes, @createdAt, @updatedAt
+      )
+    `).run(lead);
+  });
 }
 
-function resolveLeadsFilePath() {
-  return process.env.LEADS_FILE_PATH ?? fileURLToPath(defaultLeadsFileUrl);
+async function createStoredLead(input: CreateLeadInput) {
+  const timestamp = new Date().toISOString();
+  const lead: Lead = {
+    id: randomUUID(),
+    name: `${input.studentName} ${input.studentSurname}`.trim(),
+    message: buildLeadSummary(input),
+    interestType: null,
+    ...input,
+    status: 'new',
+    notes: '',
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+
+  await writeLead(lead);
+  return lead;
 }
 
-function isMissingFileError(error: unknown): error is NodeJS.ErrnoException {
-  return error instanceof Error && 'code' in error && error.code === 'ENOENT';
+export function createLead(input: CreateLeadInput): Promise<{ id: string }> {
+  return enqueueWrite(async () => {
+    const lead = await createStoredLead(input);
+    return { id: lead.id };
+  });
 }
+
+function buildLeadSummary(input: CreateLeadInput) {
+  return [
+    input.school,
+    input.currentCourse,
+    `${input.primaryContactRelationship}: ${input.primaryContactName} ${input.primaryContactSurname}`,
+    `Pago: ${input.paymentMethod}`,
+  ].join(' · ');
+}
+
+/*
+  Old JSON helpers removed in favor of SQLite storage.
+*/

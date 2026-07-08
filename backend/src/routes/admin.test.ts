@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 import { createApp } from '../app.ts';
+import { storeAdminSession } from '../modules/auth/admin-session-repository.ts';
 
 test('POST /api/admin/login returns 401 for invalid credentials', async () => {
   process.env.ADMIN_USERNAME = 'admin';
@@ -42,9 +43,10 @@ test('POST /api/admin/login returns 401 for invalid credentials', async () => {
   }
 });
 
-test('authenticated admin can list and update leads', async () => {
-  const leadsFilePath = join(tmpdir(), `tew-admin-leads-${randomUUID()}.json`);
-  process.env.LEADS_FILE_PATH = leadsFilePath;
+test('authenticated admin can list, update and delete leads', async () => {
+  const sqliteDbPath = join(tmpdir(), `tew-admin-leads-${randomUUID()}.sqlite`);
+  process.env.SQLITE_DB_PATH = sqliteDbPath;
+  process.env.LEGACY_LEADS_FILE_PATH = join(tmpdir(), `tew-legacy-missing-${randomUUID()}.json`);
   process.env.ADMIN_USERNAME = 'admin';
   process.env.ADMIN_PASSWORD = 'secret';
 
@@ -66,11 +68,25 @@ test('authenticated admin can list and update leads', async () => {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        name: 'Ana Perez',
+        studentName: 'Ana',
+        studentSurname: 'Perez',
+        birthDate: '2014-05-10',
+        address: 'Calle Mayor 1, Merida',
         email: 'ana@example.com',
         phone: '600000000',
-        message: 'Quiero informacion',
-        interestType: 'primary',
+        school: 'Colegio Ejemplo',
+        currentCourse: '5 Primaria',
+        primaryContactName: 'Laura',
+        primaryContactSurname: 'Perez',
+        primaryContactRelationship: 'Madre',
+        secondaryContactName: 'Juan',
+        secondaryContactSurname: 'Perez',
+        secondaryContactRelationship: 'Padre',
+        pickupContact: 'Rocio Perez - Tia',
+        paymentMethod: 'bizum',
+        paymentAccountHolder: 'Laura Perez',
+        paymentIban: 'ES7620770024003102575766',
+        observations: 'Alergia alimentaria',
         source: 'public-site',
       }),
     });
@@ -90,11 +106,12 @@ test('authenticated admin can list and update leads', async () => {
     });
 
     assert.equal(loginResponse.status, 200);
-    const loginBody = (await loginResponse.json()) as { ok: boolean; token: string };
+    const loginBody = (await loginResponse.json()) as { ok: boolean; token: string; expiresAt: string };
 
     assert.equal(loginBody.ok, true);
     assert.equal(typeof loginBody.token, 'string');
     assert.notEqual(loginBody.token, '');
+    assert.equal(typeof loginBody.expiresAt, 'string');
 
     const listResponse = await fetch(`${baseUrl}/api/admin/leads`, {
       headers: {
@@ -111,6 +128,7 @@ test('authenticated admin can list and update leads', async () => {
     assert.equal(listBody.ok, true);
     assert.equal(listBody.leads.length, 1);
     assert.equal(listBody.leads[0].id, createdBody.leadId);
+    assert.equal((listBody.leads[0] as { studentName?: string }).studentName, 'Ana');
     assert.equal(listBody.leads[0].status, 'new');
 
     const patchResponse = await fetch(`${baseUrl}/api/admin/leads/${createdBody.leadId}`, {
@@ -136,11 +154,227 @@ test('authenticated admin can list and update leads', async () => {
     assert.equal(patchBody.lead.status, 'contacted');
     assert.equal(patchBody.lead.notes, 'Pendiente de visita');
     assert.notEqual(patchBody.lead.updatedAt, listBody.leads[0].updatedAt);
+
+    const deleteResponse = await fetch(`${baseUrl}/api/admin/leads/${createdBody.leadId}`, {
+      method: 'DELETE',
+      headers: {
+        authorization: `Bearer ${loginBody.token}`,
+      },
+    });
+
+    assert.equal(deleteResponse.status, 200);
+    assert.deepEqual(await deleteResponse.json(), { ok: true });
+
+    const listAfterDeleteResponse = await fetch(`${baseUrl}/api/admin/leads`, {
+      headers: {
+        authorization: `Bearer ${loginBody.token}`,
+      },
+    });
+
+    assert.equal(listAfterDeleteResponse.status, 200);
+    const listAfterDeleteBody = (await listAfterDeleteResponse.json()) as {
+      ok: boolean;
+      leads: Array<{ id: string }>;
+    };
+
+    assert.equal(listAfterDeleteBody.ok, true);
+    assert.deepEqual(listAfterDeleteBody.leads, []);
   } finally {
-    delete process.env.LEADS_FILE_PATH;
+    delete process.env.SQLITE_DB_PATH;
+    delete process.env.LEGACY_LEADS_FILE_PATH;
     delete process.env.ADMIN_USERNAME;
     delete process.env.ADMIN_PASSWORD;
     await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
-    await rm(leadsFilePath, { force: true });
+    await rm(sqliteDbPath, { force: true });
+  }
+});
+
+test('admin delete lead returns 404 when the lead does not exist', async () => {
+  const sqliteDbPath = join(tmpdir(), `tew-admin-leads-${randomUUID()}.sqlite`);
+  process.env.SQLITE_DB_PATH = sqliteDbPath;
+  process.env.LEGACY_LEADS_FILE_PATH = join(tmpdir(), `tew-legacy-missing-${randomUUID()}.json`);
+  process.env.ADMIN_USERNAME = 'admin';
+  process.env.ADMIN_PASSWORD = 'secret';
+
+  const server = createServer(createApp());
+
+  try {
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+
+    if (!address || typeof address === 'string') {
+      throw new Error('Test server did not expose a port');
+    }
+
+    const baseUrl = `http://127.0.0.1:${address.port}`;
+
+    const loginResponse = await fetch(`${baseUrl}/api/admin/login`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: 'admin',
+        password: 'secret',
+      }),
+    });
+
+    const loginBody = (await loginResponse.json()) as { token: string };
+
+    const deleteResponse = await fetch(`${baseUrl}/api/admin/leads/missing-lead`, {
+      method: 'DELETE',
+      headers: {
+        authorization: `Bearer ${loginBody.token}`,
+      },
+    });
+
+    assert.equal(deleteResponse.status, 404);
+    assert.deepEqual(await deleteResponse.json(), { ok: false, error: 'Lead not found' });
+  } finally {
+    delete process.env.SQLITE_DB_PATH;
+    delete process.env.LEGACY_LEADS_FILE_PATH;
+    delete process.env.ADMIN_USERNAME;
+    delete process.env.ADMIN_PASSWORD;
+    await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+    await rm(sqliteDbPath, { force: true });
+  }
+});
+
+test('admin delete lead returns 401 without a valid token', async () => {
+  const sqliteDbPath = join(tmpdir(), `tew-admin-leads-${randomUUID()}.sqlite`);
+  process.env.SQLITE_DB_PATH = sqliteDbPath;
+  process.env.LEGACY_LEADS_FILE_PATH = join(tmpdir(), `tew-legacy-missing-${randomUUID()}.json`);
+  process.env.ADMIN_USERNAME = 'admin';
+  process.env.ADMIN_PASSWORD = 'secret';
+
+  const server = createServer(createApp());
+
+  try {
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+
+    if (!address || typeof address === 'string') {
+      throw new Error('Test server did not expose a port');
+    }
+
+    const baseUrl = `http://127.0.0.1:${address.port}`;
+
+    const deleteResponse = await fetch(`${baseUrl}/api/admin/leads/lead_123`, {
+      method: 'DELETE',
+    });
+
+    assert.equal(deleteResponse.status, 401);
+    assert.deepEqual(await deleteResponse.json(), { ok: false });
+  } finally {
+    delete process.env.SQLITE_DB_PATH;
+    delete process.env.LEGACY_LEADS_FILE_PATH;
+    delete process.env.ADMIN_USERNAME;
+    delete process.env.ADMIN_PASSWORD;
+    await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+    await rm(sqliteDbPath, { force: true });
+  }
+});
+
+test('admin leads returns 401 for an expired persisted session token', async () => {
+  const sqliteDbPath = join(tmpdir(), `tew-admin-leads-${randomUUID()}.sqlite`);
+  process.env.SQLITE_DB_PATH = sqliteDbPath;
+  process.env.LEGACY_LEADS_FILE_PATH = join(tmpdir(), `tew-legacy-missing-${randomUUID()}.json`);
+  process.env.ADMIN_USERNAME = 'admin';
+  process.env.ADMIN_PASSWORD = 'secret';
+
+  const server = createServer(createApp());
+
+  try {
+    storeAdminSession('expired-token', '2000-01-01T00:00:00.000Z', process.env);
+
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+
+    if (!address || typeof address === 'string') {
+      throw new Error('Test server did not expose a port');
+    }
+
+    const response = await fetch(`http://127.0.0.1:${address.port}/api/admin/leads`, {
+      headers: {
+        authorization: 'Bearer expired-token',
+      },
+    });
+
+    assert.equal(response.status, 401);
+    assert.deepEqual(await response.json(), { ok: false });
+  } finally {
+    delete process.env.SQLITE_DB_PATH;
+    delete process.env.LEGACY_LEADS_FILE_PATH;
+    delete process.env.ADMIN_USERNAME;
+    delete process.env.ADMIN_PASSWORD;
+    await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+    await rm(sqliteDbPath, { force: true });
+  }
+});
+
+test('admin login returns JSON 500 when sqlite storage is unavailable', async () => {
+  process.env.SQLITE_DB_PATH = tmpdir();
+  process.env.ADMIN_USERNAME = 'admin';
+  process.env.ADMIN_PASSWORD = 'secret';
+
+  const server = createServer(createApp());
+
+  try {
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+
+    if (!address || typeof address === 'string') {
+      throw new Error('Test server did not expose a port');
+    }
+
+    const response = await fetch(`http://127.0.0.1:${address.port}/api/admin/login`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: 'admin',
+        password: 'secret',
+      }),
+    });
+
+    assert.equal(response.status, 500);
+    assert.deepEqual(await response.json(), { ok: false, error: 'Internal server error' });
+  } finally {
+    delete process.env.SQLITE_DB_PATH;
+    delete process.env.ADMIN_USERNAME;
+    delete process.env.ADMIN_PASSWORD;
+    await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+  }
+});
+
+test('admin leads returns JSON 500 when sqlite storage is unavailable during token validation', async () => {
+  process.env.SQLITE_DB_PATH = tmpdir();
+  process.env.ADMIN_USERNAME = 'admin';
+  process.env.ADMIN_PASSWORD = 'secret';
+
+  const server = createServer(createApp());
+
+  try {
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+
+    if (!address || typeof address === 'string') {
+      throw new Error('Test server did not expose a port');
+    }
+
+    const response = await fetch(`http://127.0.0.1:${address.port}/api/admin/leads`, {
+      headers: {
+        authorization: 'Bearer token_123',
+      },
+    });
+
+    assert.equal(response.status, 500);
+    assert.deepEqual(await response.json(), { ok: false, error: 'Internal server error' });
+  } finally {
+    delete process.env.SQLITE_DB_PATH;
+    delete process.env.ADMIN_USERNAME;
+    delete process.env.ADMIN_PASSWORD;
+    await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
   }
 });
