@@ -15,8 +15,8 @@
       <nav [class.nav-open]="menuOpen">
         <a href="#metodo"     (click)="scrollToSection($event, 'metodo')">Método</a>
         <a href="#clases"     (click)="scrollToSection($event, 'clases')">Clases</a>
-        <a href="#formulario" (click)="scrollToSection($event, 'formulario')">Matrícula</a>
         <a href="#contacto"   (click)="scrollToSection($event, 'contacto')">Contacto</a>
+        <a href="#formulario" (click)="scrollToSection($event, 'formulario')">Matrícula</a>
       </nav>
 
       <button
@@ -35,7 +35,7 @@
 
   <main>
     <section class="hero shell" id="inicio">
-      <article class="hero-copy">
+      <article class="hero-copy" data-aos="fade-up">
         <span class="eyebrow">Make it happen</span>
         <div class="hero-brand-pair" aria-label="Identidad visual TEW">
           <picture>
@@ -61,7 +61,7 @@
 
       </article>
 
-      <aside class="hero-stage" aria-label="Escena visual TEW">
+      <aside class="hero-stage" aria-label="Escena visual TEW" data-aos="zoom-in" data-aos-delay="120">
         <div class="hero-stage-notes">
           <div class="floating-note note-top">Aprendizaje + tecnología = motivación</div>
           <div class="floating-note note-bottom">Aula digital · Seguimiento real</div>
@@ -97,7 +97,7 @@
       </div>
     </section>
 
-    <section class="shell overview" id="metodo">
+    <section class="shell overview overview-centered" id="metodo" data-aos="fade-up">
       <article class="section-copy card overview-copy">
         <div class="overview-heading">
           <span class="section-kicker">Método TEW</span>
@@ -117,58 +117,46 @@
         </div>
 
         <div class="proof-grid">
-          <article class="proof-card">
+          <article class="proof-card" data-aos="fade-up" data-aos-delay="0">
             <small>01</small>
             <strong>Aplicación real</strong>
             <span>Clases con inglés conectado al mundo real desde el primer día.</span>
           </article>
-          <article class="proof-card">
+          <article class="proof-card" data-aos="fade-up" data-aos-delay="100">
             <small>02</small>
             <strong>Seguimiento claro</strong>
             <span>Familias y alumnado saben en todo momento qué se trabaja y cómo avanza.</span>
           </article>
-          <article class="proof-card">
+          <article class="proof-card" data-aos="fade-up" data-aos-delay="200">
             <small>03</small>
             <strong>Material propio</strong>
             <span>Apoyo visual, ritmo adaptado y recursos diseñados por TEW.</span>
           </article>
         </div>
       </article>
-
-      <article class="section-visual overview-image">
-        <div class="overview-image-badge">Metodología visual · ritmo claro</div>
-        <img src="assets/img/MOVERS CLASSROOM LOGO.png" alt="Metodología visual de TEW" loading="lazy" decoding="async" />
-        <div class="overview-image-note">
-          <strong>TEW</strong>
-          <span>Explicación cercana, práctica guiada y seguimiento real.</span>
-        </div>
-      </article>
     </section>
 
-    <section class="shell benefits">
+    <section class="shell benefits" data-aos="fade-up">
       <article class="benefit card benefit-explain">
-        <img class="benefit-visual" src="assets/img/MOVERS CLASSROOM LOGO.png" alt="" aria-hidden="true" />
         <span class="benefit-tag">Explicación</span>
         <h3>Inglés con sentido</h3>
         <p>El alumno entiende qué está trabajando y para qué sirve dentro y fuera del aula.</p>
       </article>
 
-      <article class="benefit card benefit-practice">
-        <img class="benefit-visual" src="assets/img/MOVERS CLASSROOM LOGO.png" alt="" aria-hidden="true" />
+      <article data-aos="fade-up" data-aos-delay="100" class="benefit card benefit-practice">
         <span class="benefit-tag">Práctica</span>
         <h3>Actividades que enganchan</h3>
         <p>Recursos visuales, tareas útiles y una dinámica que mantiene la motivación clase a clase.</p>
       </article>
 
-      <article class="benefit card benefit-follow">
-        <img class="benefit-visual" src="assets/img/TEW CLASSROOM LOGO.png" alt="" aria-hidden="true" />
+      <article data-aos="fade-up" data-aos-delay="200" class="benefit card benefit-follow">
         <span class="benefit-tag">Seguimiento</span>
         <h3>Avance visible</h3>
         <p>Familias y alumnado tienen una referencia clara del trabajo semanal y del progreso real.</p>
       </article>
     </section>
 
-    <section class="shell testimonials">
+    <section class="shell testimonials" data-aos="fade-up">
       <div class="testimonials-header">
         <span class="section-kicker">Lo que dicen las familias</span>
         <div class="testimonials-stars" aria-label="5 estrellas en Google">
@@ -177,7 +165,7 @@
         </div>
       </div>
       <div class="testimonials-grid">
-        <blockquote class="testimonial-card card">
+        <blockquote class="testimonial-card card" data-aos="fade-up" data-aos-delay="0">
           <p class="testimonial-text">
             "La mejor academia, mis dos hijos están encantados con su metodología, por encima del nivel que les corresponde, excelentes resultados en sus notas de inglés. La recomiendo 100x100."
           </p>
@@ -190,7 +178,7 @@
           </footer>
         </blockquote>
 
-        <blockquote class="testimonial-card card">
+        <blockquote class="testimonial-card card" data-aos="fade-up" data-aos-delay="100">
           <p class="testimonial-text">
             "Mi hija tenía la asignatura de inglés de 1.º y 2.º de bachillerato suspensas y a un mes de la recuperación contacto con Juanfran. Su respuesta: «vamos súper justos… iremos a full»."
           </p>
@@ -203,7 +191,7 @@
           </footer>
         </blockquote>
 
-        <blockquote class="testimonial-card card">
+        <blockquote class="testimonial-card card" data-aos="fade-up" data-aos-delay="200">
           <p class="testimonial-text">
             "We are extremely happy with this English academy. The lessons are dynamic, fun, and easy to follow. This is probably the most digitalized academy in Mérida, allowing all the pupils to learn English while having fun."
           </p>
@@ -218,8 +206,8 @@
       </div>
     </section>
 
-    <section class="shell tech-showcase" id="clases">
-      <article class="tech-copy card">
+    <section class="shell tech-showcase" id="clases" data-aos="fade-up">
+      <article class="tech-copy card" data-aos="fade-right">
         <span class="section-kicker">Cómo es una clase</span>
         <h2>Trabajo en clase, apoyo digital y material listo para seguir avanzando.</h2>
         <p>
@@ -235,7 +223,7 @@
         </div>
       </article>
 
-      <article class="tech-stack">
+      <article class="tech-stack" data-aos="fade-left">
         <div class="card classroom-card">
           <img src="assets/img/TEW CLASSROOM LOGO.png" alt="Visual de TEW Classroom" loading="lazy" decoding="async" />
         </div>
@@ -245,7 +233,7 @@
       </article>
     </section>
 
-    <section class="shell contact" id="contacto">
+    <section class="shell contact" id="contacto" data-aos="fade-up">
       <article class="info-card card">
         <span class="section-kicker">Contacto TEW</span>
         <h2>¿Dudas sobre grupos y horarios? Escríbenos.</h2>
@@ -280,7 +268,7 @@
       </article>
     </section>
 
-    <section class="enroll" id="formulario">
+    <section class="enroll" id="formulario" data-aos="fade-up">
       <div class="shell">
       <aside class="form-card card">
         <span class="mode-pill" [class.live]="!!siteConfig.apiBaseUrl && !configErrorMessage">

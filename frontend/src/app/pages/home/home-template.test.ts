@@ -25,8 +25,6 @@ test('home template uses refreshed TEW assets, copy, and full enrollment form bi
   assert.match(template, /Cómo es una clase/);
   assert.match(template, /El alumno debe contar con algún dispositivo y nosotros nos encargamos de prepararle la plataforma/);
   assert.doesNotMatch(template, /La academia cuenta con sus propios equipos informáticos para dejar al alumnado si lo necesita/);
-  assert.match(template, /<article class="benefit card benefit-explain">[\s\S]*?<img class="benefit-visual" src="assets\/img\/MOVERS CLASSROOM LOGO\.png" alt="" aria-hidden="true" \/>/);
-  assert.doesNotMatch(template, /<article class="benefit card benefit-explain">[\s\S]*?<img class="benefit-visual" src="assets\/img\/Robot Head with TEW Logo\.png" alt="" aria-hidden="true" \/>/);
   assert.match(template, /Telegram/);
   assert.match(template, /secretaria\.tew@gmail\.com/);
   assert.match(template, /¿Dudas sobre grupos y horarios\? Escríbenos\./);

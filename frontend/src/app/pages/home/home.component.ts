@@ -27,7 +27,7 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
     }
 
     .shell {
-      width: min(1220px, calc(100% - 32px));
+      width: min(1400px, calc(100% - 48px));
       margin: 0 auto;
     }
 
@@ -168,10 +168,10 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
 
     .hero {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(380px, 520px);
+      grid-template-columns: minmax(0, 1fr) minmax(420px, 640px);
       align-items: center;
-      gap: 28px;
-      padding: 56px 0 22px;
+      gap: 40px;
+      padding: 48px 0 22px;
     }
 
     .card,
@@ -480,7 +480,7 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
     .tech-stack,
     .check-grid {
       display: grid;
-      gap: 14px;
+      gap: 24px;
     }
 
     .hero-points {
@@ -535,16 +535,33 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
       color: rgba(255, 255, 255, 0.5);
     }
 
+    main > section {
+      padding: 28px 0;
+    }
+
+    main > section:not(.hero):not(.marquee):nth-of-type(even) {
+      background: rgba(255, 255, 255, 0.55);
+    }
+
     .overview,
     .benefits,
     .tech-showcase,
-    .contact {
-      margin-top: 28px;
+    .contact,
+    .testimonials,
+    .enroll {
+      margin-top: 0;
     }
 
     .overview {
-      grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.82fr);
       align-items: stretch;
+    }
+
+    .overview-centered {
+      justify-items: center;
+    }
+
+    .overview-centered .overview-copy {
+      width: 100%;
     }
 
     .overview-copy {
@@ -558,18 +575,21 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
     .overview-heading {
       display: grid;
       gap: 14px;
+      justify-items: center;
+      text-align: center;
     }
 
     .overview-heading h2 {
-      max-width: 11ch;
+      max-width: none;
       margin-top: 0;
       font-size: clamp(2.2rem, 4.2vw, 4rem);
-      line-height: 0.92;
+      line-height: 1.1;
       letter-spacing: -0.05em;
     }
 
     .overview-heading p {
-      max-width: 58ch;
+      max-width: 70ch;
+      text-align: left;
       color: rgba(17, 17, 17, 0.7);
     }
 
@@ -674,8 +694,8 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
     .proof-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 18px;
+      gap: 20px;
+      margin-top: 24px;
     }
 
     .proof-card {
@@ -719,12 +739,12 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
     }
 
     .enroll {
-      margin-top: 28px;
+      margin-top: 0;
     }
 
     .enroll .form-card {
-      max-width: 720px;
-      margin: 0 auto;
+      width: 100%;
+      max-width: none;
     }
 
     .dark-card,
@@ -798,14 +818,6 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
 
     .benefit-follow {
       background: #f2fbf4;
-    }
-
-    .benefit-visual {
-      display: block;
-      width: 100%;
-      max-width: 110px;
-      height: auto;
-      margin-bottom: 14px;
     }
 
     .feature-list,
@@ -938,7 +950,7 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
     .map-card iframe {
       display: block;
       width: 100%;
-      min-height: 320px;
+      min-height: 380px;
       border: 0;
     }
 
@@ -995,8 +1007,8 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
     }
 
     .contact-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      margin-top: 22px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 24px;
     }
 
     .contact-grid strong {
@@ -1051,8 +1063,8 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
 
     .testimonials-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
     }
 
     .testimonial-card {
@@ -1214,7 +1226,8 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
       .hero-points,
       .form-section,
       .contact-grid,
-      .check-grid {
+      .check-grid,
+      .testimonials-grid {
         grid-template-columns: 1fr;
       }
 
@@ -1248,13 +1261,15 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
       }
     }
 
-    @media (max-width: 760px) {
-      .testimonials-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
     @media (max-width: 640px) {
+      .shell {
+        width: min(1400px, calc(100% - 24px));
+      }
+
+      main > section {
+        padding: 22px 0;
+      }
+
       .hamburger {
         display: flex;
       }
@@ -1384,6 +1399,11 @@ export class HomeComponent implements OnInit {
       this.configErrorMessage = state.status === 'error' ? state.message : '';
       this.isLoadingConfig = false;
     });
+
+    const aos = (window as unknown as { AOS?: { init: (options?: object) => void } }).AOS;
+    if (aos) {
+      aos.init({ once: true, duration: 850, easing: 'ease-out-cubic' });
+    }
   }
 
   protected scrollToSection(event: Event, id: string) {
