@@ -185,6 +185,40 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
       box-shadow: var(--shadow);
     }
 
+    /* Hover estilo cartel TEW: borde rojo + sombra */
+    .overview-copy,
+    .proof-card,
+    .overview-summary,
+    .benefit,
+    .testimonial-card,
+    .tech-copy,
+    .classroom-card,
+    .mini-banner-card,
+    .info-card,
+    .form-card,
+    .hero-copy,
+    .hero-stage {
+      outline: 2px solid transparent;
+      transition: outline-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .overview-copy:hover,
+    .proof-card:hover,
+    .overview-summary:hover,
+    .benefit:hover,
+    .testimonial-card:hover,
+    .tech-copy:hover,
+    .classroom-card:hover,
+    .mini-banner-card:hover,
+    .info-card:hover,
+    .form-card:hover,
+    .hero-copy:hover,
+    .hero-stage:hover {
+      outline-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 4px 4px 0 var(--accent);
+    }
+
     .hero-copy {
       position: relative;
       overflow: hidden;
