@@ -5,6 +5,10 @@ const derive = promisify(scrypt) as (password: string, salt: Buffer, keylen: num
 const saltBytes = 16;
 const keyBytes = 64;
 
+export function generateTemporaryPassword() {
+  return randomBytes(8).toString("base64url").slice(0, 10);
+}
+
 export async function hashPassword(password: string) {
   const salt = randomBytes(saltBytes);
   const key = await derive(password, salt, keyBytes);

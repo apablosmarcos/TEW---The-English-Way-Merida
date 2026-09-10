@@ -14,3 +14,8 @@ export type AcademySession = {
 };
 
 export type AcademyLogin = AcademySession & { token: string };
+
+export type AcademyUserState = "active" | "disabled" | "deleted";
+export type AcademyUserDetail = AcademyUser & { mustChangePassword: boolean; state: AcademyUserState; createdAt: string; updatedAt: string };
+export type UserListOptions = { search?: string; role?: AcademyRole; state?: AcademyUserState; page?: number; pageSize?: number };
+export type UserList = { items: AcademyUserDetail[]; page: number; pageSize: number; total: number };

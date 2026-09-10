@@ -6,3 +6,12 @@ export class AcademyAuthError extends Error {
     this.code = code;
   }
 }
+
+export class AcademyUserError extends Error {
+  readonly code: "LAST_ACTIVE_ADMIN" | "USER_DELETED" | "USER_NOT_FOUND" | "USERNAME_TAKEN";
+
+  constructor(code: "LAST_ACTIVE_ADMIN" | "USER_DELETED" | "USER_NOT_FOUND" | "USERNAME_TAKEN") {
+    super(code);
+    this.code = code;
+  }
+}
