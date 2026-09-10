@@ -13,7 +13,7 @@ import { applyAcademyMigrations } from "../modules/storage/academy-migrations.ts
 import { openDatabase } from "../modules/storage/sqlite.ts";
 import { academyAuthMiddleware, requireAcademyAdmin, requirePasswordChange } from "./academy-middleware.ts";
 
-async function setup(users: Array<{ username: string; password: string; role?: "parent" | "admin"; mustChangePassword?: boolean }>) {
+async function setup(users: Array<{ id?: string; username: string; password: string; role?: "parent" | "admin"; mustChangePassword?: boolean }>) {
   const sqliteDbPath = join(tmpdir(), `academy-auth-${randomUUID()}.sqlite`);
   const database = openDatabase({ SQLITE_DB_PATH: sqliteDbPath });
   try {
@@ -21,7 +21,7 @@ async function setup(users: Array<{ username: string; password: string; role?: "
     for (const [index, user] of users.entries()) {
       database.prepare(`INSERT INTO users (id, displayName, username, normalizedUsername, role, passwordHash, mustChangePassword, disabledAt, deletedAt, createdAt, updatedAt)
         VALUES (?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?)`).run(
-        `user-${index}`, user.username, user.username, user.username.toLowerCase(), user.role ?? "parent",
+        user.id ?? `user-${index}`, user.username, user.username, user.username.toLowerCase(), user.role ?? "parent",
         await hashPassword(user.password), user.mustChangePassword ? 1 : 0, new Date().toISOString(), new Date().toISOString(),
       );
     }
@@ -166,6 +166,107 @@ test("academy middleware blocks forced-password users and enforces administrator
       const admin = await login(baseUrl, "admin", "password");
       const allowed = await fetch(`${baseUrl}/test/admin`, { headers: { authorization: `Bearer ${admin.body.token}` } });
       assert.equal(allowed.status, 200);
+    });
+  } finally {
+    await fixture.close();
+  }
+});
+
+test("academy administrator user routes enforce lifecycle boundaries and keep passwords transient", async () => {
+  const adminId = randomUUID();
+  const fixture = await setup([
+    { id: adminId, username: "admin", password: "password", role: "admin" },
+    { username: "parent", password: "password" },
+  ]);
+  try {
+    await withServer(createApp(), async (baseUrl) => {
+      const unauthenticated = await fetch(`${baseUrl}/api/academy/admin/users`);
+      assert.equal(unauthenticated.status, 401);
+      assert.deepEqual(await unauthenticated.json(), { ok: false, error: "UNAUTHENTICATED" });
+
+      const parent = await login(baseUrl, "parent", "password");
+      const denied = await fetch(`${baseUrl}/api/academy/admin/users`, { headers: { authorization: `Bearer ${parent.body.token}` } });
+      assert.equal(denied.status, 403);
+      assert.deepEqual(await denied.json(), { ok: false, error: "FORBIDDEN" });
+
+      const admin = await login(baseUrl, "admin", "password");
+      const headers = { authorization: `Bearer ${admin.body.token}`, "content-type": "application/json" };
+      const listed = await fetch(`${baseUrl}/api/academy/admin/users?search=admin&role=admin&state=active&page=1&pageSize=1`, { headers });
+      assert.equal(listed.status, 200);
+      const listedBody = await listed.json() as { ok: boolean; data: { items: Array<{ id: string; passwordHash?: string; temporaryPassword?: string }>; pagination: { page: number; pageSize: number; total: number; pageCount: number } } };
+      assert.equal(listedBody.data.items[0]?.id, adminId);
+      assert.deepEqual(listedBody.data.pagination, { page: 1, pageSize: 1, total: 1, pageCount: 1 });
+      assert.equal("passwordHash" in (listedBody.data.items[0] ?? {}), false);
+      assert.equal("temporaryPassword" in (listedBody.data.items[0] ?? {}), false);
+
+      const invalidQuery = await fetch(`${baseUrl}/api/academy/admin/users?state=unknown`, { headers });
+      assert.equal(invalidQuery.status, 400);
+      assert.deepEqual(await invalidQuery.json(), { ok: false, error: "VALIDATION_ERROR" });
+      const invalidPagination = await fetch(`${baseUrl}/api/academy/admin/users?role=teacher&page=0&pageSize=101`, { headers });
+      assert.equal(invalidPagination.status, 400);
+      assert.deepEqual(await invalidPagination.json(), { ok: false, error: "VALIDATION_ERROR" });
+      const invalidId = await fetch(`${baseUrl}/api/academy/admin/users/not-a-uuid`, { headers });
+      assert.equal(invalidId.status, 400);
+      assert.deepEqual(await invalidId.json(), { ok: false, error: "VALIDATION_ERROR" });
+      const missing = await fetch(`${baseUrl}/api/academy/admin/users/${randomUUID()}`, { headers });
+      assert.equal(missing.status, 404);
+      assert.deepEqual(await missing.json(), { ok: false, error: "USER_NOT_FOUND" });
+
+      const invalidCreate = await fetch(`${baseUrl}/api/academy/admin/users`, { method: "POST", headers, body: JSON.stringify({ displayName: "New", username: "admin", role: "admin" }) });
+      assert.equal(invalidCreate.status, 400);
+      assert.deepEqual(await invalidCreate.json(), { ok: false, error: "VALIDATION_ERROR" });
+
+      const created = await fetch(`${baseUrl}/api/academy/admin/users`, { method: "POST", headers, body: JSON.stringify({ displayName: "New Parent", username: "new_parent" }) });
+      assert.equal(created.status, 201);
+      assert.equal(created.headers.get("cache-control"), "no-store");
+      const createdBody = await created.json() as { ok: boolean; data: { user: { id: string; role: string; mustChangePassword: boolean }; temporaryPassword: string } };
+      assert.equal(createdBody.data.user.role, "parent");
+      assert.equal(createdBody.data.user.mustChangePassword, true);
+      assert.equal(createdBody.data.temporaryPassword.length, 10);
+
+      const duplicate = await fetch(`${baseUrl}/api/academy/admin/users`, { method: "POST", headers, body: JSON.stringify({ displayName: "Duplicate", username: "new_parent" }) });
+      assert.equal(duplicate.status, 409);
+      assert.deepEqual(await duplicate.json(), { ok: false, error: "USERNAME_TAKEN" });
+
+      const detail = await fetch(`${baseUrl}/api/academy/admin/users/${createdBody.data.user.id}`, { headers });
+      assert.equal(detail.status, 200);
+      const detailBody = JSON.stringify(await detail.json());
+      assert.equal(detailBody.includes(createdBody.data.temporaryPassword), false);
+      assert.equal(detailBody.includes("passwordHash"), false);
+
+      const reset = await fetch(`${baseUrl}/api/academy/admin/users/${createdBody.data.user.id}/reset-password`, { method: "POST", headers });
+      assert.equal(reset.status, 200);
+      assert.equal(reset.headers.get("cache-control"), "no-store");
+      const resetBody = await reset.json() as { data: { temporaryPassword: string } };
+      assert.equal(resetBody.data.temporaryPassword.length, 10);
+      const afterReset = await fetch(`${baseUrl}/api/academy/admin/users/${createdBody.data.user.id}`, { headers });
+      const afterResetBody = JSON.stringify(await afterReset.json());
+      assert.equal(afterResetBody.includes(resetBody.data.temporaryPassword), false);
+      assert.equal(afterResetBody.includes("passwordHash"), false);
+
+      const invalidDisable = await fetch(`${baseUrl}/api/academy/admin/users/${createdBody.data.user.id}`, { method: "PATCH", headers, body: JSON.stringify({ disabled: false }) });
+      assert.equal(invalidDisable.status, 400);
+      assert.deepEqual(await invalidDisable.json(), { ok: false, error: "VALIDATION_ERROR" });
+      const disabled = await fetch(`${baseUrl}/api/academy/admin/users/${createdBody.data.user.id}`, { method: "PATCH", headers, body: JSON.stringify({ disabled: true }) });
+      assert.equal(disabled.status, 200);
+      const disabledBody = await disabled.json() as { data: { state: string } };
+      assert.equal(disabledBody.data.state, "disabled");
+      assert.equal(JSON.stringify(disabledBody).includes("passwordHash"), false);
+      assert.equal(JSON.stringify(disabledBody).includes("temporaryPassword"), false);
+      const disabledList = await fetch(`${baseUrl}/api/academy/admin/users?state=disabled`, { headers });
+      assert.equal((await disabledList.json() as { data: { items: Array<{ id: string }> } }).data.items[0]?.id, createdBody.data.user.id);
+
+      const enabled = await fetch(`${baseUrl}/api/academy/admin/users/${createdBody.data.user.id}/enable`, { method: "POST", headers });
+      assert.equal(enabled.status, 204);
+      const removed = await fetch(`${baseUrl}/api/academy/admin/users/${createdBody.data.user.id}`, { method: "DELETE", headers });
+      assert.equal(removed.status, 204);
+      const deleted = await fetch(`${baseUrl}/api/academy/admin/users/${createdBody.data.user.id}/enable`, { method: "POST", headers });
+      assert.equal(deleted.status, 404);
+      assert.deepEqual(await deleted.json(), { ok: false, error: "USER_DELETED" });
+
+      const lastAdmin = await fetch(`${baseUrl}/api/academy/admin/users/${adminId}`, { method: "PATCH", headers, body: JSON.stringify({ disabled: true }) });
+      assert.equal(lastAdmin.status, 409);
+      assert.deepEqual(await lastAdmin.json(), { ok: false, error: "LAST_ACTIVE_ADMIN" });
     });
   } finally {
     await fixture.close();
