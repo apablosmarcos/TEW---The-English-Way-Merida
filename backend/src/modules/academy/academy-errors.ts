@@ -1,0 +1,8 @@
+export class AcademyAuthError extends Error {
+  readonly code: "AUTHENTICATION_FAILED" | "UNAUTHENTICATED";
+
+  constructor(code: "AUTHENTICATION_FAILED" | "UNAUTHENTICATED") {
+    super(code);
+    this.code = code;
+  }
+}
