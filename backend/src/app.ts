@@ -5,6 +5,7 @@ import morgan from 'morgan';
 
 import { adminAuthRouter } from './routes/admin-auth.ts';
 import { adminLeadsRouter } from './routes/admin-leads.ts';
+import { createAcademyRouter } from './routes/academy-router.ts';
 import { healthRouter } from './routes/health.ts';
 import { leadsRouter } from './routes/leads.ts';
 
@@ -28,6 +29,7 @@ export function createApp() {
   app.use('/api', leadsRouter);
   app.use('/api', adminAuthRouter);
   app.use('/api', adminLeadsRouter);
+  app.use('/api/academy', createAcademyRouter());
 
   return app;
 }
