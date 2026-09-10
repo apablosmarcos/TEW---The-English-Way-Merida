@@ -1,9 +1,26 @@
 import { createApp } from './app.ts';
 import { getPort } from './config/env.ts';
+import { applyAcademyMigrations } from './modules/storage/academy-migrations.ts';
+import { ensureStorageDirectories, importLegacyLeadsIfNeeded, initializeDatabase, openDatabase } from './modules/storage/sqlite.ts';
 
-const app = createApp();
-const port = getPort();
+async function start() {
+  await ensureStorageDirectories(process.env);
 
-app.listen(port, () => {
-  console.log(`API listening on http://localhost:${port}`);
+  const database = openDatabase(process.env);
+  try {
+    initializeDatabase(database);
+    applyAcademyMigrations(database);
+    importLegacyLeadsIfNeeded(database, process.env);
+  } finally {
+    database.close();
+  }
+
+  createApp().listen(getPort(), () => {
+    console.log(`API listening on http://localhost:${getPort()}`);
+  });
+}
+
+void start().catch((error: unknown) => {
+  console.error('API startup failed.', error);
+  process.exitCode = 1;
 });
