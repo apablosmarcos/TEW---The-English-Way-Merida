@@ -1,0 +1,60 @@
+strict_tdd: true
+context: |
+  TEW Lead Capture MVP is a pnpm workspace with an Angular 20 standalone frontend, an Express 5 TypeScript backend, and SQLite persistence through node:sqlite.
+  The frontend is feature-oriented under frontend/src/app; the backend separates routes from domain and storage modules under backend/src.
+  TypeScript strict mode is enabled in both applications, and tests use the built-in Node.js test runner in colocated *.test.ts files.
+  Primary test command: pnpm --recursive test.
+  Repository-facing technical artifacts are written in English.
+  Existing OpenSpec archives and the active hero-images-poster-redesign change must be preserved.
+rules:
+  proposal:
+    require_problem_statement: true
+  spec:
+    require_acceptance_criteria: true
+  design:
+    require_tradeoffs: true
+  tasks:
+    protect_review_workload: true
+  apply:
+    test_command: "pnpm --recursive test"
+  verify:
+    test_command: "pnpm --recursive test"
+testing:
+  detected: "2026-09-10"
+  runner:
+    command: "pnpm --recursive test"
+    framework: "Node.js test runner"
+  layers:
+    unit: "Node.js test runner"
+    integration: "Node.js test runner (Express and SQLite)"
+    e2e: ""
+  commands:
+    unit:
+      - scope: "frontend"
+        command: "pnpm --filter tew-frontend test"
+        framework: "Node.js test runner"
+      - scope: "backend"
+        command: "pnpm --filter tew-backend test"
+        framework: "Node.js test runner"
+    integration:
+      - scope: "backend"
+        command: "pnpm --filter tew-backend test"
+        framework: "Node.js test runner (Express and SQLite)"
+    e2e:
+      []
+  coverage:
+    command: ""
+    commands:
+      []
+quality:
+  lint: ""
+  lint_commands:
+    []
+  typecheck: "pnpm --recursive run build"
+  typecheck_commands:
+    - scope: "."
+      command: "pnpm --recursive run build"
+      framework: "TypeScript and Angular build"
+  format: ""
+  format_commands:
+    []
