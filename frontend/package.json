@@ -5,7 +5,7 @@
   "scripts": {
     "build": "ng build",
     "dev": "ng serve",
-    "test": "node --test --experimental-strip-types src/app/core/services/site-config.service.test.ts src/app/core/services/admin-endpoint.test.ts src/app/core/services/admin-session.test.ts src/app/core/academy/academy-endpoint.test.ts src/app/core/academy/academy-api.service.test.ts src/app/core/academy/academy-session.store.test.ts src/app/pages/home/home-form.test.ts src/app/pages/home/home-template.test.ts src/app/pages/admin/leads-state.test.ts src/app/pages/admin/admin-template.test.ts"
+    "test": "node --test --experimental-strip-types src/app/core/services/site-config.service.test.ts src/app/core/services/admin-endpoint.test.ts src/app/core/services/admin-session.test.ts src/app/core/academy/academy-endpoint.test.ts src/app/core/academy/academy-api.service.test.ts src/app/core/academy/academy-session.store.test.ts src/app/pages/home/home-form.test.ts src/app/pages/home/home-template.test.ts src/app/pages/admin/leads-state.test.ts src/app/pages/admin/admin-template.test.ts src/app/pages/academy/access.component.test.ts src/app/pages/academy/password-change.component.test.ts src/app/pages/academy/academy-shell.component.test.ts"
   },
   "dependencies": {
     "@angular/common": "^20.0.0",
