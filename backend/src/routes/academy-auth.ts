@@ -1,7 +1,8 @@
 import { Router, type RequestHandler } from "express";
 
 import { LoginLimiter } from "../modules/academy/login-limiter.ts";
-import { academyAuth, academyAuthMiddleware, createAcademyAuthService, sendAcademyError } from "./academy-middleware.ts";
+import type { AcademyHttpLogin, AcademyHttpSession, AcademyLogin, AcademySession } from "../modules/academy/academy-types.ts";
+import { academyAuth, academyAuthMiddleware, createAcademyAuthService, sendAcademyError, sendAcademyHttpError } from "./academy-middleware.ts";
 
 export function createAcademyRouter() {
   const router = Router();
@@ -10,7 +11,8 @@ export function createAcademyRouter() {
   router.post("/login", async (req, res) => {
     res.set("Cache-Control", "no-store");
     if (!limiter.attempt(req.ip ?? req.socket.remoteAddress ?? "unknown")) {
-      res.set("Retry-After", "900").status(429).json({ ok: false, error: "TOO_MANY_REQUESTS" });
+      res.set("Retry-After", "900");
+      sendAcademyHttpError(res, 429, "RATE_LIMITED");
       return;
     }
 
@@ -21,7 +23,7 @@ export function createAcademyRouter() {
       const username = typeof req.body?.username === "string" ? req.body.username : "";
       const password = typeof req.body?.password === "string" ? req.body.password : "";
       const login = await context.service.login(username, password);
-      res.json({ ok: true, ...login });
+      res.json({ ok: true, data: loginView(login) });
     } catch (error) {
       sendAcademyError(res, error);
     } finally {
@@ -31,13 +33,13 @@ export function createAcademyRouter() {
 
   router.get("/session", academyAuthMiddleware, (req, res) => {
     const { session } = academyAuth(req);
-    res.json({ ok: true, user: session.user, mustChangePassword: session.mustChangePassword });
+    res.json({ ok: true, data: sessionView(session) });
   });
 
   router.post("/logout", academyAuthMiddleware, (req, res) => {
     try {
       academyAuth(req).service.logout(readBearerToken(req.headers.authorization));
-      res.json({ ok: true });
+      res.status(204).end();
     } catch (error) {
       sendAcademyError(res, error);
     }
@@ -46,14 +48,14 @@ export function createAcademyRouter() {
   router.post("/me/password", noStore, academyAuthMiddleware, async (req, res) => {
     const input = readPasswordInput(req.body);
     if (!input) {
-      res.status(400).json({ ok: false, error: "INVALID_PASSWORD_CHANGE" });
+      sendAcademyHttpError(res, 400, "VALIDATION_ERROR");
       return;
     }
 
     try {
       const { service } = academyAuth(req);
       await service.changeOwnPassword(readBearerToken(req.headers.authorization), input.currentPassword, input.newPassword);
-      res.json({ ok: true });
+      res.status(204).end();
     } catch (error) {
       sendAcademyError(res, error);
     }
@@ -69,6 +71,15 @@ const noStore: RequestHandler = (_req, res, next) => {
 
 function readBearerToken(header: string | undefined) {
   return header?.startsWith("Bearer ") ? header.slice("Bearer ".length).trim() : "";
+}
+
+function loginView(login: AcademyLogin): AcademyHttpLogin {
+  return { token: login.token, ...sessionView(login) };
+}
+
+function sessionView(session: AcademySession): AcademyHttpSession {
+  const { id: _id, ...user } = session.user;
+  return { expiresAt: session.expiresAt, user: { ...user, mustChangePassword: session.mustChangePassword } };
 }
 
 function readPasswordInput(input: unknown) {

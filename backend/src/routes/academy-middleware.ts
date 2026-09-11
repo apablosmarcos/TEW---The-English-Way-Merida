@@ -1,6 +1,6 @@
-import type { Request, RequestHandler } from "express";
+import type { Request, RequestHandler, Response } from "express";
 
-import { AcademyAuthError } from "../modules/academy/academy-errors.ts";
+import { academyErrorBody, type AcademyHttpErrorCode, AcademyAuthError } from "../modules/academy/academy-errors.ts";
 import { AuthRepository } from "../modules/academy/auth-repository.ts";
 import { AuthService } from "../modules/academy/auth-service.ts";
 import type { AcademySession } from "../modules/academy/academy-types.ts";
@@ -19,7 +19,7 @@ declare global {
 export const academyAuthMiddleware: RequestHandler = (req, res, next) => {
   const token = readBearerToken(req.headers.authorization);
   if (!token) {
-    res.status(401).json({ ok: false, error: "UNAUTHENTICATED" });
+    sendAcademyHttpError(res, 401, "AUTHENTICATION_REQUIRED");
     return;
   }
 
@@ -38,7 +38,7 @@ export const academyAuthMiddleware: RequestHandler = (req, res, next) => {
 
 export const requirePasswordChange: RequestHandler = (req, res, next) => {
   if (req.academyAuth?.session.mustChangePassword) {
-    res.status(403).json({ ok: false, error: "PASSWORD_CHANGE_REQUIRED" });
+    sendAcademyHttpError(res, 403, "PASSWORD_CHANGE_REQUIRED");
     return;
   }
   next();
@@ -46,7 +46,7 @@ export const requirePasswordChange: RequestHandler = (req, res, next) => {
 
 export const requireAcademyAdmin: RequestHandler = (req, res, next) => {
   if (req.academyAuth?.session.user.role !== "admin") {
-    res.status(403).json({ ok: false, error: "FORBIDDEN" });
+    sendAcademyHttpError(res, 403, "FORBIDDEN");
     return;
   }
   next();
@@ -66,10 +66,14 @@ export function readBearerToken(header: string | undefined) {
   return header?.startsWith("Bearer ") ? header.slice("Bearer ".length).trim() : "";
 }
 
-export function sendAcademyError(res: Parameters<RequestHandler>[1], error: unknown) {
+export function sendAcademyHttpError(res: Response, status: number, code: AcademyHttpErrorCode) {
+  res.status(status).json(academyErrorBody(code));
+}
+
+export function sendAcademyError(res: Response, error: unknown) {
   if (error instanceof AcademyAuthError) {
-    res.status(401).json({ ok: false, error: error.code });
+    sendAcademyHttpError(res, 401, error.code);
     return;
   }
-  res.status(500).json({ ok: false, error: "Internal server error" });
+  sendAcademyHttpError(res, 500, "INTERNAL_ERROR");
 }

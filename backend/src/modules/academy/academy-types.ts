@@ -14,6 +14,9 @@ export type AcademySession = {
 };
 
 export type AcademyLogin = AcademySession & { token: string };
+export type AcademyHttpUser = Omit<AcademyUser, "id"> & Pick<AcademySession, "mustChangePassword">;
+export type AcademyHttpSession = { expiresAt: string; user: AcademyHttpUser };
+export type AcademyHttpLogin = AcademyHttpSession & { token: string };
 
 export type AcademyUserState = "active" | "disabled" | "deleted";
 export type AcademyUserDetail = AcademyUser & { mustChangePassword: boolean; state: AcademyUserState; createdAt: string; updatedAt: string };

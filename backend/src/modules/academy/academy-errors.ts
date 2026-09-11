@@ -1,7 +1,23 @@
-export class AcademyAuthError extends Error {
-  readonly code: "AUTHENTICATION_FAILED" | "UNAUTHENTICATED";
+export type AcademyHttpErrorCode = "INVALID_CREDENTIALS" | "AUTHENTICATION_REQUIRED" | "PASSWORD_CHANGE_REQUIRED" | "FORBIDDEN" | "VALIDATION_ERROR" | "RATE_LIMITED" | "INTERNAL_ERROR";
 
-  constructor(code: "AUTHENTICATION_FAILED" | "UNAUTHENTICATED") {
+const messages: Record<AcademyHttpErrorCode, string> = {
+  INVALID_CREDENTIALS: "Invalid username or password.",
+  AUTHENTICATION_REQUIRED: "Authentication is required.",
+  PASSWORD_CHANGE_REQUIRED: "You must change your password.",
+  FORBIDDEN: "You do not have permission to perform this action.",
+  VALIDATION_ERROR: "The request is invalid.",
+  RATE_LIMITED: "Too many login attempts. Please try again later.",
+  INTERNAL_ERROR: "An unexpected error occurred.",
+};
+
+export function academyErrorBody(code: AcademyHttpErrorCode) {
+  return { ok: false as const, error: { code, message: messages[code] } };
+}
+
+export class AcademyAuthError extends Error {
+  readonly code: "INVALID_CREDENTIALS" | "AUTHENTICATION_REQUIRED";
+
+  constructor(code: AcademyAuthError["code"]) {
     super(code);
     this.code = code;
   }

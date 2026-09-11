@@ -23,7 +23,7 @@ async function setup(options: { disabled?: boolean; deleted?: boolean; mustChang
 }
 
 async function rejectsLogin(service: AuthService, username: string, password: string) {
-  await assert.rejects(service.login(username, password), (error) => error instanceof AcademyAuthError && error.code === "AUTHENTICATION_FAILED");
+  await assert.rejects(service.login(username, password), (error) => error instanceof AcademyAuthError && error.code === "INVALID_CREDENTIALS");
 }
 
 test("normalizes active usernames, creates opaque eight-hour sessions, and exposes forced-change state", async () => {
@@ -61,9 +61,9 @@ test("rolls active sessions, deletes expired tokens, supports logout, and keeps 
   setNow(new Date("2026-01-01T01:00:00.000Z"));
   assert.equal((await service.getSession(first.token)).expiresAt, "2026-01-01T09:00:00.000Z");
   await service.logout(first.token);
-  assert.throws(() => service.getSession(first.token), { code: "UNAUTHENTICATED" });
+  assert.throws(() => service.getSession(first.token), { code: "AUTHENTICATION_REQUIRED" });
   database.prepare("UPDATE sessions SET expiresAt = ? WHERE tokenHash != ?").run(start.toISOString(), "no-match");
-  assert.throws(() => service.getSession(second.token), { code: "UNAUTHENTICATED" });
+  assert.throws(() => service.getSession(second.token), { code: "AUTHENTICATION_REQUIRED" });
   assert.equal(database.prepare("SELECT COUNT(*) AS count FROM sessions").get()?.count, 0);
 });
 
@@ -73,8 +73,8 @@ test("password changes clear forced state and revoke every existing session", as
   const second = await service.login("ada", "correct password");
   await service.changeOwnPassword(first.token, "correct password", "new password");
 
-  assert.throws(() => service.getSession(first.token), { code: "UNAUTHENTICATED" });
-  assert.throws(() => service.getSession(second.token), { code: "UNAUTHENTICATED" });
+  assert.throws(() => service.getSession(first.token), { code: "AUTHENTICATION_REQUIRED" });
+  assert.throws(() => service.getSession(second.token), { code: "AUTHENTICATION_REQUIRED" });
   await rejectsLogin(service, "ada", "correct password");
   assert.equal((await service.login("ada", "new password")).mustChangePassword, false);
 });

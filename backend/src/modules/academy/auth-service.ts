@@ -63,9 +63,9 @@ function publicUser(user: { id: string; displayName: string; username: string; r
 }
 
 function failed(): never {
-  throw new AcademyAuthError("AUTHENTICATION_FAILED");
+  throw new AcademyAuthError("INVALID_CREDENTIALS");
 }
 
 function unauthenticated(): never {
-  throw new AcademyAuthError("UNAUTHENTICATED");
+  throw new AcademyAuthError("AUTHENTICATION_REQUIRED");
 }

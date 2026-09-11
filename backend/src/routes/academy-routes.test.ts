@@ -55,37 +55,90 @@ async function withServer(app: express.Express, action: (baseUrl: string) => Pro
   }
 }
 
+function academyError(code: "AUTHENTICATION_REQUIRED" | "FORBIDDEN" | "INTERNAL_ERROR" | "PASSWORD_CHANGE_REQUIRED" | "RATE_LIMITED") {
+  const messages = {
+    AUTHENTICATION_REQUIRED: "Authentication is required.",
+    FORBIDDEN: "You do not have permission to perform this action.",
+    INTERNAL_ERROR: "An unexpected error occurred.",
+    PASSWORD_CHANGE_REQUIRED: "You must change your password.",
+    RATE_LIMITED: "Too many login attempts. Please try again later.",
+  };
+  return { ok: false, error: { code, message: messages[code] } };
+}
+
 async function login(baseUrl: string, username: string, password: string) {
   const response = await fetch(`${baseUrl}/api/academy/login`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ username, password }),
   });
-  return { response, body: await response.json() as { token: string; mustChangePassword: boolean } };
+  const payload = await response.json() as { ok: boolean; data?: { token: string; expiresAt: string; user: { mustChangePassword: boolean } } };
+  const body = payload.ok ? { ...payload.data!, mustChangePassword: payload.data!.user.mustChangePassword } : payload;
+  return { response, body: body as { token: string; mustChangePassword: boolean } };
 }
 
-test("academy login, session, logout, and password change expose only safe session data", async () => {
+test("academy auth routes expose the HTTP session contract", async () => {
   const fixture = await setup([{ username: "ada", password: "correct password" }]);
   try {
     await withServer(createApp(), async (baseUrl) => {
-      const failed = await login(baseUrl, "ada", "wrong password");
-      assert.equal(failed.response.status, 401);
-      assert.deepEqual(failed.body, { ok: false, error: "AUTHENTICATION_FAILED" });
+      const invalidJson = await fetch(`${baseUrl}/api/academy/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: "{",
+      });
+      assert.equal(invalidJson.status, 400);
+      assert.deepEqual(await invalidJson.json(), {
+        ok: false,
+        error: { code: "VALIDATION_ERROR", message: "The request is invalid." },
+      });
 
+      const invalidCredentials = await fetch(`${baseUrl}/api/academy/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ username: "ada", password: "wrong password" }),
+      });
+      assert.equal(invalidCredentials.status, 401);
+      assert.deepEqual(await invalidCredentials.json(), {
+        ok: false,
+        error: { code: "INVALID_CREDENTIALS", message: "Invalid username or password." },
+      });
+
+      const loginResponse = await fetch(`${baseUrl}/api/academy/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ username: "ada", password: "correct password" }),
+      });
+      const loginBody = await loginResponse.json() as { data: { token: string; expiresAt: string; user: Record<string, unknown> } };
+      assert.equal(loginResponse.status, 200);
+      assert.equal(typeof loginBody.data.token, "string");
+      assert.equal(typeof loginBody.data.expiresAt, "string");
+      assert.deepEqual(loginBody.data.user, { displayName: "ada", username: "ada", role: "parent", mustChangePassword: false });
+      assert.equal("id" in loginBody.data.user, false);
+
+      const sessionResponse = await fetch(`${baseUrl}/api/academy/session`, { headers: { authorization: `Bearer ${loginBody.data.token}` } });
+      const sessionBody = await sessionResponse.json() as { data: { expiresAt: string; user: Record<string, unknown> } };
+      assert.equal(sessionResponse.status, 200);
+      assert.equal(Date.parse(sessionBody.data.expiresAt) >= Date.parse(loginBody.data.expiresAt), true);
+      assert.deepEqual(sessionBody.data.user, { displayName: "ada", username: "ada", role: "parent", mustChangePassword: false });
+      assert.equal("id" in sessionBody.data.user, false);
+
+      const logout = await fetch(`${baseUrl}/api/academy/logout`, { method: "POST", headers: { authorization: `Bearer ${loginBody.data.token}` } });
+      assert.equal(logout.status, 204);
+      assert.equal(await logout.text(), "");
+    });
+  } finally {
+    await fixture.close();
+  }
+});
+
+test("academy password change keeps session identity internal and revokes expired or replaced sessions", async () => {
+  const fixture = await setup([{ username: "ada", password: "correct password" }]);
+  try {
+    await withServer(createApp(), async (baseUrl) => {
       const signedIn = await login(baseUrl, "ada", "correct password");
       assert.equal(signedIn.response.status, 200);
       assert.equal(signedIn.response.headers.get("cache-control"), "no-store");
       assert.equal(typeof signedIn.body.token, "string");
-      assert.equal("passwordHash" in signedIn.body, false);
-      assert.equal("tokenHash" in signedIn.body, false);
-
-      const session = await fetch(`${baseUrl}/api/academy/session`, { headers: { authorization: `Bearer ${signedIn.body.token}` } });
-      assert.equal(session.status, 200);
-      assert.deepEqual(await session.json(), {
-        ok: true,
-        user: { id: "user-0", displayName: "ada", username: "ada", role: "parent" },
-        mustChangePassword: false,
-      });
 
       const expired = await login(baseUrl, "ada", "correct password");
       const database = openDatabase({ SQLITE_DB_PATH: fixture.sqliteDbPath });
@@ -97,25 +150,26 @@ test("academy login, session, logout, and password change expose only safe sessi
       }
       const expiredSession = await fetch(`${baseUrl}/api/academy/session`, { headers: { authorization: `Bearer ${expired.body.token}` } });
       assert.equal(expiredSession.status, 401);
-      assert.deepEqual(await expiredSession.json(), { ok: false, error: "UNAUTHENTICATED" });
+      assert.deepEqual(await expiredSession.json(), {
+        ok: false,
+        error: { code: "AUTHENTICATION_REQUIRED", message: "Authentication is required." },
+      });
 
       const changed = await fetch(`${baseUrl}/api/academy/me/password`, {
         method: "POST",
         headers: { authorization: `Bearer ${signedIn.body.token}`, "content-type": "application/json" },
         body: JSON.stringify({ currentPassword: "correct password", newPassword: "new password" }),
       });
-      assert.equal(changed.status, 200);
+      assert.equal(changed.status, 204);
       assert.equal(changed.headers.get("cache-control"), "no-store");
-      assert.deepEqual(await changed.json(), { ok: true });
+      assert.equal(await changed.text(), "");
 
       const revoked = await fetch(`${baseUrl}/api/academy/session`, { headers: { authorization: `Bearer ${signedIn.body.token}` } });
       assert.equal(revoked.status, 401);
-      assert.deepEqual(await revoked.json(), { ok: false, error: "UNAUTHENTICATED" });
-
-      const renewed = await login(baseUrl, "ada", "new password");
-      const loggedOut = await fetch(`${baseUrl}/api/academy/logout`, { method: "POST", headers: { authorization: `Bearer ${renewed.body.token}` } });
-      assert.equal(loggedOut.status, 200);
-      assert.deepEqual(await loggedOut.json(), { ok: true });
+      assert.deepEqual(await revoked.json(), {
+        ok: false,
+        error: { code: "AUTHENTICATION_REQUIRED", message: "Authentication is required." },
+      });
     });
   } finally {
     await fixture.close();
@@ -134,7 +188,7 @@ test("academy storage failures return a generic safe error", async () => {
       });
       assert.equal(response.status, 500);
       assert.equal(response.headers.get("cache-control"), "no-store");
-      assert.deepEqual(await response.json(), { ok: false, error: "Internal server error" });
+      assert.deepEqual(await response.json(), academyError("INTERNAL_ERROR"));
     });
   } finally {
     if (originalPath === undefined) delete process.env.SQLITE_DB_PATH;
@@ -160,12 +214,12 @@ test("academy middleware blocks forced-password users and enforces administrator
       assert.equal(forcedSession.status, 200);
       const blocked = await fetch(`${baseUrl}/test/protected`, { headers: { authorization: `Bearer ${forced.body.token}` } });
       assert.equal(blocked.status, 403);
-      assert.deepEqual(await blocked.json(), { ok: false, error: "PASSWORD_CHANGE_REQUIRED" });
+      assert.deepEqual(await blocked.json(), academyError("PASSWORD_CHANGE_REQUIRED"));
 
       const parent = await login(baseUrl, "parent", "password");
       const denied = await fetch(`${baseUrl}/test/admin`, { headers: { authorization: `Bearer ${parent.body.token}` } });
       assert.equal(denied.status, 403);
-      assert.deepEqual(await denied.json(), { ok: false, error: "FORBIDDEN" });
+      assert.deepEqual(await denied.json(), academyError("FORBIDDEN"));
 
       const admin = await login(baseUrl, "admin", "password");
       const allowed = await fetch(`${baseUrl}/test/admin`, { headers: { authorization: `Bearer ${admin.body.token}` } });
@@ -186,12 +240,12 @@ test("academy administrator user routes enforce lifecycle boundaries and keep pa
     await withServer(createApp(), async (baseUrl) => {
       const unauthenticated = await fetch(`${baseUrl}/api/academy/admin/users`);
       assert.equal(unauthenticated.status, 401);
-      assert.deepEqual(await unauthenticated.json(), { ok: false, error: "UNAUTHENTICATED" });
+      assert.deepEqual(await unauthenticated.json(), academyError("AUTHENTICATION_REQUIRED"));
 
       const parent = await login(baseUrl, "parent", "password");
       const denied = await fetch(`${baseUrl}/api/academy/admin/users`, { headers: { authorization: `Bearer ${parent.body.token}` } });
       assert.equal(denied.status, 403);
-      assert.deepEqual(await denied.json(), { ok: false, error: "FORBIDDEN" });
+      assert.deepEqual(await denied.json(), academyError("FORBIDDEN"));
 
       const admin = await login(baseUrl, "admin", "password");
       const headers = { authorization: `Bearer ${admin.body.token}`, "content-type": "application/json" };
@@ -292,10 +346,10 @@ test("academy publication routes enforce admin lifecycle and parent-safe reads",
 
       const denied = await fetch(`${baseUrl}/api/academy/admin/categories`, { headers: { authorization: `Bearer ${parent.body.token}` } });
       assert.equal(denied.status, 403);
-      assert.deepEqual(await denied.json(), { ok: false, error: "FORBIDDEN" });
+      assert.deepEqual(await denied.json(), academyError("FORBIDDEN"));
       const forcedDenied = await fetch(`${baseUrl}/api/academy/admin/categories`, { headers: { authorization: `Bearer ${forced.body.token}` } });
       assert.equal(forcedDenied.status, 403);
-      assert.deepEqual(await forcedDenied.json(), { ok: false, error: "PASSWORD_CHANGE_REQUIRED" });
+      assert.deepEqual(await forcedDenied.json(), academyError("PASSWORD_CHANGE_REQUIRED"));
 
       const invalidCategory = await fetch(`${baseUrl}/api/academy/admin/categories`, { method: "POST", headers, body: JSON.stringify({ displayName: " " }) });
       assert.equal(invalidCategory.status, 400);
@@ -517,7 +571,7 @@ test("academy login rate-limits each IP after ten attempts", async () => {
       const limited = await login(baseUrl, "ada", "wrong password");
       assert.equal(limited.response.status, 429);
       assert.equal(limited.response.headers.get("retry-after"), "900");
-      assert.deepEqual(limited.body, { ok: false, error: "TOO_MANY_REQUESTS" });
+      assert.deepEqual(limited.body, academyError("RATE_LIMITED"));
     });
   } finally {
     await fixture.close();
