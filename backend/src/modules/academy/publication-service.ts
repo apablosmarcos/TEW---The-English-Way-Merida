@@ -41,7 +41,12 @@ export class PublicationService {
   getAdminPost(id: string): AdminPostDetail | undefined { const post = this.publications.post(id); return post && { ...admin(post), attachments: this.attachmentMetadata(id, true) }; }
   listAdminPosts() { return this.publications.listAdminPosts().map(admin); }
   getParentPost(id: string): ParentPostDetail | undefined { const post = this.publications.parentPost(id); return post && { ...parent(post), attachments: this.attachmentMetadata(id, false).map(parentAttachment) }; }
-  listParentPosts(options: PublicationListOptions = {}): PublicationList { const page = positive(options.page, 1), pageSize = Math.min(100, positive(options.pageSize, 25)), result = this.publications.listParentPosts(options, page, pageSize); return { items: result.items.map(parent), total: result.total, page, pageSize }; }
+  listParentPosts(options: PublicationListOptions = {}): PublicationList {
+    const pageSize = Math.min(50, positive(options.pageSize, 20));
+    const page = Math.min(Math.floor(Number.MAX_SAFE_INTEGER / pageSize) + 1, positive(options.page, 1));
+    const result = this.publications.listParentPosts(options, page, pageSize);
+    return { categories: this.publications.listParentCategories(), items: result.items.map(parent), total: result.total, page, pageSize };
+  }
 
   private visibility(actorUserId: string | null, id: string, visibility: PublicationVisibility, action: string) { const now = this.clock(); return this.publications.transaction(() => { this.mutable(id); const post = this.publications.setVisibility(id, visibility, now); this.audit.append(actorUserId, action, id, now, "post"); return admin(post); }); }
   private attachmentMetadata(postId: string, includeDeleted: boolean) { return this.attachments?.list(postId, includeDeleted).map(attachment) ?? []; }

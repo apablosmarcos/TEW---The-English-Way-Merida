@@ -369,10 +369,14 @@ test("academy publication routes enforce admin lifecycle and parent-safe reads",
       const adminDetail = await fetch(`${baseUrl}/api/academy/admin/posts/${post.data.id}`, { headers });
       assert.equal(adminDetail.status, 200);
       assert.match(JSON.stringify(await adminDetail.json()), /markdownSource/);
+      const missingAdminDetail = await fetch(`${baseUrl}/api/academy/admin/posts/${randomUUID()}`, { headers });
+      assert.equal(missingAdminDetail.status, 404);
+      assert.deepEqual(await missingAdminDetail.json(), { ok: false, error: { code: "POST_NOT_FOUND", message: "The post was not found." } });
 
       const parentList = await fetch(`${baseUrl}/api/academy/posts?search=100%25_%5C&categoryId=${categoryBody.data.id}&page=1&pageSize=1`, { headers: { authorization: `Bearer ${parent.body.token}` } });
       assert.equal(parentList.status, 200);
-      const parentListBody = await parentList.json() as { data: { items: Array<Record<string, unknown>>; pagination: { page: number; pageSize: number; total: number } } };
+      const parentListBody = await parentList.json() as { data: { categories: Array<{ id: string }>; items: Array<Record<string, unknown>>; pagination: { page: number; pageSize: number; total: number } } };
+      assert.deepEqual(parentListBody.data.categories.map(({ id }) => id), [categoryBody.data.id]);
       assert.equal(parentListBody.data.pagination.page, 1);
       assert.deepEqual(parentListBody.data.pagination, { page: 1, pageSize: 1, total: 1, pageCount: 1 });
       assert.equal(parentListBody.data.items[0]?.id, post.data.id);
@@ -393,7 +397,7 @@ test("academy publication routes enforce admin lifecycle and parent-safe reads",
       assert.equal(invalidStatus.status, 400);
       const staleParentDetail = await fetch(`${baseUrl}/api/academy/posts/${post.data.id}`, { headers: { authorization: `Bearer ${parent.body.token}` } });
       assert.equal(staleParentDetail.status, 404);
-      assert.deepEqual(await staleParentDetail.json(), { ok: false, error: "POST_NOT_FOUND" });
+      assert.deepEqual(await staleParentDetail.json(), { ok: false, error: { code: "POST_NOT_FOUND", message: "The post was not found." } });
 
       const shown = await fetch(`${baseUrl}/api/academy/admin/posts/${post.data.id}/show`, { method: "POST", headers });
       assert.equal(shown.status, 200);
@@ -403,14 +407,51 @@ test("academy publication routes enforce admin lifecycle and parent-safe reads",
       assert.equal(removed.status, 204);
       const restore = await fetch(`${baseUrl}/api/academy/admin/posts/${post.data.id}/show`, { method: "POST", headers });
       assert.equal(restore.status, 404);
-      assert.deepEqual(await restore.json(), { ok: false, error: "POST_DELETED" });
+      assert.deepEqual(await restore.json(), { ok: false, error: { code: "POST_DELETED", message: "The post has been deleted." } });
       const categoryInUse = await fetch(`${baseUrl}/api/academy/admin/categories/${categoryBody.data.id}`, { method: "DELETE", headers });
       assert.equal(categoryInUse.status, 409);
-      assert.deepEqual(await categoryInUse.json(), { ok: false, error: "CATEGORY_IN_USE" });
+      assert.deepEqual(await categoryInUse.json(), { ok: false, error: { code: "CATEGORY_IN_USE", message: "The category is in use." } });
     });
   } finally {
     await fixture.close();
   }
+});
+
+test("academy post and attachment errors use structured domain responses", async () => {
+  const fixture = await setup([
+    { username: "admin", password: "password", role: "admin" },
+    { username: "parent", password: "password" },
+  ]);
+  try {
+    await withServer(createApp(), async (baseUrl) => {
+      const admin = await login(baseUrl, "admin", "password");
+      const parent = await login(baseUrl, "parent", "password");
+      const parentHeaders = { authorization: `Bearer ${parent.body.token}` };
+      const adminHeaders = { authorization: `Bearer ${admin.body.token}`, "content-type": "application/json" };
+
+      const invalidPage = await fetch(`${baseUrl}/api/academy/posts?page=0`, { headers: parentHeaders });
+      assert.equal(invalidPage.status, 400);
+      assert.deepEqual(await invalidPage.json(), { ok: false, error: { code: "VALIDATION_ERROR", message: "The request is invalid." } });
+      const oversizedPage = await fetch(`${baseUrl}/api/academy/posts?pageSize=51`, { headers: parentHeaders });
+      assert.equal(oversizedPage.status, 400);
+      assert.deepEqual(await oversizedPage.json(), { ok: false, error: { code: "VALIDATION_ERROR", message: "The request is invalid." } });
+      const unsafePage = await fetch(`${baseUrl}/api/academy/posts?page=180143985094821`, { headers: parentHeaders });
+      assert.equal(unsafePage.status, 400);
+      assert.deepEqual(await unsafePage.json(), { ok: false, error: { code: "VALIDATION_ERROR", message: "The request is invalid." } });
+      const missingPost = await fetch(`${baseUrl}/api/academy/posts/${randomUUID()}`, { headers: parentHeaders });
+      assert.equal(missingPost.status, 404);
+      assert.deepEqual(await missingPost.json(), { ok: false, error: { code: "POST_NOT_FOUND", message: "The post was not found." } });
+      const unknownPostAction = await fetch(`${baseUrl}/api/academy/admin/posts/${randomUUID()}/unknown`, { method: "POST", headers: adminHeaders });
+      assert.equal(unknownPostAction.status, 404);
+      assert.deepEqual(await unknownPostAction.json(), { ok: false, error: { code: "POST_NOT_FOUND", message: "The post was not found." } });
+      const invalidAttachment = await fetch(`${baseUrl}/api/academy/admin/attachments/not-a-uuid`, { method: "PATCH", headers: adminHeaders, body: JSON.stringify({ title: "Name" }) });
+      assert.equal(invalidAttachment.status, 400);
+      assert.deepEqual(await invalidAttachment.json(), { ok: false, error: { code: "VALIDATION_ERROR", message: "The request is invalid." } });
+      const missingAttachment = await fetch(`${baseUrl}/api/academy/admin/attachments/${randomUUID()}`, { method: "DELETE", headers: adminHeaders });
+      assert.equal(missingAttachment.status, 404);
+      assert.deepEqual(await missingAttachment.json(), { ok: false, error: { code: "ATTACHMENT_NOT_FOUND", message: "The attachment was not found." } });
+    });
+  } finally { await fixture.close(); }
 });
 
 test("academy attachment upload streams one valid file to opaque durable storage", async () => {
@@ -536,7 +577,7 @@ test("academy attachment streams authenticate, recheck access, and hide storage 
       await rm(join(fixture.fileStoragePath, (await readdir(fixture.fileStoragePath))[0]!), { force: true });
       const missing = await fetch(previewUrl, { headers: { authorization: `Bearer ${admin.body.token}` } });
       assert.equal(missing.status, 500);
-      assert.equal((await missing.arrayBuffer()).byteLength, 0);
+      assert.deepEqual(await missing.json(), { ok: false, error: { code: "INTERNAL_ERROR", message: "An unexpected error occurred." } });
     });
   } finally { await fixture.close(); }
 });

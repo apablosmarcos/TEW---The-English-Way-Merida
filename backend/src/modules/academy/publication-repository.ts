@@ -16,6 +16,7 @@ export class PublicationRepository {
 
   transaction<T>(action: () => T) { this.database.exec("BEGIN IMMEDIATE"); try { const result = action(); this.database.exec("COMMIT"); return result; } catch (error) { this.database.exec("ROLLBACK"); throw error; } }
   listCategories() { return this.database.prepare("SELECT id, displayName, createdAt, updatedAt FROM categories ORDER BY displayName COLLATE NOCASE, id").all() as AcademyCategory[]; }
+  listParentCategories() { return this.database.prepare("SELECT c.id, c.displayName, c.createdAt, c.updatedAt FROM categories c WHERE EXISTS (SELECT 1 FROM posts p WHERE p.categoryId = c.id AND p.visibility = 'visible' AND p.deletedAt IS NULL) ORDER BY c.displayName COLLATE NOCASE, c.id").all() as AcademyCategory[]; }
   category(id: string) { return this.database.prepare("SELECT id, displayName, createdAt, updatedAt FROM categories WHERE id = ?").get(id) as AcademyCategory | undefined; }
   categoryNameTaken(normalizedName: string, exceptId: string | null = null) { return !!this.database.prepare("SELECT 1 FROM categories WHERE normalizedName = ? AND (? IS NULL OR id != ?)").get(normalizedName, exceptId, exceptId); }
   createCategory(id: string, displayName: string, normalizedName: string, now: string) { this.database.prepare("INSERT INTO categories (id, displayName, normalizedName, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)").run(id, displayName, normalizedName, now, now); return this.category(id)!; }

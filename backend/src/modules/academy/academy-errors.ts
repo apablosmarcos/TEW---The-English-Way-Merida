@@ -1,4 +1,7 @@
-export type AcademyHttpErrorCode = "INVALID_CREDENTIALS" | "AUTHENTICATION_REQUIRED" | "PASSWORD_CHANGE_REQUIRED" | "FORBIDDEN" | "VALIDATION_ERROR" | "RATE_LIMITED" | "INTERNAL_ERROR";
+export type AcademyHttpErrorCode =
+  | "INVALID_CREDENTIALS" | "AUTHENTICATION_REQUIRED" | "PASSWORD_CHANGE_REQUIRED" | "FORBIDDEN" | "VALIDATION_ERROR" | "RATE_LIMITED" | "INTERNAL_ERROR"
+  | "CATEGORY_IN_USE" | "CATEGORY_NAME_TAKEN" | "CATEGORY_NOT_FOUND" | "POST_DELETED" | "POST_NOT_FOUND"
+  | "ATTACHMENT_DELETED" | "ATTACHMENT_LIMIT" | "ATTACHMENT_NOT_FOUND" | "UNSUPPORTED_FILE_TYPE" | "UPLOAD_TOO_LARGE";
 
 const messages: Record<AcademyHttpErrorCode, string> = {
   INVALID_CREDENTIALS: "Invalid username or password.",
@@ -8,6 +11,16 @@ const messages: Record<AcademyHttpErrorCode, string> = {
   VALIDATION_ERROR: "The request is invalid.",
   RATE_LIMITED: "Too many login attempts. Please try again later.",
   INTERNAL_ERROR: "An unexpected error occurred.",
+  CATEGORY_IN_USE: "The category is in use.",
+  CATEGORY_NAME_TAKEN: "The category name is already in use.",
+  CATEGORY_NOT_FOUND: "The category was not found.",
+  POST_DELETED: "The post has been deleted.",
+  POST_NOT_FOUND: "The post was not found.",
+  ATTACHMENT_DELETED: "The attachment has been deleted.",
+  ATTACHMENT_LIMIT: "The attachment limit has been reached.",
+  ATTACHMENT_NOT_FOUND: "The attachment was not found.",
+  UNSUPPORTED_FILE_TYPE: "The file type is not supported.",
+  UPLOAD_TOO_LARGE: "The upload is too large.",
 };
 
 export function academyErrorBody(code: AcademyHttpErrorCode) {

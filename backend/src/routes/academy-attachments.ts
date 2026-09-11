@@ -3,7 +3,7 @@ import { pipeline } from "node:stream/promises";
 import Busboy from "busboy";
 import { Router, type Request, type Response } from "express";
 
-import { AttachmentError } from "../modules/academy/academy-errors.ts";
+import { academyErrorBody, AttachmentError } from "../modules/academy/academy-errors.ts";
 import { AttachmentRepository } from "../modules/academy/attachment-repository.ts";
 import { AttachmentService } from "../modules/academy/attachment-service.ts";
 import { AuditRepository } from "../modules/academy/audit-repository.ts";
@@ -15,7 +15,7 @@ import { uuid } from "./academy-posts.ts";
 export function createAcademyAttachmentsRouter() {
   const router = Router();
   router.post("/:id/attachments", async (req, res) => {
-    if (!uuid(req.params.id)) { res.status(400).json({ ok: false, error: "VALIDATION_ERROR" }); return; }
+    if (!uuid(req.params.id)) { sendError(res, new AttachmentError("VALIDATION_ERROR")); return; }
     const storage = new FileStorage(resolveFileStoragePath(process.env));
     try {
       const input = await parseUpload(req, storage);
@@ -38,17 +38,17 @@ export function createAcademyAttachmentStreamsRouter() {
 
 function streamAttachment(disposition: "inline" | "attachment") {
   return async (req: Request, res: Response) => {
-    if (!uuid(req.params.id)) { res.status(400).json({ ok: false, error: "VALIDATION_ERROR" }); return; }
+    if (!uuid(req.params.id)) { sendError(res, new AttachmentError("VALIDATION_ERROR")); return; }
     let database: ReturnType<typeof openDatabase> | undefined;
     try {
       database = openDatabase(process.env);
       const attachment = new AttachmentRepository(database).streamable(req.params.id, academyAuth(req).session.user.role === "admin");
-      if (!attachment) { res.status(404).json({ ok: false, error: "ATTACHMENT_NOT_FOUND" }); return; }
+      if (!attachment) { sendError(res, new AttachmentError("ATTACHMENT_NOT_FOUND")); return; }
       const storage = new FileStorage(resolveFileStoragePath(process.env)), path = storage.finalPath(attachment.storageId, attachment.extension);
-      if (!await storage.existsPath(path)) { res.status(500).end(); return; }
+      if (!await storage.existsPath(path)) { sendError(res, new Error("Attachment file is unavailable")); return; }
       res.set({ "Content-Type": attachmentMimeType(attachment.extension), "X-Content-Type-Options": "nosniff", "Cache-Control": "private, no-store", "Content-Disposition": `${disposition}; filename="${attachmentFilename(attachment.visibleTitle, attachment.materialOrdinal, attachment.extension)}"` });
       createReadStream(path).on("error", () => res.destroy()).pipe(res);
-    } catch { if (!res.headersSent) res.status(500).end(); }
+    } catch (error) { if (!res.headersSent) sendError(res, error); else res.destroy(); }
     finally { database?.close(); }
   };
 }
@@ -66,11 +66,11 @@ export function createAcademyAttachmentLifecycleRouter() {
   const router = Router();
   router.patch("/:id", (req, res) => {
     const title = renameTitle(req.body);
-    if (!uuid(req.params.id) || title === null) { res.status(400).json({ ok: false, error: "VALIDATION_ERROR" }); return; }
+    if (!uuid(req.params.id) || title === null) { sendError(res, new AttachmentError("VALIDATION_ERROR")); return; }
     return withAttachments(res, (service) => { res.json({ ok: true, data: service.rename(academyAuth(req).session.user.id, req.params.id, { title }) }); });
   });
   router.delete("/:id", (req, res) => {
-    if (!uuid(req.params.id)) { res.status(400).json({ ok: false, error: "VALIDATION_ERROR" }); return; }
+    if (!uuid(req.params.id)) { sendError(res, new AttachmentError("VALIDATION_ERROR")); return; }
     return withAttachments(res, (service) => { service.delete(academyAuth(req).session.user.id, req.params.id); res.status(204).end(); });
   });
   return router;
@@ -120,7 +120,7 @@ async function parseUpload(req: Request, storage: FileStorage) {
 }
 
 function sendError(res: Response, error: unknown) {
-  if (!(error instanceof AttachmentError)) { res.status(500).json({ ok: false, error: "Internal server error" }); return; }
+  if (!(error instanceof AttachmentError)) { res.status(500).json(academyErrorBody("INTERNAL_ERROR")); return; }
   const status = error.code === "VALIDATION_ERROR" ? 400 : error.code === "ATTACHMENT_LIMIT" || error.code === "ATTACHMENT_DELETED" || error.code === "POST_DELETED" ? 409 : error.code === "ATTACHMENT_NOT_FOUND" || error.code === "POST_NOT_FOUND" ? 404 : error.code === "UPLOAD_TOO_LARGE" ? 413 : 415;
-  res.status(status).json({ ok: false, error: error.code });
+  res.status(status).json(academyErrorBody(error.code));
 }

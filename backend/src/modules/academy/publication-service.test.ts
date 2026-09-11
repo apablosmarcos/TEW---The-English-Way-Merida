@@ -77,6 +77,25 @@ test("keeps parent reads visible, literal, paginated, and metadata-safe while ad
   assert.equal(service.getAdminPost(deleted.id)?.deletedAt !== null, true);
 });
 
+test("derives parent categories from currently visible posts and bounds parent pagination", () => {
+  const { service } = setup();
+  const visibleCategory = service.createCategory("admin", { displayName: "Visible" });
+  const hiddenCategory = service.createCategory("admin", { displayName: "Hidden" });
+  const deletedCategory = service.createCategory("admin", { displayName: "Deleted" });
+  const visible = service.createPost("admin", { title: "Visible", markdownSource: "body", categoryId: visibleCategory.id });
+  const hidden = service.createPost("admin", { title: "Hidden", markdownSource: "body", categoryId: hiddenCategory.id });
+  service.hidePost("admin", hidden.id);
+  const deleted = service.createPost("admin", { title: "Deleted", markdownSource: "body", categoryId: deletedCategory.id });
+  service.deletePost("admin", deleted.id);
+
+  const feed = service.listParentPosts({ pageSize: 100 });
+  assert.deepEqual(feed.categories.map(({ id }) => id), [visibleCategory.id]);
+  assert.deepEqual(feed.items.map(({ id }) => id), [visible.id]);
+  assert.equal(feed.pageSize, 50);
+  assert.equal(service.listParentPosts().pageSize, 20);
+  assert.deepEqual(service.listParentPosts({ categoryId: hiddenCategory.id }).items, []);
+});
+
 test("includes stable attachment metadata in details but completely hides deleted attachments from parents", () => {
   const { database, service } = setup();
   const post = service.createPost("admin", { title: "Post", markdownSource: "body" });

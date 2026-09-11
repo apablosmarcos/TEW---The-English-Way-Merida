@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from "express";
 
 import type { PostEditInput, PostInput, PublicationVisibility } from "../modules/academy/academy-types.ts";
 import { academyAuth } from "./academy-middleware.ts";
-import { uuid, validationError, withId, withPublications } from "./academy-posts.ts";
+import { notFound, uuid, validationError, withId, withPublications } from "./academy-posts.ts";
 
 export function createAcademyAdminCategoriesRouter() {
   const router = Router();
@@ -35,7 +35,7 @@ export function createAcademyAdminPostsRouter() {
   });
   router.get("/:id", (req, res) => withId(req, res, (id) => withPublications(res, (service) => {
     const post = service.getAdminPost(id);
-    if (!post) { res.status(404).json({ ok: false, error: "POST_NOT_FOUND" }); return; }
+    if (!post) { notFound(res); return; }
     res.json({ ok: true, data: post });
   })));
   router.patch("/:id", (req, res) => {
@@ -45,7 +45,7 @@ export function createAcademyAdminPostsRouter() {
   });
   router.post("/:id/:action", (req, res) => withId(req, res, (id) => {
     const action = req.params.action;
-    if (action !== "show" && action !== "hide") { res.status(404).end(); return; }
+    if (action !== "show" && action !== "hide") { notFound(res); return; }
     return withPublications(res, (service) => { res.json({ ok: true, data: action === "show" ? service.showPost(academyAuth(req).session.user.id, id) : service.hidePost(academyAuth(req).session.user.id, id) }); });
   }));
   router.delete("/:id", (req, res) => withId(req, res, (id) => withPublications(res, (service) => { service.deletePost(academyAuth(req).session.user.id, id); res.status(204).end(); })));
