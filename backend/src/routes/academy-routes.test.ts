@@ -273,6 +273,88 @@ test("academy administrator user routes enforce lifecycle boundaries and keep pa
   }
 });
 
+test("academy publication routes enforce admin lifecycle and parent-safe reads", async () => {
+  const fixture = await setup([
+    { username: "admin", password: "password", role: "admin" },
+    { username: "parent", password: "password" },
+    { username: "forced", password: "password", role: "admin", mustChangePassword: true },
+  ]);
+  try {
+    await withServer(createApp(), async (baseUrl) => {
+      const admin = await login(baseUrl, "admin", "password");
+      const parent = await login(baseUrl, "parent", "password");
+      const forced = await login(baseUrl, "forced", "password");
+      const headers = { authorization: `Bearer ${admin.body.token}`, "content-type": "application/json" };
+
+      const denied = await fetch(`${baseUrl}/api/academy/admin/categories`, { headers: { authorization: `Bearer ${parent.body.token}` } });
+      assert.equal(denied.status, 403);
+      assert.deepEqual(await denied.json(), { ok: false, error: "FORBIDDEN" });
+      const forcedDenied = await fetch(`${baseUrl}/api/academy/admin/categories`, { headers: { authorization: `Bearer ${forced.body.token}` } });
+      assert.equal(forcedDenied.status, 403);
+      assert.deepEqual(await forcedDenied.json(), { ok: false, error: "PASSWORD_CHANGE_REQUIRED" });
+
+      const invalidCategory = await fetch(`${baseUrl}/api/academy/admin/categories`, { method: "POST", headers, body: JSON.stringify({ displayName: " " }) });
+      assert.equal(invalidCategory.status, 400);
+      const category = await fetch(`${baseUrl}/api/academy/admin/categories`, { method: "POST", headers, body: JSON.stringify({ displayName: " News " }) });
+      assert.equal(category.status, 201);
+      const categoryBody = await category.json() as { data: { id: string; displayName: string } };
+      assert.equal(categoryBody.data.displayName, "News");
+      const changedCategory = await fetch(`${baseUrl}/api/academy/admin/categories/${categoryBody.data.id}`, { method: "PATCH", headers, body: JSON.stringify({ displayName: "Updates" }) });
+      assert.equal(changedCategory.status, 200);
+
+      const invalidPost = await fetch(`${baseUrl}/api/academy/admin/posts`, { method: "POST", headers, body: JSON.stringify({ title: "Missing source" }) });
+      assert.equal(invalidPost.status, 400);
+      const created = await fetch(`${baseUrl}/api/academy/admin/posts`, { method: "POST", headers, body: JSON.stringify({ title: "100%_\\ story", markdownSource: "<img src=x onerror=1>", categoryId: categoryBody.data.id }) });
+      assert.equal(created.status, 201);
+      const post = await created.json() as { data: { id: string; visibility: string } };
+      assert.equal(post.data.visibility, "visible");
+      const adminDetail = await fetch(`${baseUrl}/api/academy/admin/posts/${post.data.id}`, { headers });
+      assert.equal(adminDetail.status, 200);
+      assert.match(JSON.stringify(await adminDetail.json()), /markdownSource/);
+
+      const parentList = await fetch(`${baseUrl}/api/academy/posts?search=100%25_%5C&categoryId=${categoryBody.data.id}&page=1&pageSize=1`, { headers: { authorization: `Bearer ${parent.body.token}` } });
+      assert.equal(parentList.status, 200);
+      const parentListBody = await parentList.json() as { data: { items: Array<Record<string, unknown>>; pagination: { page: number; pageSize: number; total: number } } };
+      assert.equal(parentListBody.data.pagination.page, 1);
+      assert.deepEqual(parentListBody.data.pagination, { page: 1, pageSize: 1, total: 1, pageCount: 1 });
+      assert.equal(parentListBody.data.items[0]?.id, post.data.id);
+      assert.match(parentListBody.data.items[0]?.renderedMarkdown as string, /&lt;img/);
+      assert.equal("markdownSource" in (parentListBody.data.items[0] ?? {}), false);
+      assert.equal("visibility" in (parentListBody.data.items[0] ?? {}), false);
+      assert.equal("deletedAt" in (parentListBody.data.items[0] ?? {}), false);
+      assert.equal("attachments" in (parentListBody.data.items[0] ?? {}), false);
+      const invalidParentQuery = await fetch(`${baseUrl}/api/academy/posts?page=0`, { headers: { authorization: `Bearer ${parent.body.token}` } });
+      assert.equal(invalidParentQuery.status, 400);
+
+      const hidden = await fetch(`${baseUrl}/api/academy/admin/posts/${post.data.id}/hide`, { method: "POST", headers });
+      assert.equal(hidden.status, 200);
+      const hiddenAdminList = await fetch(`${baseUrl}/api/academy/admin/posts?status=hidden`, { headers });
+      assert.equal(hiddenAdminList.status, 200);
+      assert.equal((await hiddenAdminList.json() as { data: { items: Array<{ id: string }> } }).data.items[0]?.id, post.data.id);
+      const invalidStatus = await fetch(`${baseUrl}/api/academy/admin/posts?status=unknown`, { headers });
+      assert.equal(invalidStatus.status, 400);
+      const staleParentDetail = await fetch(`${baseUrl}/api/academy/posts/${post.data.id}`, { headers: { authorization: `Bearer ${parent.body.token}` } });
+      assert.equal(staleParentDetail.status, 404);
+      assert.deepEqual(await staleParentDetail.json(), { ok: false, error: "POST_NOT_FOUND" });
+
+      const shown = await fetch(`${baseUrl}/api/academy/admin/posts/${post.data.id}/show`, { method: "POST", headers });
+      assert.equal(shown.status, 200);
+      const edited = await fetch(`${baseUrl}/api/academy/admin/posts/${post.data.id}`, { method: "PATCH", headers, body: JSON.stringify({ title: "Edited" }) });
+      assert.equal(edited.status, 200);
+      const removed = await fetch(`${baseUrl}/api/academy/admin/posts/${post.data.id}`, { method: "DELETE", headers });
+      assert.equal(removed.status, 204);
+      const restore = await fetch(`${baseUrl}/api/academy/admin/posts/${post.data.id}/show`, { method: "POST", headers });
+      assert.equal(restore.status, 404);
+      assert.deepEqual(await restore.json(), { ok: false, error: "POST_DELETED" });
+      const categoryInUse = await fetch(`${baseUrl}/api/academy/admin/categories/${categoryBody.data.id}`, { method: "DELETE", headers });
+      assert.equal(categoryInUse.status, 409);
+      assert.deepEqual(await categoryInUse.json(), { ok: false, error: "CATEGORY_IN_USE" });
+    });
+  } finally {
+    await fixture.close();
+  }
+});
+
 test("academy login rate-limits each IP after ten attempts", async () => {
   const fixture = await setup([{ username: "ada", password: "correct password" }]);
   try {
