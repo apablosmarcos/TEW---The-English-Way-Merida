@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { createHash, randomUUID } from "node:crypto";
-import { rm } from "node:fs/promises";
+import { readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -29,12 +29,16 @@ async function setup(users: Array<{ id?: string; username: string; password: str
     database.close();
   }
 
+  const fileStoragePath = join(tmpdir(), `academy-uploads-${randomUUID()}`);
   process.env.SQLITE_DB_PATH = sqliteDbPath;
+  process.env.FILE_STORAGE_PATH = fileStoragePath;
   return {
-    sqliteDbPath,
+    sqliteDbPath, fileStoragePath,
     async close() {
       delete process.env.SQLITE_DB_PATH;
+      delete process.env.FILE_STORAGE_PATH;
       await rm(sqliteDbPath, { force: true });
+      await rm(fileStoragePath, { recursive: true, force: true });
     },
   };
 }
@@ -353,6 +357,41 @@ test("academy publication routes enforce admin lifecycle and parent-safe reads",
   } finally {
     await fixture.close();
   }
+});
+
+test("academy attachment upload streams one valid file to opaque durable storage", async () => {
+  const fixture = await setup([{ username: "admin", password: "password", role: "admin" }]);
+  try {
+    await withServer(createApp(), async (baseUrl) => {
+      const admin = await login(baseUrl, "admin", "password");
+      const headers = { authorization: `Bearer ${admin.body.token}`, "content-type": "application/json" };
+      const post = await fetch(`${baseUrl}/api/academy/admin/posts`, { method: "POST", headers, body: JSON.stringify({ title: "Post", markdownSource: "" }) });
+      const { data } = await post.json() as { data: { id: string } };
+      const form = new FormData();
+      form.append("file", new Blob(["%PDF-1.7"], { type: "application/pdf" }), "untrusted.pdf");
+      form.append("title", "Material");
+      const uploaded = await fetch(`${baseUrl}/api/academy/admin/posts/${data.id}/attachments`, { method: "POST", headers: { authorization: `Bearer ${admin.body.token}` }, body: form });
+      assert.equal(uploaded.status, 201);
+      const body = await uploaded.json() as { data: Record<string, unknown> };
+      assert.equal(body.data.visibleTitle, "Material");
+      assert.equal("storageId" in body.data, false);
+      assert.equal(JSON.stringify(body).includes("untrusted.pdf"), false);
+      assert.match((await readdir(fixture.fileStoragePath))[0]!, /^[0-9a-f-]+\.pdf$/);
+    });
+  } finally { await fixture.close(); }
+});
+
+test("academy attachment upload handles failed writes without unhandled rejections", async () => {
+  const fixture = await setup([{ username: "admin", password: "password", role: "admin" }]);
+  const errors: unknown[] = [], onUnhandled = (error: unknown) => errors.push(error), abort = new AbortController();
+  const originalPath = process.env.FILE_STORAGE_PATH; process.env.FILE_STORAGE_PATH = "/proc"; process.on("unhandledRejection", onUnhandled);
+  try {
+    await withServer(createApp(), async (baseUrl) => {
+      const admin = await login(baseUrl, "admin", "password");
+      void fetch(`${baseUrl}/api/academy/admin/posts/${randomUUID()}/attachments`, { method: "POST", headers: { authorization: `Bearer ${admin.body.token}`, "content-type": "multipart/form-data; boundary=x" }, body: new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode("--x\r\nContent-Disposition: form-data; name=\"file\"; filename=\"x.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-")); } }), duplex: "half", signal: abort.signal } as RequestInit & { duplex: "half" }).catch(() => {});
+      await new Promise((resolve) => setTimeout(resolve, 50)); abort.abort(); assert.equal(errors.length, 0);
+    });
+  } finally { process.off("unhandledRejection", onUnhandled); if (originalPath === undefined) delete process.env.FILE_STORAGE_PATH; else process.env.FILE_STORAGE_PATH = originalPath; await fixture.close(); }
 });
 
 test("academy login rate-limits each IP after ten attempts", async () => {

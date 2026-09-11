@@ -20,3 +20,8 @@ export class AcademyPublicationError extends Error {
   readonly code: "CATEGORY_IN_USE" | "CATEGORY_NAME_TAKEN" | "CATEGORY_NOT_FOUND" | "POST_DELETED" | "POST_NOT_FOUND";
   constructor(code: AcademyPublicationError["code"]) { super(code); this.code = code; }
 }
+
+export class AttachmentError extends Error {
+  readonly code: "ATTACHMENT_LIMIT" | "POST_DELETED" | "POST_NOT_FOUND" | "UNSUPPORTED_FILE_TYPE" | "UPLOAD_TOO_LARGE" | "VALIDATION_ERROR";
+  constructor(code: AttachmentError["code"]) { super(code); this.code = code; }
+}

@@ -29,3 +29,4 @@ export type PostInput = { title: string; markdownSource: string; categoryId?: st
 export type PostEditInput = Partial<PostInput>;
 export type PublicationListOptions = { search?: string; categoryId?: string; page?: number; pageSize?: number };
 export type PublicationList = { items: ParentPost[]; page: number; pageSize: number; total: number };
+export type AcademyAttachment = { id: string; postId: string; extension: "pdf" | "jpg" | "png" | "webp"; mimeType: string; byteSize: number; visibleTitle: string | null; materialOrdinal: number; createdAt: string; updatedAt: string };
