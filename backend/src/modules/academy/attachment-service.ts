@@ -24,7 +24,7 @@ export class AttachmentService {
         if (!post) throw new AttachmentError("POST_NOT_FOUND");
         if (post.deletedAt || post.visibility === "deleted") throw new AttachmentError("POST_DELETED");
         if (this.attachments.count(postId) >= 10) throw new AttachmentError("ATTACHMENT_LIMIT");
-        const stored: StoredAttachment = { id, postId, storageId, ...file, visibleTitle, materialOrdinal: this.attachments.nextOrdinal(postId), createdAt: now, updatedAt: now };
+        const stored: StoredAttachment = { id, postId, storageId, ...file, visibleTitle, materialOrdinal: this.attachments.nextOrdinal(postId), createdAt: now, updatedAt: now, deletedAt: null };
         finalPath = this.storage.finalPath(storageId, file.extension);
         this.storage.move(input.temporaryPath, storageId, file.extension);
         this.attachments.create(stored);
@@ -37,6 +37,38 @@ export class AttachmentService {
       if (finalPath) this.storage.remove(finalPath);
       throw error;
     }
+  }
+
+  rename(actorUserId: string, id: string, input: { title: string }): AcademyAttachment {
+    const now = this.clock();
+    return this.attachments.transaction(() => {
+      const attachment = this.mutable(id);
+      const renamed = this.attachments.rename(id, input.title.trim() || null, now);
+      this.audit.append(actorUserId, "attachment.renamed", id, now, "attachment");
+      return safe(renamed);
+    });
+  }
+
+  delete(actorUserId: string, id: string) {
+    const now = this.clock();
+    return this.attachments.transaction(() => {
+      this.mutable(id);
+      const deleted = this.attachments.softDelete(id, now);
+      this.audit.append(actorUserId, "attachment.deleted", id, now, "attachment");
+      return safe(deleted);
+    });
+  }
+
+  listAdmin(postId: string) { return this.attachments.list(postId, true).map(safe); }
+
+  private mutable(id: string) {
+    const attachment = this.attachments.attachment(id);
+    if (!attachment) throw new AttachmentError("ATTACHMENT_NOT_FOUND");
+    if (attachment.deletedAt) throw new AttachmentError("ATTACHMENT_DELETED");
+    const post = this.attachments.mutablePost(attachment.postId);
+    if (!post) throw new AttachmentError("POST_NOT_FOUND");
+    if (post.deletedAt || post.visibility === "deleted") throw new AttachmentError("POST_DELETED");
+    return attachment;
   }
 }
 

@@ -31,7 +31,7 @@ test("attachment upload validates a staged PDF, moves it opaquely, and atomicall
     const temporaryPath = await context.storage.createTemporaryPath();
     await writeFile(temporaryPath, "%PDF-1.7\ncontent");
     const attachment = await context.service.upload(context.actorId, context.postId, { temporaryPath, mimeType: "application/pdf", title: " Lesson " });
-    assert.deepEqual(Object.keys(attachment).sort(), ["byteSize", "createdAt", "extension", "id", "materialOrdinal", "mimeType", "postId", "updatedAt", "visibleTitle"]);
+    assert.deepEqual(Object.keys(attachment).sort(), ["byteSize", "createdAt", "deletedAt", "extension", "id", "materialOrdinal", "mimeType", "postId", "updatedAt", "visibleTitle"]);
     assert.equal(attachment.visibleTitle, "Lesson");
     assert.equal(attachment.extension, "pdf");
     assert.equal(attachment.materialOrdinal, 1);
@@ -65,5 +65,27 @@ test("attachment upload rejects invalid, oversized, and full-post files without 
     await writeFile(full, "%PDF-");
     await assert.rejects(context.service.upload(context.actorId, context.postId, { temporaryPath: full, mimeType: "application/pdf" }), new AttachmentError("ATTACHMENT_LIMIT"));
     assert.equal(await context.storage.existsPath(full), false);
+  } finally { context.database.close(); await rm(context.root, { recursive: true, force: true }); }
+});
+
+test("attachment rename and soft deletion retain files, ordinals, and safe audit evidence", async () => {
+  const context = await fixture();
+  try {
+    const upload = async (title: string) => { const temporaryPath = await context.storage.createTemporaryPath(); await writeFile(temporaryPath, "%PDF-"); return context.service.upload(context.actorId, context.postId, { temporaryPath, mimeType: "application/pdf", title }); };
+    const first = await upload("First"), second = await upload("Second");
+    const renamed = context.service.rename(context.actorId, first.id, { title: " Renamed " });
+    assert.equal(renamed.visibleTitle, "Renamed");
+    await context.service.delete(context.actorId, second.id);
+    const third = await upload("Third");
+    assert.deepEqual(context.service.listAdmin(context.postId).map(({ materialOrdinal, deletedAt }) => [materialOrdinal, deletedAt !== null]), [[1, false], [2, true], [3, false]]);
+    const storageId = (context.database.prepare("SELECT storageId FROM attachments WHERE id = ?").get(second.id) as { storageId: string }).storageId;
+    assert.equal(await context.storage.existsPath(join(context.root, "uploads", `${storageId}.pdf`)), true);
+    const audit = JSON.stringify(context.database.prepare("SELECT action, entityType, entityId FROM audit_log WHERE entityId IN (?, ?)").all(first.id, second.id));
+    assert.match(audit, /attachment.renamed/);
+    assert.match(audit, /attachment.deleted/);
+    assert.equal(audit.includes(storageId), false);
+    assert.equal(audit.includes("Renamed"), false);
+    assert.equal(audit.includes("Second"), false);
+    assert.throws(() => context.service.rename(context.actorId, second.id, { title: "Nope" }), new AttachmentError("ATTACHMENT_DELETED"));
   } finally { context.database.close(); await rm(context.root, { recursive: true, force: true }); }
 });

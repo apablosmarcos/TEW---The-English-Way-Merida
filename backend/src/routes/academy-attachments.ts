@@ -29,6 +29,35 @@ export function createAcademyAttachmentsRouter() {
   return router;
 }
 
+export function createAcademyAttachmentLifecycleRouter() {
+  const router = Router();
+  router.patch("/:id", (req, res) => {
+    const title = renameTitle(req.body);
+    if (!uuid(req.params.id) || title === null) { res.status(400).json({ ok: false, error: "VALIDATION_ERROR" }); return; }
+    return withAttachments(res, (service) => { res.json({ ok: true, data: service.rename(academyAuth(req).session.user.id, req.params.id, { title }) }); });
+  });
+  router.delete("/:id", (req, res) => {
+    if (!uuid(req.params.id)) { res.status(400).json({ ok: false, error: "VALIDATION_ERROR" }); return; }
+    return withAttachments(res, (service) => { service.delete(academyAuth(req).session.user.id, req.params.id); res.status(204).end(); });
+  });
+  return router;
+}
+
+function withAttachments(res: Response, action: (service: AttachmentService) => void) {
+  let database: ReturnType<typeof openDatabase> | undefined;
+  return Promise.resolve().then(() => {
+    try { database = openDatabase(process.env); action(new AttachmentService(new AttachmentRepository(database), new AuditRepository(database), new FileStorage(resolveFileStoragePath(process.env)))); }
+    catch (error) { sendError(res, error); }
+    finally { database?.close(); }
+  });
+}
+
+function renameTitle(body: unknown) {
+  if (!body || typeof body !== "object" || Array.isArray(body)) return null;
+  const data = body as Record<string, unknown>;
+  return Object.keys(data).length === 1 && typeof data.title === "string" ? data.title : null;
+}
+
 async function parseUpload(req: Request, storage: FileStorage) {
   await storage.ensureDirectory();
   return new Promise<{ temporaryPath: string; mimeType: string; title?: string }>((resolve, reject) => {
@@ -59,6 +88,6 @@ async function parseUpload(req: Request, storage: FileStorage) {
 
 function sendError(res: Response, error: unknown) {
   if (!(error instanceof AttachmentError)) { res.status(500).json({ ok: false, error: "Internal server error" }); return; }
-  const status = error.code === "VALIDATION_ERROR" ? 400 : error.code === "ATTACHMENT_LIMIT" || error.code === "POST_DELETED" ? 409 : error.code === "POST_NOT_FOUND" ? 404 : error.code === "UPLOAD_TOO_LARGE" ? 413 : 415;
+  const status = error.code === "VALIDATION_ERROR" ? 400 : error.code === "ATTACHMENT_LIMIT" || error.code === "ATTACHMENT_DELETED" || error.code === "POST_DELETED" ? 409 : error.code === "ATTACHMENT_NOT_FOUND" || error.code === "POST_NOT_FOUND" ? 404 : error.code === "UPLOAD_TOO_LARGE" ? 413 : 415;
   res.status(status).json({ ok: false, error: error.code });
 }

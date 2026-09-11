@@ -394,6 +394,40 @@ test("academy attachment upload handles failed writes without unhandled rejectio
   } finally { process.off("unhandledRejection", onUnhandled); if (originalPath === undefined) delete process.env.FILE_STORAGE_PATH; else process.env.FILE_STORAGE_PATH = originalPath; await fixture.close(); }
 });
 
+test("academy attachment mutations are admin-only and deleted metadata remains administrator-only", async () => {
+  const fixture = await setup([
+    { username: "admin", password: "password", role: "admin" },
+    { username: "parent", password: "password" },
+  ]);
+  try {
+    await withServer(createApp(), async (baseUrl) => {
+      const admin = await login(baseUrl, "admin", "password");
+      const parent = await login(baseUrl, "parent", "password");
+      const headers = { authorization: `Bearer ${admin.body.token}`, "content-type": "application/json" };
+      const post = await fetch(`${baseUrl}/api/academy/admin/posts`, { method: "POST", headers, body: JSON.stringify({ title: "Post", markdownSource: "" }) });
+      const { data: created } = await post.json() as { data: { id: string } };
+      const form = new FormData();
+      form.append("file", new Blob(["%PDF-1.7"], { type: "application/pdf" }), "client-name.pdf");
+      form.append("title", "Original");
+      const upload = await fetch(`${baseUrl}/api/academy/admin/posts/${created.id}/attachments`, { method: "POST", headers: { authorization: `Bearer ${admin.body.token}` }, body: form });
+      const { data: attachment } = await upload.json() as { data: { id: string } };
+      const denied = await fetch(`${baseUrl}/api/academy/admin/attachments/${attachment.id}`, { method: "PATCH", headers: { authorization: `Bearer ${parent.body.token}`, "content-type": "application/json" }, body: JSON.stringify({ title: "No" }) });
+      assert.equal(denied.status, 403);
+      const renamed = await fetch(`${baseUrl}/api/academy/admin/attachments/${attachment.id}`, { method: "PATCH", headers, body: JSON.stringify({ title: " Renamed " }) });
+      assert.equal(renamed.status, 200);
+      assert.equal((await renamed.json() as { data: { visibleTitle: string } }).data.visibleTitle, "Renamed");
+      const removed = await fetch(`${baseUrl}/api/academy/admin/attachments/${attachment.id}`, { method: "DELETE", headers });
+      assert.equal(removed.status, 204);
+      assert.equal((await readdir(fixture.fileStoragePath)).length, 1);
+      const adminDetail = await fetch(`${baseUrl}/api/academy/admin/posts/${created.id}`, { headers });
+      const adminAttachments = (await adminDetail.json() as { data: { attachments: Array<{ deletedAt: string | null }> } }).data.attachments;
+      assert.equal(adminAttachments[0]?.deletedAt !== null, true);
+      const parentDetail = await fetch(`${baseUrl}/api/academy/posts/${created.id}`, { headers: { authorization: `Bearer ${parent.body.token}` } });
+      assert.deepEqual((await parentDetail.json() as { data: { attachments: unknown[] } }).data.attachments, []);
+    });
+  } finally { await fixture.close(); }
+});
+
 test("academy login rate-limits each IP after ten attempts", async () => {
   const fixture = await setup([{ username: "ada", password: "correct password" }]);
   try {

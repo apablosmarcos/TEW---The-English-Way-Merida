@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 
 import { AcademyPublicationError } from "../modules/academy/academy-errors.ts";
+import { AttachmentRepository } from "../modules/academy/attachment-repository.ts";
 import { AuditRepository } from "../modules/academy/audit-repository.ts";
 import type { PublicationListOptions } from "../modules/academy/academy-types.ts";
 import { PublicationRepository } from "../modules/academy/publication-repository.ts";
@@ -30,7 +31,7 @@ export function withPublications(res: Response, action: (service: PublicationSer
   return Promise.resolve().then(async () => {
     try {
       database = openDatabase(process.env);
-      await action(new PublicationService(new PublicationRepository(database), new AuditRepository(database)));
+      await action(new PublicationService(new PublicationRepository(database), new AuditRepository(database), undefined, new AttachmentRepository(database)));
     } catch (error) {
       sendPublicationError(res, error);
     } finally {

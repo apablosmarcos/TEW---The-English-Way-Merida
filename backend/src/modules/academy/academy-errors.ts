@@ -22,6 +22,6 @@ export class AcademyPublicationError extends Error {
 }
 
 export class AttachmentError extends Error {
-  readonly code: "ATTACHMENT_LIMIT" | "POST_DELETED" | "POST_NOT_FOUND" | "UNSUPPORTED_FILE_TYPE" | "UPLOAD_TOO_LARGE" | "VALIDATION_ERROR";
+  readonly code: "ATTACHMENT_DELETED" | "ATTACHMENT_LIMIT" | "ATTACHMENT_NOT_FOUND" | "POST_DELETED" | "POST_NOT_FOUND" | "UNSUPPORTED_FILE_TYPE" | "UPLOAD_TOO_LARGE" | "VALIDATION_ERROR";
   constructor(code: AttachmentError["code"]) { super(code); this.code = code; }
 }
