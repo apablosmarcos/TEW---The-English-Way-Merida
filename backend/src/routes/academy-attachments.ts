@@ -1,4 +1,4 @@
-import { createWriteStream } from "node:fs";
+import { createReadStream, createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
 import Busboy from "busboy";
 import { Router, type Request, type Response } from "express";
@@ -27,6 +27,39 @@ export function createAcademyAttachmentsRouter() {
     } catch (error) { sendError(res, error); }
   });
   return router;
+}
+
+export function createAcademyAttachmentStreamsRouter() {
+  const router = Router();
+  router.get("/:id/preview", streamAttachment("inline"));
+  router.get("/:id/download", streamAttachment("attachment"));
+  return router;
+}
+
+function streamAttachment(disposition: "inline" | "attachment") {
+  return async (req: Request, res: Response) => {
+    if (!uuid(req.params.id)) { res.status(400).json({ ok: false, error: "VALIDATION_ERROR" }); return; }
+    let database: ReturnType<typeof openDatabase> | undefined;
+    try {
+      database = openDatabase(process.env);
+      const attachment = new AttachmentRepository(database).streamable(req.params.id, academyAuth(req).session.user.role === "admin");
+      if (!attachment) { res.status(404).json({ ok: false, error: "ATTACHMENT_NOT_FOUND" }); return; }
+      const storage = new FileStorage(resolveFileStoragePath(process.env)), path = storage.finalPath(attachment.storageId, attachment.extension);
+      if (!await storage.existsPath(path)) { res.status(500).end(); return; }
+      res.set({ "Content-Type": attachmentMimeType(attachment.extension), "X-Content-Type-Options": "nosniff", "Cache-Control": "private, no-store", "Content-Disposition": `${disposition}; filename="${attachmentFilename(attachment.visibleTitle, attachment.materialOrdinal, attachment.extension)}"` });
+      createReadStream(path).on("error", () => res.destroy()).pipe(res);
+    } catch { if (!res.headersSent) res.status(500).end(); }
+    finally { database?.close(); }
+  };
+}
+
+function attachmentMimeType(extension: "pdf" | "jpg" | "png" | "webp") {
+  return extension === "pdf" ? "application/pdf" : extension === "jpg" ? "image/jpeg" : extension === "png" ? "image/png" : "image/webp";
+}
+
+function attachmentFilename(title: string | null, ordinal: number, extension: "pdf" | "jpg" | "png" | "webp") {
+  const safeTitle = title?.normalize("NFKD").replace(/[^\x20-\x7e]/g, "").replace(/[^A-Za-z0-9 _-]+/g, " ").replace(/\s+/g, " ").trim() || `Material ${ordinal}`;
+  return `${safeTitle}.${extension}`;
 }
 
 export function createAcademyAttachmentLifecycleRouter() {

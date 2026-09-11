@@ -428,6 +428,85 @@ test("academy attachment mutations are admin-only and deleted metadata remains a
   } finally { await fixture.close(); }
 });
 
+test("academy attachment streams authenticate, recheck access, and hide storage details", async () => {
+  const fixture = await setup([
+    { username: "admin", password: "password", role: "admin" },
+    { username: "parent", password: "password" },
+    { username: "forced", password: "password", mustChangePassword: true },
+  ]);
+  try {
+    await withServer(createApp(), async (baseUrl) => {
+      const admin = await login(baseUrl, "admin", "password");
+      const parent = await login(baseUrl, "parent", "password");
+      const forced = await login(baseUrl, "forced", "password");
+      const headers = { authorization: `Bearer ${admin.body.token}`, "content-type": "application/json" };
+      const post = await fetch(`${baseUrl}/api/academy/admin/posts`, { method: "POST", headers, body: JSON.stringify({ title: "Post", markdownSource: "" }) });
+      const { data: created } = await post.json() as { data: { id: string } };
+      const form = new FormData();
+      form.append("file", new Blob(["%PDF-1.7"], { type: "application/pdf" }), "client-name.pdf");
+      form.append("title", "Study: one");
+      const upload = await fetch(`${baseUrl}/api/academy/admin/posts/${created.id}/attachments`, { method: "POST", headers: { authorization: `Bearer ${admin.body.token}` }, body: form });
+      const { data: attachment } = await upload.json() as { data: { id: string } };
+      const previewUrl = `${baseUrl}/api/academy/attachments/${attachment.id}/preview`;
+
+      assert.equal((await fetch(previewUrl)).status, 401);
+      const ranged = await fetch(previewUrl, { headers: { authorization: `Bearer ${parent.body.token}`, range: "bytes=0-2" } });
+      assert.equal(ranged.status, 200);
+      assert.equal(ranged.headers.get("content-range"), null);
+      assert.equal(await ranged.text(), "%PDF-1.7");
+      const preview = await fetch(previewUrl, { headers: { authorization: `Bearer ${parent.body.token}` } });
+      assert.equal(preview.status, 200);
+      assert.equal(preview.headers.get("content-type"), "application/pdf");
+      assert.equal(preview.headers.get("x-content-type-options"), "nosniff");
+      assert.equal(preview.headers.get("cache-control"), "private, no-store");
+      assert.equal(preview.headers.get("content-disposition"), "inline; filename=\"Study one.pdf\"");
+      assert.equal(await preview.text(), "%PDF-1.7");
+      assert.equal(JSON.stringify([...preview.headers]).includes("client-name"), false);
+
+      const download = await fetch(`${baseUrl}/api/academy/attachments/${attachment.id}/download`, { headers: { authorization: `Bearer ${admin.body.token}` } });
+      assert.equal(download.status, 200);
+      assert.equal(download.headers.get("content-disposition"), "attachment; filename=\"Study one.pdf\"");
+      await download.arrayBuffer();
+      const forcedBlocked = await fetch(previewUrl, { headers: { authorization: `Bearer ${forced.body.token}` } });
+      assert.equal(forcedBlocked.status, 403);
+
+      await fetch(`${baseUrl}/api/academy/admin/posts/${created.id}/hide`, { method: "POST", headers });
+      assert.equal((await fetch(previewUrl, { headers: { authorization: `Bearer ${parent.body.token}` } })).status, 404);
+      assert.equal((await fetch(previewUrl, { headers: { authorization: `Bearer ${admin.body.token}` } })).status, 200);
+      await fetch(`${baseUrl}/api/academy/admin/attachments/${attachment.id}`, { method: "DELETE", headers });
+      assert.equal((await fetch(previewUrl, { headers: { authorization: `Bearer ${parent.body.token}` } })).status, 404);
+      assert.equal((await fetch(previewUrl, { headers: { authorization: `Bearer ${admin.body.token}` } })).status, 200);
+      await fetch(`${baseUrl}/api/academy/admin/posts/${created.id}`, { method: "DELETE", headers });
+      assert.equal((await fetch(`${baseUrl}/api/academy/attachments/${attachment.id}/download`, { headers: { authorization: `Bearer ${admin.body.token}` } })).status, 200);
+
+      await rm(join(fixture.fileStoragePath, (await readdir(fixture.fileStoragePath))[0]!), { force: true });
+      const missing = await fetch(previewUrl, { headers: { authorization: `Bearer ${admin.body.token}` } });
+      assert.equal(missing.status, 500);
+      assert.equal((await missing.arrayBuffer()).byteLength, 0);
+    });
+  } finally { await fixture.close(); }
+});
+
+test("academy attachment metadata is ordered alphabetically by visible title or material fallback", async () => {
+  const fixture = await setup([{ username: "admin", password: "password", role: "admin" }]);
+  try {
+    await withServer(createApp(), async (baseUrl) => {
+      const admin = await login(baseUrl, "admin", "password");
+      const headers = { authorization: `Bearer ${admin.body.token}`, "content-type": "application/json" };
+      const post = await fetch(`${baseUrl}/api/academy/admin/posts`, { method: "POST", headers, body: JSON.stringify({ title: "Post", markdownSource: "" }) });
+      const { data: created } = await post.json() as { data: { id: string } };
+      for (const title of ["Zulu", "Alpha", ""]) {
+        const form = new FormData();
+        form.append("file", new Blob(["%PDF-1.7"], { type: "application/pdf" }), "untrusted.pdf");
+        form.append("title", title);
+        assert.equal((await fetch(`${baseUrl}/api/academy/admin/posts/${created.id}/attachments`, { method: "POST", headers: { authorization: `Bearer ${admin.body.token}` }, body: form })).status, 201);
+      }
+      const detail = await fetch(`${baseUrl}/api/academy/admin/posts/${created.id}`, { headers });
+      assert.deepEqual((await detail.json() as { data: { attachments: Array<{ visibleTitle: string | null; materialOrdinal: number }> } }).data.attachments.map(({ visibleTitle, materialOrdinal }) => [visibleTitle, materialOrdinal]), [["Alpha", 2], [null, 3], ["Zulu", 1]]);
+    });
+  } finally { await fixture.close(); }
+});
+
 test("academy login rate-limits each IP after ten attempts", async () => {
   const fixture = await setup([{ username: "ada", password: "correct password" }]);
   try {

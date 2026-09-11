@@ -83,7 +83,7 @@ test("includes stable attachment metadata in details but completely hides delete
   for (const [id, ordinal, deletedAt] of [["one", 1, null], ["two", 2, "later"], ["three", 3, null]] as const) database.prepare("INSERT INTO attachments (id, postId, storageId, extension, mimeType, byteSize, visibleTitle, materialOrdinal, createdAt, updatedAt, deletedAt) VALUES (?, ?, ?, 'pdf', 'application/pdf', 1, ?, ?, 'now', 'now', ?)").run(id, post.id, `storage-${id}`, id, ordinal, deletedAt);
   const admin = service.getAdminPost(post.id)!;
   const parent = service.getParentPost(post.id)!;
-  assert.deepEqual(admin.attachments.map(({ materialOrdinal, deletedAt }) => [materialOrdinal, deletedAt]), [[1, null], [2, "later"], [3, null]]);
+  assert.deepEqual(admin.attachments.map(({ materialOrdinal, deletedAt }) => [materialOrdinal, deletedAt]), [[1, null], [3, null], [2, "later"]]);
   assert.deepEqual(parent.attachments.map(({ materialOrdinal }) => materialOrdinal), [1, 3]);
   assert.equal("storageId" in admin.attachments[0]!, false);
   assert.equal("deletedAt" in parent.attachments[0]!, false);
