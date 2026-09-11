@@ -7,8 +7,8 @@ export class AuditRepository {
     this.database = database;
   }
 
-  append(actorUserId: string | null, action: string, entityId: string, createdAt: string) {
-    this.database.prepare("INSERT INTO audit_log (actorUserId, action, entityType, entityId, createdAt) VALUES (?, ?, 'user', ?, ?)")
-      .run(actorUserId, action, entityId, createdAt);
+  append(actorUserId: string | null, action: string, entityId: string, createdAt: string, entityType = "user") {
+    this.database.prepare("INSERT INTO audit_log (actorUserId, action, entityType, entityId, createdAt) VALUES (?, ?, ?, ?, ?)")
+      .run(actorUserId, action, entityType, entityId, createdAt);
   }
 }

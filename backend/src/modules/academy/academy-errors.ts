@@ -15,3 +15,8 @@ export class AcademyUserError extends Error {
     this.code = code;
   }
 }
+
+export class AcademyPublicationError extends Error {
+  readonly code: "CATEGORY_IN_USE" | "CATEGORY_NAME_TAKEN" | "CATEGORY_NOT_FOUND" | "POST_DELETED" | "POST_NOT_FOUND";
+  constructor(code: AcademyPublicationError["code"]) { super(code); this.code = code; }
+}
