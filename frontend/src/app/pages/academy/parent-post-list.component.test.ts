@@ -19,7 +19,10 @@ test("parent feed is standalone, accessible, and derives data from restorable qu
     /queryParamMap[\s\S]*parentPostQuery[\s\S]*listParentPosts/,
   );
   assert.match(source, /withParentPostFilters/);
-  assert.match(source, /<h2>{{ post.title }}<\/h2>/);
+  assert.match(
+    source,
+    /<h2>\s*<a\s+\[routerLink\]\s*=\s*(['"])\[\s*(['"])\/academia\/publicaciones\2\s*,\s*post\.id\s*\]\1\s*>\s*{{\s*post\.title\s*}}\s*<\/a>\s*<\/h2>/,
+  );
   assert.match(source, /private loadGeneration = 0/);
   assert.match(
     source,

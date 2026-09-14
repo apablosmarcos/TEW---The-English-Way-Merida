@@ -27,6 +27,16 @@ export type AcademyLoginInput = { username: string; password: string };
 export type AcademyPasswordChangeInput = { currentPassword: string; newPassword: string };
 export type AcademyCategory = { id: string; displayName: string };
 export type AcademyParentPost = { id: string; title: string; category: AcademyCategory | null; publishedAt: string; updatedAt: string };
+export type AcademyParentAttachment = {
+  id: string;
+  mimeType: 'application/pdf' | 'image/jpeg' | 'image/png' | 'image/webp';
+  visibleTitle: string | null;
+  materialOrdinal: number;
+};
+export type AcademyParentPostDetail = AcademyParentPost & {
+  renderedMarkdown: string;
+  attachments: AcademyParentAttachment[];
+};
 export type AcademyParentPostQuery = { search: string; categoryId: string | null; page: number };
 export type AcademyParentPostList = {
   categories: AcademyCategory[];

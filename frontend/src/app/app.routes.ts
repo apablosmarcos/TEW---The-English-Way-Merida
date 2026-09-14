@@ -53,6 +53,10 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/academy/academy-shell.component').then((module) => module.AcademyShellComponent),
             children: [
               {
+                path: 'publicaciones/:id',
+                loadComponent: () => import('./pages/academy/post-detail.component').then((module) => module.PostDetailComponent),
+              },
+              {
                 path: '',
                 pathMatch: 'full',
                 loadComponent: () => import('./pages/academy/parent-post-list.component').then((module) => module.ParentPostListComponent),

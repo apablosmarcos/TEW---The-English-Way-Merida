@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 
 import { buildAcademyEndpoint } from './academy-endpoint';
-import type { AcademyLogin, AcademyLoginInput, AcademyParentPostList, AcademyParentPostQuery, AcademyPasswordChangeInput, AcademySession, AcademySuccess } from './academy-types';
+import type { AcademyLogin, AcademyLoginInput, AcademyParentPostDetail, AcademyParentPostList, AcademyParentPostQuery, AcademyPasswordChangeInput, AcademySession, AcademySuccess } from './academy-types';
 
 export class AcademyApiService {
   private readonly http: HttpClient;
@@ -26,6 +26,26 @@ export class AcademyApiService {
     return this.http.get<AcademySuccess<AcademyParentPostList>>(buildAcademyEndpoint(apiBaseUrl, 'posts'), {
       headers: { Authorization: `Bearer ${token}` },
       params: parentPostParams(query),
+    });
+  }
+
+  getParentPost(apiBaseUrl: string, token: string, id: string) {
+    return this.http.get<AcademySuccess<AcademyParentPostDetail>>(buildAcademyEndpoint(apiBaseUrl, `posts/${id}`), {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }
+
+  previewAttachment(apiBaseUrl: string, token: string, id: string) {
+    return this.http.get(buildAcademyEndpoint(apiBaseUrl, `attachments/${id}/preview`), {
+      headers: { Authorization: `Bearer ${token}` },
+      responseType: 'blob',
+    });
+  }
+
+  downloadAttachment(apiBaseUrl: string, token: string, id: string) {
+    return this.http.get(buildAcademyEndpoint(apiBaseUrl, `attachments/${id}/download`), {
+      headers: { Authorization: `Bearer ${token}` },
+      responseType: 'blob',
     });
   }
 
