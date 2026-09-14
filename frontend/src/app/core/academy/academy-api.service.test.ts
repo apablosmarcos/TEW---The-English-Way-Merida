@@ -9,4 +9,6 @@ test('academy API uses the aligned HTTP contract', () => {
   assert.match(source, /get<AcademySuccess<AcademySession>>\(buildAcademyEndpoint\(apiBaseUrl, 'session'\), \{\s*headers: \{ Authorization: `Bearer \$\{token\}` \}/);
   assert.match(source, /post<void>\(buildAcademyEndpoint\(apiBaseUrl, 'logout'\), null, \{\s*headers: \{ Authorization: `Bearer \$\{token\}` \}/);
   assert.match(source, /post<void>\(buildAcademyEndpoint\(apiBaseUrl, 'me\/password'\), body, \{\s*headers: \{ Authorization: `Bearer \$\{token\}` \}/);
+  assert.match(source, /get<AcademySuccess<AcademyParentPostList>>\(buildAcademyEndpoint\(apiBaseUrl, 'posts'\), \{\s*headers: \{ Authorization: `Bearer \$\{token\}` \},\s*params: parentPostParams\(query\)/);
+  assert.match(source, /new HttpParams\(\{ fromObject: params \}\)/);
 });

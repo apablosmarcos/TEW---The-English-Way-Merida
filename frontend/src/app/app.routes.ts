@@ -42,17 +42,23 @@ export const routes: Routes = [
         canActivate: [academyForcedChangeGuard],
         loadComponent: () => import('./pages/academy/password-change.component').then((module) => module.PasswordChangeComponent),
       },
-      {
-        path: '',
-        pathMatch: 'full',
-        canActivate: [academyAuthenticatedGuard, academyParentGuard],
-        loadComponent: () => import('./pages/academy/academy-shell.component').then((module) => module.AcademyShellComponent),
-      },
-      {
-        path: 'admin/publicaciones',
-        canActivate: [academyAuthenticatedGuard, academyAdminGuard],
-        loadComponent: () => import('./pages/academy/academy-shell.component').then((module) => module.AcademyShellComponent),
-      },
+          {
+            path: 'admin/publicaciones',
+            canActivate: [academyAuthenticatedGuard, academyAdminGuard],
+            loadComponent: () => import('./pages/academy/academy-shell.component').then((module) => module.AcademyShellComponent),
+          },
+          {
+            path: '',
+            canActivate: [academyAuthenticatedGuard, academyParentGuard],
+            loadComponent: () => import('./pages/academy/academy-shell.component').then((module) => module.AcademyShellComponent),
+            children: [
+              {
+                path: '',
+                pathMatch: 'full',
+                loadComponent: () => import('./pages/academy/parent-post-list.component').then((module) => module.ParentPostListComponent),
+              },
+            ],
+          },
     ],
   },
 ];
