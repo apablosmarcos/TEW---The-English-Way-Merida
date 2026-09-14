@@ -53,6 +53,37 @@ test("admin user discovery uses the protected backend list contract", () => {
   assert.match(api, /params: adminUserParams\(query\)/);
 });
 
+test("administrator lifecycle calls use the protected user contract", () => {
+  assert.match(api, /createAdminUser\(apiBaseUrl: string, token: string, input: AcademyAdminUserInput\)/);
+  assert.match(api, /disableAdminUser\(apiBaseUrl: string, token: string, id: string\)/);
+  assert.match(api, /enableAdminUser\(apiBaseUrl: string, token: string, id: string\)/);
+  assert.match(api, /deleteAdminUser\(apiBaseUrl: string, token: string, id: string\)/);
+  assert.match(api, /resetAdminUserPassword\(apiBaseUrl: string, token: string, id: string\)/);
+  assert.match(api, /'admin\/users'\), input/);
+  assert.match(api, /`admin\/users\/\$\{id\}\/reset-password`/);
+});
+
+test("temporary passwords are response-scoped and lifecycle conflicts stay focused", () => {
+  const source = readFileSync(component, "utf8");
+  assert.match(source, /temporaryPassword\?: \{ username: string; password: string \}/);
+  assert.match(source, /closeTemporaryPassword\(\) \{\s*this\.temporaryPassword = undefined;/);
+  assert.match(source, /ngOnDestroy\(\) \{[\s\S]*this\.temporaryPassword = undefined;/);
+  assert.match(source, /No se puede desactivar ni eliminar al último administrador activo\./);
+  assert.match(source, /createDisplayName[\s\S]*createUsername[\s\S]*createError/);
+  assert.match(source, /Restablecer contraseña[\s\S]*Desactivar[\s\S]*Eliminar/);
+});
+
+test("admin lifecycle retains create fields after a conflict and clears response-scoped passwords", () => {
+  const source = readFileSync(component, "utf8");
+  const create = source.match(/async createUser\(\) \{[\s\S]*?\n  \}\n  async resetPassword/)?.[0] ?? "";
+  assert.match(create, /catch \(error\) \{\s*this\.createError = this\.message\(error\);/);
+  assert.doesNotMatch(create, /catch \(error\) \{[\s\S]*this\.create(DisplayName|Username) = ""/);
+  assert.match(source, /temporaryPassword = \{ username, password: response\.data\.temporaryPassword \};/);
+  assert.match(source, /closeTemporaryPassword\(\) \{\s*this\.temporaryPassword = undefined;/);
+  assert.match(source, /ngOnDestroy\(\) \{[\s\S]*this\.temporaryPassword = undefined;/);
+  assert.match(source, /private navigate\(query: AdminUserQuery\) \{\s*this\.closeTemporaryPassword\(\);/);
+});
+
 test("admin user discovery is guarded, query-backed, and usable at narrow widths", () => {
   assert.ok(existsSync(component));
   const source = readFileSync(component, "utf8");

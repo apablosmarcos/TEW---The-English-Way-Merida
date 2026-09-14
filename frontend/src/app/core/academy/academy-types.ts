@@ -50,6 +50,9 @@ export type AcademyAdminUser = AcademyUser & {
   updatedAt: string;
 };
 export type AcademyAdminUserQuery = { search: string; role: AcademyRole | null; state: AcademyAdminUser['state'] | null; page: number };
+export type AcademyAdminUserInput = { displayName: string; username: string };
+export type AcademyAdminUserPassword = { temporaryPassword: string };
+export type AcademyAdminUserCreated = AcademyAdminUserPassword & { user: AcademyAdminUser };
 export type AcademyAdminUserList = {
   items: AcademyAdminUser[];
   pagination: { page: number; pageSize: number; total: number; pageCount: number };

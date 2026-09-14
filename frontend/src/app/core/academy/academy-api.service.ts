@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 
 import { buildAcademyEndpoint } from './academy-endpoint';
-import type { AcademyAdminUserList, AcademyAdminUserQuery, AcademyLogin, AcademyLoginInput, AcademyParentPostDetail, AcademyParentPostList, AcademyParentPostQuery, AcademyPasswordChangeInput, AcademySession, AcademySuccess } from './academy-types';
+import type { AcademyAdminUserCreated, AcademyAdminUserInput, AcademyAdminUserList, AcademyAdminUserPassword, AcademyAdminUserQuery, AcademyLogin, AcademyLoginInput, AcademyParentPostDetail, AcademyParentPostList, AcademyParentPostQuery, AcademyPasswordChangeInput, AcademySession, AcademySuccess } from './academy-types';
 
 export class AcademyApiService {
   private readonly http: HttpClient;
@@ -40,6 +40,26 @@ export class AcademyApiService {
       headers: { Authorization: `Bearer ${token}` },
       params: adminUserParams(query),
     });
+  }
+
+  createAdminUser(apiBaseUrl: string, token: string, input: AcademyAdminUserInput) {
+    return this.http.post<AcademySuccess<AcademyAdminUserCreated>>(buildAcademyEndpoint(apiBaseUrl, 'admin/users'), input, { headers: { Authorization: `Bearer ${token}` } });
+  }
+
+  disableAdminUser(apiBaseUrl: string, token: string, id: string) {
+    return this.http.patch<void>(buildAcademyEndpoint(apiBaseUrl, `admin/users/${id}`), { disabled: true }, { headers: { Authorization: `Bearer ${token}` } });
+  }
+
+  enableAdminUser(apiBaseUrl: string, token: string, id: string) {
+    return this.http.post<void>(buildAcademyEndpoint(apiBaseUrl, `admin/users/${id}/enable`), null, { headers: { Authorization: `Bearer ${token}` } });
+  }
+
+  deleteAdminUser(apiBaseUrl: string, token: string, id: string) {
+    return this.http.delete<void>(buildAcademyEndpoint(apiBaseUrl, `admin/users/${id}`), { headers: { Authorization: `Bearer ${token}` } });
+  }
+
+  resetAdminUserPassword(apiBaseUrl: string, token: string, id: string) {
+    return this.http.post<AcademySuccess<AcademyAdminUserPassword>>(buildAcademyEndpoint(apiBaseUrl, `admin/users/${id}/reset-password`), null, { headers: { Authorization: `Bearer ${token}` } });
   }
 
   previewAttachment(apiBaseUrl: string, token: string, id: string) {

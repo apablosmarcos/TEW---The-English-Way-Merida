@@ -138,10 +138,10 @@ The work-unit **Depends on** fields below remain the product dependency and acce
 
 **Acceptance:** [administrator portal experience](specs/academy-frontend/spec.md#requirement-administrator-portal-experience), [user discovery/lifecycle](specs/academy-user-administration/spec.md#requirement-administrator-user-discovery-and-lifecycle-controls), [last-admin protection](specs/academy-user-administration/spec.md#requirement-last-active-administrator-protection), [reset secrecy](specs/academy-user-administration/spec.md#requirement-password-reset-secrecy).
 
-- [ ] RED — add `frontend/src/app/pages/academy/admin-users.test.ts` cases for name/username/UUID search, role/status filters, page reset, create/reset one-time-password panels, disabled/deleted actions, and focused `LAST_ACTIVE_ADMIN` messaging. <!-- sdd-owner: implementation -->
-- [ ] GREEN — add typed user API methods and implement `admin-users.component.ts` with query-backed filters, pagination, lifecycle controls, subtle UUID display, and response-scoped temporary-password state. <!-- sdd-owner: implementation -->
-- [ ] TRIANGULATE — prove closing/navigating clears temporary passwords, route guards block parents, validation/conflict errors retain form state, and narrow layouts preserve keyboard-accessible actions. <!-- sdd-owner: implementation -->
-- [ ] REFACTOR — keep list/editor state component-local and reuse `academy-list-state.ts` only for shared query behavior; run `pnpm --filter tew-frontend test && pnpm --filter tew-frontend run build`. <!-- sdd-owner: implementation -->
+- [x] RED — add `frontend/src/app/pages/academy/admin-users.test.ts` cases for name/username/UUID search, role/status filters, page reset, create/reset one-time-password panels, disabled/deleted actions, and focused `LAST_ACTIVE_ADMIN` messaging. <!-- sdd-owner: implementation -->
+- [x] GREEN — add typed user API methods and implement `admin-users.component.ts` with query-backed filters, pagination, lifecycle controls, subtle UUID display, and response-scoped temporary-password state. <!-- sdd-owner: implementation -->
+- [x] TRIANGULATE — prove closing/navigating clears temporary passwords, route guards block parents, validation/conflict errors retain form state, and narrow layouts preserve keyboard-accessible actions. <!-- sdd-owner: implementation -->
+- [x] REFACTOR — keep list/editor state component-local and reuse `academy-list-state.ts` only for shared query behavior; run `pnpm --filter tew-frontend test && pnpm --filter tew-frontend run build`. <!-- sdd-owner: implementation -->
 
 ### 10. Administrator content, category, and attachment frontend
 

@@ -129,3 +129,38 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 **Workload / PR boundary:** `21-admin-users`, feature-branch-chain discovery slice. Full working-tree diff is within the 400-line budget; no commit, push, PR, sync, archive, or lifecycle action occurred.
 
 **Task reconciliation:** no administrator-user task checkbox was marked: its four rows also require the explicitly deferred create/reset password and lifecycle controls. Existing checked reconciliation rows remain visibly checked; parent-owned rows are unchanged.
+
+## 22-admin-users-lifecycle
+
+**Status consumed:** native `applyState: ready`, `nextRecommended: apply`, `artifactStore: openspec`; `actionContext.mode: repo-local` permits this workspace. The active bounded attempt `sha256:116c99c944302e513f28b4f94108987e7bc3cc4202a81ff7e29e30435235fedc` was resumed with acquire state `proceed` using the installed v2.9.0 binary because `gentle-ai` was not on `PATH`.
+
+**Completed / persisted:** marked all four administrator-user frontend rows (RED, GREEN, TRIANGULATE, REFACTOR) `[x]` in `tasks.md`. Added parent creation, reset, disable, enable, and soft-delete calls against the existing backend contract. The component retains create fields after errors, maps `LAST_ACTIVE_ADMIN` to a focused Spanish message, and keeps each generated password only in a dismissible response-scoped panel. The panel clears on dismissal, query navigation, and destruction.
+
+**Files:** `frontend/src/app/core/academy/{academy-api.service.ts,academy-types.ts}`, `frontend/src/app/pages/academy/{admin-users.component.ts,admin-users.test.ts}`, plus this change's `tasks.md` and `apply-progress.md`. No design deviations or dependencies.
+
+### TDD Cycle Evidence
+
+| Task | Test file | Layer | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 22 admin user lifecycle | `frontend/src/app/pages/academy/admin-users.test.ts` | Lightweight component-contract | 3/3 focused | 3/4 failed: missing lifecycle API contract; 4/5 failed: missing panel/conflict contract; 5/6 failed: navigation cleanup | 5/5 focused passed after typed API and component controls | 6/6 focused passed for create-error retention, reset/dismiss/destroy cleanup, and navigation cleanup | No behavioral refactor needed; 51/51 frontend tests and build passed |
+
+**Verification:** `pnpm --filter tew-frontend exec node --test --experimental-strip-types src/app/pages/academy/admin-users.test.ts` (final 6/6); `pnpm --filter tew-frontend test` (51/51); `pnpm --filter tew-frontend run build` (passed); `git diff --check` (passed).
+
+**Workload / PR boundary:** feature-branch-chain work unit `22-admin-users-lifecycle`; 120 product/test changed lines before OpenSpec records, below 400. No commit, push, PR, sync, review, archive, deployment, or other work unit was started.
+
+**Remaining exact unchecked rows:**
+
+- [ ] RED — add obsolete-route `404` and legacy-token-denial cases to `backend/src/routes/academy-routes.test.ts`, and adjust `backend/src/modules/storage/academy-migrations.test.ts` to prove clean initialization no longer creates/imports/queries legacy data while pre-existing legacy rows remain unchanged. <!-- sdd-owner: implementation -->
+- [ ] GREEN — remove the listed legacy lead/admin route and module files, their registrations in `backend/src/app.ts`, deprecated environment parsing in `backend/src/config/env.ts`, and legacy creation/import behavior from `backend/src/modules/storage/sqlite.ts`; retain no code path that drops historic tables. <!-- sdd-owner: implementation -->
+- [ ] TRIANGULATE — verify a database containing legacy rows keeps them byte-for-byte while academy authentication rejects old `admin_sessions` material and health plus `/api/academy` remain the only active backend surface. <!-- sdd-owner: implementation -->
+- [ ] REFACTOR — remove only orphaned backend test-script entries from `backend/package.json`, retain academy coverage, and run `pnpm --filter tew-backend test` followed by `pnpm --filter tew-backend run build`. <!-- sdd-owner: implementation -->
+- [ ] RED — add `frontend/src/app/pages/academy/{admin-post-list,admin-post-editor}.test.ts` coverage for visible/hidden/deleted inspection, category conflict presentation, create/edit/hide/delete controls, visual/source mode hooks using one Markdown source, safe preview fixtures, upload/rename/delete controls, and responsive shell navigation. <!-- sdd-owner: implementation -->
+- [ ] GREEN — implement the two planned admin content components and typed API calls, using native textarea selection controls/local generated preview, category controls within the content workspace, and `FormData` upload without a new editor/state dependency. <!-- sdd-owner: implementation -->
+- [ ] TRIANGULATE — cover mode-switch source preservation, no trust-bypass use, deleted-post mutation rejection display, attachment limit/type/size failures, retained deleted-material inspection, and keyboard/narrow-width behavior. <!-- sdd-owner: implementation -->
+- [ ] REFACTOR — retain component-local editor state and the existing design tokens rather than adding component families or a rich-text editor; run `pnpm --filter tew-frontend test && pnpm --filter tew-frontend run build`. <!-- sdd-owner: implementation -->
+- [ ] RED — update `frontend/src/app/pages/home/{home-template,home-form}.test.ts` and route/template tests to expect Google Forms plus anonymous/authenticated academy navigation, no lead form/API state, no `/admin` compatibility route, and GitHub Pages academy-unavailable behavior. <!-- sdd-owner: implementation -->
+- [ ] GREEN — remove `frontend/src/app/pages/admin/**`, legacy `core/services/admin-*`/`leads-*`, `pages/home/home-form.ts`, and their registrations; update `HomeComponent`, routes, menus, proxy configuration, durable Docker Compose volume/configuration, `.gitignore`, and `README.md` for CLI bootstrap, `/api`, uploads/SQLite, proxy trust, static hosting, and rollback. <!-- sdd-owner: implementation -->
+- [ ] TRIANGULATE — verify the public Google Forms call-to-action still works without academy authentication, `/admin` and `/admin/leads` have no redirect, deprecated credential guidance is absent, uploads are ignored/persisted in deployment configuration, and non-TTY CLI smoke creates no account. <!-- sdd-owner: implementation -->
+- [ ] REFACTOR — remove only stale frontend test-script entries while retaining all academy tests, then run `pnpm --recursive test`, `pnpm --recursive run build`, and the documented clean-data-path admin → parent → forced-password-change → publication → attachment → hide/delete stale-URL smoke flow. <!-- sdd-owner: implementation -->
+- [ ] At authorized apply, create the draft/no-merge `feat/academy-client-portal` tracker PR to `main`, then maintain the listed child base order and clean-diff boundaries; merge the tracker only after all 11 child PRs are reviewed and integrated. <!-- sdd-owner: parent -->
+- [ ] After an authorized apply, start or reuse bounded review for each child work unit against its linked acceptance criteria, focused command evidence, rollback boundary, dependency diagram, and 400-line changed-line budget. <!-- sdd-owner: parent -->
