@@ -43,3 +43,14 @@ export type AcademyParentPostList = {
   items: AcademyParentPost[];
   pagination: { page: number; pageSize: number; total: number; pageCount: number };
 };
+export type AcademyAdminUser = AcademyUser & {
+  id: string;
+  state: 'active' | 'disabled' | 'deleted';
+  createdAt: string;
+  updatedAt: string;
+};
+export type AcademyAdminUserQuery = { search: string; role: AcademyRole | null; state: AcademyAdminUser['state'] | null; page: number };
+export type AcademyAdminUserList = {
+  items: AcademyAdminUser[];
+  pagination: { page: number; pageSize: number; total: number; pageCount: number };
+};

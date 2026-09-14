@@ -48,6 +48,11 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/academy/academy-shell.component').then((module) => module.AcademyShellComponent),
           },
           {
+            path: 'admin/usuarios',
+            canActivate: [academyAuthenticatedGuard, academyAdminGuard],
+            loadComponent: () => import('./pages/academy/admin-users.component').then((module) => module.AdminUsersComponent),
+          },
+          {
             path: '',
             canActivate: [academyAuthenticatedGuard, academyParentGuard],
             loadComponent: () => import('./pages/academy/academy-shell.component').then((module) => module.AcademyShellComponent),

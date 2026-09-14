@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 
 import { buildAcademyEndpoint } from './academy-endpoint';
-import type { AcademyLogin, AcademyLoginInput, AcademyParentPostDetail, AcademyParentPostList, AcademyParentPostQuery, AcademyPasswordChangeInput, AcademySession, AcademySuccess } from './academy-types';
+import type { AcademyAdminUserList, AcademyAdminUserQuery, AcademyLogin, AcademyLoginInput, AcademyParentPostDetail, AcademyParentPostList, AcademyParentPostQuery, AcademyPasswordChangeInput, AcademySession, AcademySuccess } from './academy-types';
 
 export class AcademyApiService {
   private readonly http: HttpClient;
@@ -32,6 +32,13 @@ export class AcademyApiService {
   getParentPost(apiBaseUrl: string, token: string, id: string) {
     return this.http.get<AcademySuccess<AcademyParentPostDetail>>(buildAcademyEndpoint(apiBaseUrl, `posts/${id}`), {
       headers: { Authorization: `Bearer ${token}` },
+    });
+  }
+
+  listAdminUsers(apiBaseUrl: string, token: string, query: AcademyAdminUserQuery) {
+    return this.http.get<AcademySuccess<AcademyAdminUserList>>(buildAcademyEndpoint(apiBaseUrl, 'admin/users'), {
+      headers: { Authorization: `Bearer ${token}` },
+      params: adminUserParams(query),
     });
   }
 
@@ -67,6 +74,16 @@ function parentPostParams(query: AcademyParentPostQuery) {
   const params = {
     ...(query.search ? { search: query.search } : {}),
     ...(query.categoryId ? { categoryId: query.categoryId } : {}),
+    ...(query.page > 1 ? { page: String(query.page) } : {}),
+  };
+  return new HttpParams({ fromObject: params });
+}
+
+function adminUserParams(query: AcademyAdminUserQuery) {
+  const params = {
+    ...(query.search ? { search: query.search } : {}),
+    ...(query.role ? { role: query.role } : {}),
+    ...(query.state ? { state: query.state } : {}),
     ...(query.page > 1 ? { page: String(query.page) } : {}),
   };
   return new HttpParams({ fromObject: params });
