@@ -506,3 +506,21 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 - [ ] REFACTOR — remove only stale frontend test-script entries while retaining all academy tests, then run `pnpm --recursive test`, `pnpm --recursive run build`, and the documented clean-data-path admin → parent → forced-password-change → publication → attachment → hide/delete stale-URL smoke flow. <!-- sdd-owner: implementation -->
 
 **Workload / PR boundary:** `35-google-forms-enrolment-cta` only; 319 additions + deletions against `1177059`, within 400. No formatting outside semantic edits, task checkbox update, commit, push, PR, review, sync, archive, reset/rescope, or deployment.
+
+## 36-remove-home-lead-plumbing
+
+**Status / boundary:** authoritative OpenSpec apply-ready; parent-supplied `proceed` token is parent-owned and was not acquired or settled here. Feature-branch-chain slice only; `tasks.md` remains unchanged because the broad work-unit-11 rows are incomplete.
+
+**Completed:** retained the prior semantic removal of `home-form.test.ts` from `frontend/package.json`; deleted the now-orphaned local form, its test, and lead API endpoint/service. Google Forms and Academy home behavior are unchanged.
+
+### TDD Cycle Evidence
+
+| Slice | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- |
+| 36 deletion safety | `home-template.test.ts` 10/10 before deletion | Structural deletion: pre-delete scan found only the four modules' internal references; no replacement behavior/test is appropriate. | Post-delete active import/call and stale-script scan passed; home template 10/10. | Frontend 56/56; recursive frontend 56/56 + backend 28/28; frontend build passed. | None; exact deletion/script cleanup only. |
+
+**Verification:** `pnpm --filter tew-frontend test` 56/56; `pnpm --recursive test` frontend 56/56 + backend 28/28; `pnpm --filter tew-frontend run build` passed; `git diff --check 02606cc` passed. The only textual module-name occurrence is the intentional absence assertion in `home-template.test.ts`; no active import/call or stale script entry remains.
+
+**Scope / budget:** exactly the five authorized frontend paths plus this record; final diff against `02606cc` is 19 additions + 317 deletions = 336 changed lines, below 400 (product paths: 318). No task checkbox, admin UI/login/deployment cleanup, commit, push, PR, review, or lifecycle action.
+
+**Remaining tasks:** the four exact unchecked work-unit-11 implementation rows immediately above remain unchanged.
