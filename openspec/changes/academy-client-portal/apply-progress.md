@@ -440,3 +440,28 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 **TDD evidence:** existing Academy migration/route safety stayed 22/22; backend suite stayed 28/28; backend build and `git diff --check` passed. Prefix/suffix hashes prove no formatting churn.
 
 **Boundary:** deletion-only slice A; candidate is 364/400 lines including this record. The remaining 112-line file and all four work-unit-6 checkbox reconciliations are deferred to slice B. No formatter, commit, push, PR, review, sync, archive, reset/rescope, or deployment.
+
+## 33-finish-backend-retirement
+
+**Status / attempt:** consumed authoritative native `applyState: ready`, `nextRecommended: apply`, OpenSpec repo-local action context for this workspace with no warning. Parent supplied native acquire `proceed` token `sha256:3ac703a95fb084494430600c051b680b1b217326317cbf66787d765600b1cedf`; this slice continues and settles only that attempt.
+
+**Completed / persisted:** deleted the final 112-line stale legacy test file `backend/src/routes/admin.test.ts`. After complete retirement verification, marked exactly the four work-unit-6 implementation rows RED/GREEN/TRIANGULATE/REFACTOR `[x]`; parent-owned rows were unchanged.
+
+### TDD Cycle Evidence
+
+| Task | Test file | Layer | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Backend retirement completion | `backend/src/routes/admin.test.ts` | Integration | academy migrations/routes 22/22 | stale test 0/3: obsolete endpoints return 404, not its obsolete 401/500 assertions | deleting the obsolete test leaves backend 28/28 | active academy route/migration coverage proves obsolete routes 404, old session denial, and historic table/schema/row preservation | none; deletion-only |
+
+**Verification:** focused academy migrations/routes 22/22; backend 28/28; `pnpm --recursive test` frontend 57/57 + backend 28/28; `pnpm --recursive run build`; `git diff --check` all passed. Exact scans confirm retired paths and active legacy source/import references are absent. Active preservation coverage remains in `academy-migrations.test.ts` (clean-table absence plus existing schema/row equality) and `academy-routes.test.ts` (old token denied; legacy routes 404).
+
+**Workload / PR boundary:** feature-branch-chain slice `33-finish-backend-retirement`, against `b9d3847`; only the deleted final stale backend test, four implementation checkbox substitutions, and this evidence record. No active product/test changes, migration, package, frontend, lifecycle, formatter, commit, push, PR, review, sync, archive, reset/rescope, or deployment.
+
+**Remaining implementation rows:**
+
+- [ ] RED — update `frontend/src/app/pages/home/{home-template,home-form}.test.ts` and route/template tests to expect Google Forms plus anonymous/authenticated academy navigation, no lead form/API state, no `/admin` compatibility route, and GitHub Pages academy-unavailable behavior. <!-- sdd-owner: implementation -->
+- [ ] GREEN — remove `frontend/src/app/pages/admin/**`, legacy `core/services/admin-*`/`leads-*`, `pages/home/home-form.ts`, and their registrations; update `HomeComponent`, routes, menus, proxy configuration, durable Docker Compose volume/configuration, `.gitignore`, and `README.md` for CLI bootstrap, `/api`, uploads/SQLite, proxy trust, static hosting, and rollback. <!-- sdd-owner: implementation -->
+- [ ] TRIANGULATE — verify the public Google Forms call-to-action still works without academy authentication, `/admin` and `/admin/leads` have no redirect, deprecated credential guidance is absent, uploads are ignored/persisted in deployment configuration, and non-TTY CLI smoke creates no account. <!-- sdd-owner: implementation -->
+- [ ] REFACTOR — remove only stale frontend test-script entries while retaining all academy tests, then run `pnpm --recursive test`, `pnpm --recursive run build`, and the documented clean-data-path admin → parent → forced-password-change → publication → attachment → hide/delete stale-URL smoke flow. <!-- sdd-owner: implementation -->
+
+**Deferred parent lifecycle actions:** tracker/child-base management and bounded review remain unchanged in `tasks.md`.
