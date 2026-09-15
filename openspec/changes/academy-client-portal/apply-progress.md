@@ -383,3 +383,27 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 **Verification:** `git diff --check`, deleted-module caller scan, unchanged-task check, exact-scope check, and candidate count passed; candidate is 378 changed lines against `e26bc8d`.
 
 **Boundary:** `29-remove-legacy-lead-repository` only; no other source, test, task, script, formatter, lifecycle, or delivery action.
+
+## 30-remove-legacy-lead-remnants
+
+**Status / attempt:** native `applyState: ready`, `nextRecommended: apply`; repo-local action context permits this workspace with no warning. Continued parent-supplied `proceed` token `sha256:c60a93fd9207c2456155c5c0211ad1fa271f866e155e7f2a215886efb5cbc426`.
+
+**Completed:** deleted only `backend/src/modules/leads/{lead-schema.ts,lead-types.ts}` and `backend/src/routes/{leads.test.ts,leads.test-note.ts}` (290 deleted lines). `tasks.md` is unchanged because the work-unit-6 rows remain broader than this cleanup.
+
+| TDD cycle | Evidence |
+| --- | --- |
+| Safety net | Academy routes 14/14 before deletion. |
+| RED | Structural deletion only: caller scan identified the final orphaned module/test remnants; no replacement behavior test by explicit scope. |
+| GREEN | Academy routes 14/14; workspace suite frontend 57/57 and backend 28/28; backend build passed. |
+| TRIANGULATE / REFACTOR | Skipped: deletion-only cleanup with no behavior change or replacement authorized. |
+
+**Verification:** `git diff --check`; deleted-module/retired-route-source scan; retired `routes/leads.ts` absence; unchanged-task check; exact pre-progress backend scope; all passed. Candidate is 290/400 additions + deletions against `216ac7f` before this evidence record.
+
+**Boundary:** `30-remove-legacy-lead-remnants` only; no other source/test path, package script, protected path, formatter, commit, push, PR, review, sync, archive, reset/rescope, or deployment. Native settlement `passed` returned `complete` (request `30-remove-legacy-lead-remnants-settlement-1789467428`; evidence `sha256:4ba8a4528cd2ec045f02a11d1c4b8f3653cadb8e82176e0f79e6b6d5cfa25535`).
+
+**Remaining implementation rows (unchanged):**
+
+- [ ] RED — add obsolete-route `404` and legacy-token-denial cases to `backend/src/routes/academy-routes.test.ts`, and adjust `backend/src/modules/storage/academy-migrations.test.ts` to prove clean initialization no longer creates/imports/queries legacy data while pre-existing legacy rows remain unchanged. <!-- sdd-owner: implementation -->
+- [ ] GREEN — remove the listed legacy lead/admin route and module files, their registrations in `backend/src/app.ts`, deprecated environment parsing in `backend/src/config/env.ts`, and legacy creation/import behavior from `backend/src/modules/storage/sqlite.ts`; retain no code path that drops historic tables. <!-- sdd-owner: implementation -->
+- [ ] TRIANGULATE — verify a database containing legacy rows keeps them byte-for-byte while academy authentication rejects old `admin_sessions` material and health plus `/api/academy` remain the only active backend surface. <!-- sdd-owner: implementation -->
+- [ ] REFACTOR — remove only orphaned backend test-script entries from `backend/package.json`, retain academy coverage, and run `pnpm --filter tew-backend test` followed by `pnpm --filter tew-backend run build`. <!-- sdd-owner: implementation -->
