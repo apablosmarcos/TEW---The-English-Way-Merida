@@ -601,3 +601,32 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 - [ ] GREEN — remove `frontend/src/app/pages/admin/**`, legacy `core/services/admin-*`/`leads-*`, `pages/home/home-form.ts`, and their registrations; update `HomeComponent`, routes, menus, proxy configuration, durable Docker Compose volume/configuration, `.gitignore`, and `README.md` for CLI bootstrap, `/api`, uploads/SQLite, proxy trust, static hosting, and rollback. <!-- sdd-owner: implementation -->
 - [ ] TRIANGULATE — verify the public Google Forms call-to-action still works without academy authentication, `/admin` and `/admin/leads` have no redirect, deprecated credential guidance is absent, uploads are ignored/persisted in deployment configuration, and non-TTY CLI smoke creates no account. <!-- sdd-owner: implementation -->
 - [ ] REFACTOR — remove only stale frontend test-script entries while retaining all academy tests, then run `pnpm --recursive test`, `pnpm --recursive run build`, and the documented clean-data-path admin → parent → forced-password-change → publication → attachment → hide/delete stale-URL smoke flow. <!-- sdd-owner: implementation -->
+
+## 40-remove-legacy-leads-component
+
+**Status / attempt:** consumed authoritative OpenSpec `applyState: ready`, `nextRecommended: apply`, and repo-local action context. This factual correction is under supplied token `sha256:3309769b10fcfd6d04b186759bbbb2f747f9a14bb1de4e8e01a9e51fd875f712`; per parent instruction it remains active and was not settled. Explicit `size:exception` authorizes this exact one-product-path slice up to its managed 600-line limit. `.pi-lens.json` was not edited.
+
+**Completed slice:** deleted the unreachable legacy `LeadsComponent`; its supporting admin API/session/state modules and retained favicon test are byte-identical. The temporary RED assertion in `academy-guards.test.ts` was removed before the final candidate, and that test was restored byte-for-byte; no persisted component-presence assertion remains. No Academy route, service/state behavior, package script, or task checkbox changed.
+
+**Files:** deleted `frontend/src/app/pages/admin/leads.component.ts` and this progress record.
+
+### TDD Cycle Evidence
+
+| Slice | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- |
+| 40 legacy component deletion | A temporary, non-persisted assertion made the focused guard test fail 3/4 while `leads.component.ts` existed. | Deleted only that component. | Parent restored `academy-guards.test.ts` byte-for-byte before settlement; final product/test bytes contain no presence assertion. | None; deletion-only final candidate. |
+
+**Verification:** factual correction only: `git diff -- academy-guards.test.ts` is empty; `git diff --name-status` has the one product/test path `D frontend/src/app/pages/admin/leads.component.ts`; and `git diff --numstat` reports `0 545` for that path. Current Git scope is that deletion, this modified progress record, and untracked temporary `.pi-lens.json`; no runtime tests or settlement were run. The final product/test diff is 545 deletions, within the explicit 600-line exception.
+
+**Workload / PR boundary:** feature-branch-chain `40-remove-legacy-leads-component`; exact one-product-path scope. No commit, push, PR, review, sync, archive, deployment, formatter, `.pi-lens.json` edit, task update, or settlement occurred.
+
+**Task reconciliation:** no task checkbox was marked because this bounded deletion does not complete any broad work-unit-11 row. Persisted `tasks.md` was re-read and remains unchanged; parent-owned rows remain byte-for-byte unchanged.
+
+**Remaining exact unchecked rows:**
+
+- [ ] RED — update `frontend/src/app/pages/home/{home-template,home-form}.test.ts` and route/template tests to expect Google Forms plus anonymous/authenticated academy navigation, no lead form/API state, no `/admin` compatibility route, and GitHub Pages academy-unavailable behavior. <!-- sdd-owner: implementation -->
+- [ ] GREEN — remove `frontend/src/app/pages/admin/**`, legacy `core/services/admin-*`/`leads-*`, `pages/home/home-form.ts`, and their registrations; update `HomeComponent`, routes, menus, proxy configuration, durable Docker Compose volume/configuration, `.gitignore`, and `README.md` for CLI bootstrap, `/api`, uploads/SQLite, proxy trust, static hosting, and rollback. <!-- sdd-owner: implementation -->
+- [ ] TRIANGULATE — verify the public Google Forms call-to-action still works without academy authentication, `/admin` and `/admin/leads` have no redirect, deprecated credential guidance is absent, uploads are ignored/persisted in deployment configuration, and non-TTY CLI smoke creates no account. <!-- sdd-owner: implementation -->
+- [ ] REFACTOR — remove only stale frontend test-script entries while retaining all academy tests, then run `pnpm --recursive test`, `pnpm --recursive run build`, and the documented clean-data-path admin → parent → forced-password-change → publication → attachment → hide/delete stale-URL smoke flow. <!-- sdd-owner: implementation -->
+- [ ] At authorized apply, create the draft/no-merge `feat/academy-client-portal` tracker PR to `main`, then maintain the listed child base order and clean-diff boundaries; merge the tracker only after all 11 child PRs are reviewed and integrated. <!-- sdd-owner: parent -->
+- [ ] After an authorized apply, start or reuse bounded review for each child work unit against its linked acceptance criteria, focused command evidence, rollback boundary, dependency diagram, and 400-line changed-line budget. <!-- sdd-owner: parent -->
