@@ -483,3 +483,26 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 **Task reconciliation:** no work-unit-11 checkbox changed. Its four implementation rows remain incomplete beyond this bounded navigation slice; parent-owned rows are unchanged.
 
 **Workload / PR boundary:** feature-branch-chain slice `34-public-academy-navigation`, below the 400-line budget. No route, API, dependency, Google Forms, lead-form, task, formatter, commit, push, PR, review, sync, archive, reset/rescope, or deployment work was performed.
+
+## 35-google-forms-enrolment-cta
+
+**Status / attempt:** consumed authoritative OpenSpec `applyState: ready`, `nextRecommended: apply`; repo-local action context had no warnings. Continued only the supplied `proceed` token `sha256:25fdcc300e2a3df6ff649b3f0098177ff8cea32257a15dfc37ff53cb09c13eb5`.
+
+**Completed:** replaced the public local enrolment form with the canonical Google Forms CTA, retaining `#formulario`, established card/button styling, and public Academy navigation. It opens a clearly labelled new tab using `noopener noreferrer`. Removed HomeComponent reactive-form, lead-API, demo/submission, success/error, and submit state. `home-form.ts`, its test, lead services, scripts, and tasks are unchanged by scope.
+
+### TDD Cycle Evidence
+
+| Task | Test file | Layer | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Google Forms CTA | `frontend/src/app/pages/home/home-template.test.ts` | Template/source contract | 8/8 | 7/10 passed; exact URL, new-tab safety, and no-local-form contracts failed | 10/10 | exact URL/safety and absence contracts cover independent public outcomes | retained existing visual language; no code refactor needed |
+
+**Verification:** focused home template 10/10; frontend 63/63; recursive frontend 63/63 + backend 28/28; frontend build; `git diff --check`; exact URL/safety and no-form/lead-state scans passed.
+
+**Task reconciliation:** no WU-11 row was marked. The following implementation rows remain unchecked and parent lifecycle rows remain unchanged:
+
+- [ ] RED — update `frontend/src/app/pages/home/{home-template,home-form}.test.ts` and route/template tests to expect Google Forms plus anonymous/authenticated academy navigation, no lead form/API state, no `/admin` compatibility route, and GitHub Pages academy-unavailable behavior. <!-- sdd-owner: implementation -->
+- [ ] GREEN — remove `frontend/src/app/pages/admin/**`, legacy `core/services/admin-*`/`leads-*`, `pages/home/home-form.ts`, and their registrations; update `HomeComponent`, routes, menus, proxy configuration, durable Docker Compose volume/configuration, `.gitignore`, and `README.md` for CLI bootstrap, `/api`, uploads/SQLite, proxy trust, static hosting, and rollback. <!-- sdd-owner: implementation -->
+- [ ] TRIANGULATE — verify the public Google Forms call-to-action still works without academy authentication, `/admin` and `/admin/leads` have no redirect, deprecated credential guidance is absent, uploads are ignored/persisted in deployment configuration, and non-TTY CLI smoke creates no account. <!-- sdd-owner: implementation -->
+- [ ] REFACTOR — remove only stale frontend test-script entries while retaining all academy tests, then run `pnpm --recursive test`, `pnpm --recursive run build`, and the documented clean-data-path admin → parent → forced-password-change → publication → attachment → hide/delete stale-URL smoke flow. <!-- sdd-owner: implementation -->
+
+**Workload / PR boundary:** `35-google-forms-enrolment-cta` only; 319 additions + deletions against `1177059`, within 400. No formatting outside semantic edits, task checkbox update, commit, push, PR, review, sync, archive, reset/rescope, or deployment.

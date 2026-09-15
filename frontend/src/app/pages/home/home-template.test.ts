@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 const templatePath = resolve(import.meta.dirname, 'home.component.html');
 const sourcePath = resolve(import.meta.dirname, 'home.component.ts');
 
-test('home template uses refreshed TEW assets, copy, and full enrollment form bindings', () => {
+test('home template keeps public TEW content and sends enrolment to the canonical Google Form', () => {
   const template = readFileSync(templatePath, 'utf8');
 
   assert.match(template, /assets\/img\/Robot Head with TEW Logo\.png/);
@@ -32,32 +32,27 @@ test('home template uses refreshed TEW assets, copy, and full enrollment form bi
   assert.match(template, /C\/ Severo Ochoa, 20, Local 4, 06800 Mérida/);
   assert.match(template, /iframe/);
   assert.match(template, /id="formulario"/);
-  assert.match(template, /INFORMACIÓN DEL ALUMNO/);
-  assert.match(template, /INFORMACIÓN ACADÉMICA/);
-  assert.match(template, /INFORMACIÓN DE PADRE\/MADRE\/TUTOR/);
-  assert.match(template, /CUOTA/);
-  assert.match(template, /OBSERVACIONES/);
-  assert.match(template, /id="student-name"/);
-  assert.match(template, /formControlName="studentName"/);
-  assert.match(template, /id="student-surname"/);
-  assert.match(template, /formControlName="studentSurname"/);
-  assert.match(template, /id="birth-date"/);
-  assert.match(template, /formControlName="birthDate"/);
-  assert.match(template, /id="student-address"/);
-  assert.match(template, /formControlName="address"/);
-  assert.match(template, /id="student-school"/);
-  assert.match(template, /formControlName="school"/);
-  assert.match(template, /id="student-current-course"/);
-  assert.match(template, /formControlName="currentCourse"/);
-  assert.match(template, /formControlName="primaryContactName"/);
-  assert.match(template, /formControlName="primaryContactSurname"/);
-  assert.match(template, /formControlName="primaryContactRelationship"/);
-  assert.match(template, /formControlName="secondaryContactName"/);
-  assert.match(template, /formControlName="pickupContact"/);
-  assert.match(template, /formControlName="paymentMethod"/);
-  assert.match(template, /formControlName="paymentAccountHolder"/);
-  assert.match(template, /formControlName="paymentIban"/);
-  assert.match(template, /formControlName="observations"/);
+  assert.match(template, /href="https:\/\/docs\.google\.com\/forms\/d\/e\/1FAIpQLSfTpcDh-XO9lGUBH9IagbhSyZkz3PlTsra64dvHEUAEgtMWlg\/viewform"/);
+});
+
+test('Google Forms enrolment opens safely in a clearly announced new tab', () => {
+  const template = readFileSync(templatePath, 'utf8');
+
+  assert.match(template, /target="_blank"/);
+  assert.match(template, /rel="noopener noreferrer"/);
+  assert.match(template, /aria-label="Abrir el formulario de matrícula en Google Forms en una nueva pestaña"/);
+  assert.match(template, /Solicitar matrícula en Google Forms/);
+});
+
+test('public home has no local lead form, submission state, or lead API', () => {
+  const template = readFileSync(templatePath, 'utf8');
+  const source = readFileSync(sourcePath, 'utf8');
+
+  assert.doesNotMatch(template, /<form[\s>]/);
+  assert.doesNotMatch(template, /formControlName=/);
+  assert.doesNotMatch(template, /\(ngSubmit\)=/);
+  assert.doesNotMatch(source, /ReactiveFormsModule|LeadsApiService|home-form|createLeadForm|submitLeadForm/);
+  assert.doesNotMatch(source, /protected readonly form|protected isSubmitting|protected successMessage|protected errorMessage|protected async submit\(/);
 });
 
 test('public home shows an anonymous Academy access link', () => {

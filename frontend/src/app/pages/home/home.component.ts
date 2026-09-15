@@ -1,18 +1,14 @@
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { academyDestination } from '../../core/academy/academy-guards';
 import { AcademySessionStore } from '../../core/academy/academy-session.store';
-import { LeadsApiService } from '../../core/services/leads-api.service';
 import {
   DEFAULT_SITE_CONFIG,
-  SITE_CONFIG_LOAD_ERROR_MESSAGE,
   SiteConfigService,
   type SiteConfig,
 } from '../../core/services/site-config.service';
-import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
 
 declare global {
   interface Window {
@@ -22,7 +18,7 @@ declare global {
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, RouterLink],
   templateUrl: './home.component.html',
   styles: `
     :host {
@@ -1477,25 +1473,15 @@ declare global {
 export class HomeComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly siteConfigService = inject(SiteConfigService);
-  private readonly leadsApi = inject(LeadsApiService);
   protected readonly academySession = inject(AcademySessionStore);
   protected readonly academyDestination = academyDestination;
 
-  protected readonly form = createLeadForm();
-  protected readonly demoMessage = DEMO_MODE_MESSAGE;
   protected menuOpen = false;
   protected siteConfig: SiteConfig = DEFAULT_SITE_CONFIG;
-  protected isLoadingConfig = true;
-  protected isSubmitting = false;
-  protected configErrorMessage = '';
-  protected successMessage = '';
-  protected errorMessage = '';
 
   ngOnInit() {
     this.siteConfigService.load().subscribe((state) => {
       this.siteConfig = state.config;
-      this.configErrorMessage = state.status === 'error' ? state.message : '';
-      this.isLoadingConfig = false;
 
       if (state.status === 'ready' && this.siteConfig.apiBaseUrl && this.academySession.token) {
         this.academySession.restore(this.siteConfig.apiBaseUrl).subscribe();
@@ -1536,59 +1522,4 @@ export class HomeComponent implements OnInit {
     window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
   }
 
-  protected async submit() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    this.successMessage = '';
-    this.errorMessage = '';
-
-    if (this.configErrorMessage) {
-      this.errorMessage = SITE_CONFIG_LOAD_ERROR_MESSAGE;
-      return;
-    }
-
-    const result = submitLeadForm(this.form, this.siteConfig.apiBaseUrl, (payload) =>
-      this.leadsApi.createLead(this.siteConfig.apiBaseUrl, payload),
-    );
-
-    if (result.mode === 'demo') {
-      this.successMessage = result.message;
-      return;
-    }
-
-    this.isSubmitting = true;
-
-    try {
-      await result.request;
-      this.form.reset({
-        studentName: '',
-        studentSurname: '',
-        birthDate: '',
-        address: '',
-        email: '',
-        phone: '',
-        school: '',
-        currentCourse: '',
-        primaryContactName: '',
-        primaryContactSurname: '',
-        primaryContactRelationship: '',
-        secondaryContactName: '',
-        secondaryContactSurname: '',
-        secondaryContactRelationship: '',
-        pickupContact: '',
-        paymentMethod: '',
-        paymentAccountHolder: '',
-        paymentIban: '',
-        observations: '',
-      });
-      this.successMessage = 'Gracias. Hemos recibido tu solicitud y te responderemos pronto.';
-    } catch {
-      this.errorMessage = 'No hemos podido enviar tu solicitud. Escribenos al email de contacto.';
-    } finally {
-      this.isSubmitting = false;
-    }
-  }
 }

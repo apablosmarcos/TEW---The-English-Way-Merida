@@ -283,163 +283,22 @@
     <section class="enroll" id="formulario" data-aos="fade-up">
       <div class="shell">
       <aside class="form-card card">
-        <span class="mode-pill" [class.live]="!!siteConfig.apiBaseUrl && !configErrorMessage">
-          {{ configErrorMessage ? 'Configuración no disponible' : siteConfig.apiBaseUrl ? 'Formulario conectado' : 'Demo visual' }}
-        </span>
+        <span class="mode-pill">Matrícula online</span>
         <h2>Matrícula y solicitud de información</h2>
         <p class="copy-muted">
-          Completa esta ficha y te ayudaremos a encontrar el grupo, horario y seguimiento que mejor encajen con vuestra
-          situación.
+          Completa la solicitud en Google Forms y te ayudaremos a encontrar el grupo, horario y seguimiento que mejor
+          encajen con vuestra situación.
         </p>
-
-        <div class="error" *ngIf="configErrorMessage" role="alert" aria-live="assertive">
-          {{ configErrorMessage }}
-        </div>
-
-        <div class="helper" *ngIf="!siteConfig.apiBaseUrl && !configErrorMessage" role="status" aria-live="polite">
-          {{ demoMessage }}
-        </div>
-
-        <form [formGroup]="form" (ngSubmit)="submit()">
-          <section class="form-section">
-            <h3 class="form-section-title">INFORMACIÓN DEL ALUMNO</h3>
-
-            <label class="field">
-              <span>Nombre del alumno *</span>
-              <input id="student-name" name="studentName" formControlName="studentName" type="text" autocomplete="given-name" />
-            </label>
-
-            <label class="field">
-              <span>Apellidos del alumno *</span>
-              <input id="student-surname" name="studentSurname" formControlName="studentSurname" type="text" autocomplete="family-name" />
-            </label>
-
-            <label class="field">
-              <span>Fecha de nacimiento *</span>
-              <input id="birth-date" name="birthDate" formControlName="birthDate" type="date" />
-            </label>
-
-            <label class="field field-full">
-              <span>Domicilio habitual *</span>
-              <textarea id="student-address" name="address" formControlName="address" placeholder="En casos de dos domicilios, si lo desean pueden indicar ambos."></textarea>
-            </label>
-
-            <label class="field">
-              <span>Email *</span>
-              <input id="lead-email" name="email" formControlName="email" type="email" autocomplete="email" />
-            </label>
-
-            <label class="field">
-              <span>Teléfono de contacto</span>
-              <input id="lead-phone" name="phone" formControlName="phone" type="text" autocomplete="tel" />
-            </label>
-          </section>
-
-          <section class="form-section">
-            <h3 class="form-section-title">INFORMACIÓN ACADÉMICA</h3>
-
-            <label class="field">
-              <span>Centro educativo *</span>
-              <input id="student-school" name="school" formControlName="school" type="text" />
-            </label>
-
-            <label class="field">
-              <span>Curso actual *</span>
-              <input id="student-current-course" name="currentCourse" formControlName="currentCourse" type="text" placeholder="Curso en el que se encuentra actualmente matriculado" />
-            </label>
-          </section>
-
-          <section class="form-section">
-            <h3 class="form-section-title">INFORMACIÓN DE PADRE/MADRE/TUTOR</h3>
-
-            <label class="field">
-              <span>Nombre *</span>
-              <input name="primaryContactName" formControlName="primaryContactName" type="text" />
-            </label>
-
-            <label class="field">
-              <span>Apellidos *</span>
-              <input name="primaryContactSurname" formControlName="primaryContactSurname" type="text" />
-            </label>
-
-            <label class="field field-full">
-              <span>Parentesco *</span>
-              <input name="primaryContactRelationship" formControlName="primaryContactRelationship" type="text" placeholder="Madre, padre, pareja, tutor..." />
-            </label>
-
-            <label class="field">
-              <span>Nombre</span>
-              <input name="secondaryContactName" formControlName="secondaryContactName" type="text" />
-            </label>
-
-            <label class="field">
-              <span>Apellidos</span>
-              <input name="secondaryContactSurname" formControlName="secondaryContactSurname" type="text" />
-            </label>
-
-            <label class="field field-full">
-              <span>Parentesco</span>
-              <input name="secondaryContactRelationship" formControlName="secondaryContactRelationship" type="text" placeholder="Madre, padre, pareja, tutor..." />
-            </label>
-
-            <label class="field field-full">
-              <span>Nombre y apellidos del familiar</span>
-              <textarea name="pickupContact" formControlName="pickupContact" placeholder="Si en alguna ocasión vendrá algún familiar a recoger al alumno, indíquelo aquí junto a su parentesco."></textarea>
-            </label>
-          </section>
-
-          <section class="form-section">
-            <h3 class="form-section-title">CUOTA</h3>
-            <p class="copy-muted section-note">
-              No se paga matrícula. El primer mes se aplica el coste del material del curso: copias, cuadernos de trabajo y material escolar. El alumno debe contar con algún dispositivo y nosotros nos encargamos de prepararle la plataforma.
-            </p>
-
-            <label class="field field-full">
-              <span>Forma de pago *</span>
-              <select name="paymentMethod" formControlName="paymentMethod">
-                <option value="">Seleccione la forma de pago</option>
-                <option value="efectivo">Efectivo (los 5 primeros días del mes en curso)</option>
-                <option value="domiciliacion">Domiciliación bancaria</option>
-                <option value="bizum">Bizum</option>
-              </select>
-            </label>
-
-            <ng-container *ngIf="form.get('paymentMethod')?.value === 'domiciliacion'">
-              <label class="field">
-                <span>Titular</span>
-                <input name="paymentAccountHolder" formControlName="paymentAccountHolder" type="text" />
-              </label>
-
-              <label class="field">
-                <span>IBAN</span>
-                <input name="paymentIban" formControlName="paymentIban" type="text" placeholder="ES..." />
-              </label>
-            </ng-container>
-          </section>
-
-          <section class="form-section">
-            <h3 class="form-section-title">OBSERVACIONES</h3>
-            <label class="field field-full">
-              <span>Comentarios adicionales relevantes</span>
-              <textarea name="observations" formControlName="observations" placeholder="Alergias, comentarios importantes o cualquier información que quieran incluir de forma privada."></textarea>
-            </label>
-          </section>
-
-          <div class="error" *ngIf="errorMessage" role="alert" aria-live="assertive">{{ errorMessage }}</div>
-          <div class="success success-celebrate" *ngIf="successMessage" role="status" aria-live="polite">
-            <img class="success-robot" src="assets/img/Robot Head with TEW Logo.png" alt="" aria-hidden="true" loading="lazy" decoding="async" width="1024" height="1024" />
-            <span>{{ successMessage }}</span>
-          </div>
-
-          <p class="privacy-notice">
-            Al enviar este formulario aceptas el tratamiento de tus datos para la gestión de la matrícula según nuestra
-            <a href="/privacidad" target="_blank">política de privacidad</a>.
-          </p>
-
-          <button class="button primary" type="submit" [disabled]="isSubmitting || isLoadingConfig || !!configErrorMessage">
-            {{ isSubmitting ? 'Enviando...' : 'Enviar matrícula' }}
-          </button>
-        </form>
+        <p class="helper" role="status">El formulario se abrirá en una nueva pestaña.</p>
+        <a
+          class="button primary"
+          href="https://docs.google.com/forms/d/e/1FAIpQLSfTpcDh-XO9lGUBH9IagbhSyZkz3PlTsra64dvHEUAEgtMWlg/viewform"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Abrir el formulario de matrícula en Google Forms en una nueva pestaña"
+        >
+          Solicitar matrícula en Google Forms
+        </a>
       </aside>
       </div>
     </section>
