@@ -7,7 +7,6 @@ import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 import { createApp } from '../app.ts';
-import { storeAdminSession } from '../modules/auth/admin-session-repository.ts';
 
 test('POST /api/admin/login returns 401 for invalid credentials', async () => {
   process.env.ADMIN_USERNAME = 'admin';
@@ -389,43 +388,6 @@ test('admin delete lead returns 401 without a valid token', async () => {
 
     assert.equal(deleteResponse.status, 401);
     assert.deepEqual(await deleteResponse.json(), { ok: false });
-  } finally {
-    delete process.env.SQLITE_DB_PATH;
-    delete process.env.LEGACY_LEADS_FILE_PATH;
-    delete process.env.ADMIN_USERNAME;
-    delete process.env.ADMIN_PASSWORD;
-    await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
-    await rm(sqliteDbPath, { force: true });
-  }
-});
-
-test('admin leads returns 401 for an expired persisted session token', async () => {
-  const sqliteDbPath = join(tmpdir(), `tew-admin-leads-${randomUUID()}.sqlite`);
-  process.env.SQLITE_DB_PATH = sqliteDbPath;
-  process.env.LEGACY_LEADS_FILE_PATH = join(tmpdir(), `tew-legacy-missing-${randomUUID()}.json`);
-  process.env.ADMIN_USERNAME = 'admin';
-  process.env.ADMIN_PASSWORD = 'secret';
-
-  const server = createServer(createApp());
-
-  try {
-    storeAdminSession('expired-token', '2000-01-01T00:00:00.000Z', process.env);
-
-    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
-    const address = server.address();
-
-    if (!address || typeof address === 'string') {
-      throw new Error('Test server did not expose a port');
-    }
-
-    const response = await fetch(`http://127.0.0.1:${address.port}/api/admin/leads`, {
-      headers: {
-        authorization: 'Bearer expired-token',
-      },
-    });
-
-    assert.equal(response.status, 401);
-    assert.deepEqual(await response.json(), { ok: false });
   } finally {
     delete process.env.SQLITE_DB_PATH;
     delete process.env.LEGACY_LEADS_FILE_PATH;

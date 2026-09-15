@@ -261,6 +261,38 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 - [ ] TRIANGULATE — verify a database containing legacy rows keeps them byte-for-byte while academy authentication rejects old `admin_sessions` material and health plus `/api/academy` remain the only active backend surface. <!-- sdd-owner: implementation -->
 - [ ] REFACTOR — remove only orphaned backend test-script entries from `backend/package.json`, retain academy coverage, and run `pnpm --filter tew-backend test` followed by `pnpm --filter tew-backend run build`. <!-- sdd-owner: implementation -->
 
+## 28-remove-legacy-auth normalization correction
+
+**Status / attempt:** authoritative `applyState: ready`; resumed supplied token `sha256:20b40c49a0b8edbb7a27e1481e4208b613eb86de15e10fc333e4c24d6fef2b9c` as `proceed` for `28-remove-legacy-auth-normalization`.
+
+**Correction:** restored `backend/src/routes/admin.test.ts` byte-for-byte from `27e5a7c`, then deleted only the `storeAdminSession` import and its expired-token test. The four intended legacy-auth files remain deleted; `tasks.md` was not changed.
+
+### TDD Cycle Evidence
+
+| Slice | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- |
+| Diff normalization | Academy route test 14/14 | Gatekeeper caught the prior 506-line formatting regression | Exact restore-and-delete check passed | Structural deletion; byte comparison against `27e5a7c` proves no other file byte changed | None; no formatter |
+
+**Verification:** academy routes 14/14; backend suite 28/28; backend build; `git diff --check`; deleted-module import scan; exact `admin.test.ts` byte comparison; allowed-only scope/count: 201/400 against `27e5a7c`. No commit, push, PR, review, sync, archive, deployment, package, task, lead/storage/frontend, or additional test change.
+
+**Settlement:** attempted `passed` with evidence `sha256:61dbe9706bf9773e5fc5c6c7055105eb4e4a19ebb23a6a5dd7a2e22db7bf6df7`; native state returned `blocked` for maintainer decision because cumulative attempt accounting is 482/400, despite the verified current candidate being 215/400. No reset, rescope, or new acquire was performed.
+
+## 28-remove-legacy-auth
+
+**Status consumed:** authoritative OpenSpec `applyState: ready`, `nextRecommended: apply`; repo-local action context authorized this workspace with no warning. Parent supplied the exact active attempt token `sha256:59e5d394bab1833e20a2169043d2cb11f9f7b5cb3470d8f9f9b494701b8710ed`.
+
+**Completed slice:** deleted the four inactive shared-admin auth/session module and test files. In `backend/src/routes/admin.test.ts`, removed only the `storeAdminSession` import and its expired-token test; all other legacy-route tests remain byte-for-byte unchanged. No task checkbox changed: all four broad work-unit-6 rows remain unchecked by scope.
+
+### TDD Cycle Evidence
+
+| Slice | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- |
+| 28 legacy auth deletion | `academy-routes.test.ts` 14/14 before deletion | Established prior deletion RED: stale callers prevented legacy-auth removal; this slice deletes precisely those orphan callers, with no replacement behavior test by explicit scope | academy routes 14/14; backend suite 28/28; build passed | independent import scan found no caller of any deleted module | None; deletion-only |
+
+**Verification:** `pnpm --filter tew-backend exec node --test --experimental-strip-types src/routes/academy-routes.test.ts` 14/14; `pnpm --filter tew-backend test` 28/28; `pnpm --filter tew-backend run build`; `git diff --check`; deleted-module import scan — all passed.
+
+**Workload / PR boundary:** feature-branch-chain work unit `28-remove-legacy-auth`, against `27e5a7c`; scope is only the four deleted files, the one `admin.test.ts` import/test removal, and this record. No design deviation, package-script change, task change, commit, push, PR, review, sync, archive, or deployment. The four exact unchecked work-unit-6 rows above remain deferred.
+
 ## 27-remove-legacy-routes-only — final settlement
 
 **Status consumed:** authoritative repo-local `applyState: ready`; allowed root was this workspace. Exact active token `sha256:4ccc840c77f6988b52f4cc3fb1e0f21102208b0ef3c194b854afda1bf72d3404` was reacquired as `proceed` and settled as `complete`. No action-context warning.
