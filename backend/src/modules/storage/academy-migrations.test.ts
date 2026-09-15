@@ -8,7 +8,6 @@ import { DatabaseSync } from "node:sqlite";
 import { applyAcademyMigrations } from "./academy-migrations.ts";
 import {
   ensureStorageDirectories,
-  initializeDatabase,
   openDatabase,
 } from "./sqlite.ts";
 
@@ -123,7 +122,6 @@ test("rolls back a failing migration and refuses a database newer than this bina
 
 test("clean initialization leaves legacy tables absent and preserves existing legacy bytes", () => {
   const clean = new DatabaseSync(":memory:");
-  initializeDatabase(clean);
   applyAcademyMigrations(clean);
   assert.deepEqual(academyTables(clean), ["attachments", "audit_log", "categories", "posts", "sessions", "users"]);
 
@@ -137,7 +135,6 @@ test("clean initialization leaves legacy tables absent and preserves existing le
   const legacyBefore = database.prepare("SELECT sql FROM sqlite_master WHERE name IN ('leads', 'admin_sessions') ORDER BY name").all();
   const rowsBefore = [database.prepare("SELECT * FROM leads").all(), database.prepare("SELECT * FROM admin_sessions").all()];
 
-  initializeDatabase(database);
   applyAcademyMigrations(database);
 
   assert.deepEqual(database.prepare("SELECT sql FROM sqlite_master WHERE name IN ('leads', 'admin_sessions') ORDER BY name").all(), legacyBefore);

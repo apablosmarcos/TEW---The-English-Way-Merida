@@ -407,3 +407,26 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 - [ ] GREEN — remove the listed legacy lead/admin route and module files, their registrations in `backend/src/app.ts`, deprecated environment parsing in `backend/src/config/env.ts`, and legacy creation/import behavior from `backend/src/modules/storage/sqlite.ts`; retain no code path that drops historic tables. <!-- sdd-owner: implementation -->
 - [ ] TRIANGULATE — verify a database containing legacy rows keeps them byte-for-byte while academy authentication rejects old `admin_sessions` material and health plus `/api/academy` remain the only active backend surface. <!-- sdd-owner: implementation -->
 - [ ] REFACTOR — remove only orphaned backend test-script entries from `backend/package.json`, retain academy coverage, and run `pnpm --filter tew-backend test` followed by `pnpm --filter tew-backend run build`. <!-- sdd-owner: implementation -->
+
+## 31-remove-legacy-storage-helpers
+
+**Status / attempt:** authoritative native `applyState: ready`; repo-local action context authorized this workspace with no warnings. Continued the supplied `proceed` token `sha256:55f7c71ebd73a20e064e9e641a34eb0b8ff4cc72ab771dca67a5e66f04b263ee` only.
+
+**Completed:** deleted the four failing retired-storage tests; removed only `initializeDatabase` and `importLegacyLeadsIfNeeded` from `sqlite.ts`; removed only their migration-test import and two calls. No schema, migration, table, row, runtime-route, package, frontend, generated-dist, or formatter change.
+
+**Files:** `backend/src/modules/storage/{sqlite.ts,sqlite.test.ts,academy-migrations.test.ts}` and this progress record. `tasks.md` remains byte-for-byte unchanged because no broad work-unit-6 checkbox is completed by this bounded cleanup.
+
+### TDD Cycle Evidence
+
+| Slice | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- |
+| 31 storage-helper deletion | Focused academy migrations/routes: 22/22 | `sqlite.test.ts`: 0/4; all cases asserted retired initializer/import behavior | Focused academy migrations/routes: 22/22; backend 28/28; workspace frontend 57/57 + backend 28/28; backend build passed | Skipped: structural deletion with no replacement behavior | No behavioral refactor; final focused suite remained 22/22 |
+
+**Verification:** `pnpm --filter tew-backend exec node --test --experimental-strip-types src/modules/storage/academy-migrations.test.ts src/routes/academy-routes.test.ts`; `pnpm --filter tew-backend test`; `pnpm --recursive test`; `pnpm --filter tew-backend run build`; `git diff --check` all passed. Exact `backend/src` caller scan is empty; exact transformation and unchanged-task checks passed. Pre-progress product diff: 160/400 against `806d5dc`.
+
+**Boundary / remaining:** only `31-remove-legacy-storage-helpers`; no commit, push, PR, review, sync, archive, reset/rescope, deployment, or task update. The four work-unit-6 implementation rows remain unchecked, including:
+
+- [ ] RED — add obsolete-route `404` and legacy-token-denial cases to `backend/src/routes/academy-routes.test.ts`, and adjust `backend/src/modules/storage/academy-migrations.test.ts` to prove clean initialization no longer creates/imports/queries legacy data while pre-existing legacy rows remain unchanged. <!-- sdd-owner: implementation -->
+- [ ] GREEN — remove the listed legacy lead/admin route and module files, their registrations in `backend/src/app.ts`, deprecated environment parsing in `backend/src/config/env.ts`, and legacy creation/import behavior from `backend/src/modules/storage/sqlite.ts`; retain no code path that drops historic tables. <!-- sdd-owner: implementation -->
+- [ ] TRIANGULATE — verify a database containing legacy rows keeps them byte-for-byte while academy authentication rejects old `admin_sessions` material and health plus `/api/academy` remain the only active backend surface. <!-- sdd-owner: implementation -->
+- [ ] REFACTOR — remove only orphaned backend test-script entries from `backend/package.json`, retain academy coverage, and run `pnpm --filter tew-backend test` followed by `pnpm --filter tew-backend run build`. <!-- sdd-owner: implementation -->

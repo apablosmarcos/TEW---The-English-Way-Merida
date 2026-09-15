@@ -15,13 +15,6 @@ export function openDatabase(env: NodeJS.ProcessEnv) {
   return database;
 }
 
-export function initializeDatabase(_database: DatabaseSync) {}
-
-export function importLegacyLeadsIfNeeded(
-  _database: DatabaseSync,
-  _env: NodeJS.ProcessEnv,
-) {}
-
 export function resolveDatabasePath(env: NodeJS.ProcessEnv) {
   return env.SQLITE_DB_PATH ?? fileURLToPath(defaultDatabaseFileUrl);
 }
