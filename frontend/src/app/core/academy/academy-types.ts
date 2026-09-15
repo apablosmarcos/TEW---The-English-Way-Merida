@@ -22,7 +22,8 @@ export type AcademyErrorCode =
   | 'VALIDATION_ERROR'
   | 'RATE_LIMITED'
   | 'INTERNAL_ERROR'
-  | 'CATEGORY_IN_USE';
+  | 'CATEGORY_IN_USE'
+  | 'RESOURCE_STATE_CONFLICT';
 export type AcademyError = { ok: false; error: { code: AcademyErrorCode; message: string } };
 export type AcademyLoginInput = { username: string; password: string };
 export type AcademyPasswordChangeInput = { currentPassword: string; newPassword: string };
@@ -31,6 +32,8 @@ export type AcademyPostVisibility = 'visible' | 'hidden' | 'deleted';
 export type AcademyAdminPost = {
   id: string;
   title: string;
+  markdownSource: string;
+  categoryId: string | null;
   category: AcademyCategory | null;
   visibility: AcademyPostVisibility;
   publishedAt: string;
@@ -38,6 +41,7 @@ export type AcademyAdminPost = {
   deletedAt: string | null;
 };
 export type AcademyAdminPostList = { items: AcademyAdminPost[] };
+export type AcademyAdminPostInput = { title: string; markdownSource: string; categoryId: string | null };
 export type AcademyParentPost = { id: string; title: string; category: AcademyCategory | null; publishedAt: string; updatedAt: string };
 export type AcademyParentAttachment = {
   id: string;

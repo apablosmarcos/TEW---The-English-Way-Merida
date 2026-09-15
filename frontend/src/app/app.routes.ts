@@ -48,6 +48,14 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/academy/academy-shell.component').then((module) => module.AcademyShellComponent),
             children: [
               {
+                path: 'nueva',
+                loadComponent: () => import('./pages/academy/admin-post-editor.component').then((module) => module.AdminPostEditorComponent),
+              },
+              {
+                path: ':id',
+                loadComponent: () => import('./pages/academy/admin-post-editor.component').then((module) => module.AdminPostEditorComponent),
+              },
+              {
                 path: '',
                 loadComponent: () => import('./pages/academy/admin-post-list.component').then((module) => module.AdminPostListComponent),
               },

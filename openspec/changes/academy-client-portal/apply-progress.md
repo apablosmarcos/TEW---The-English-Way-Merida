@@ -170,6 +170,35 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 
 **Design deviations:** none.
 
+## 24-admin-post-editor
+
+**Status consumed:** native `applyState: ready`, `nextRecommended: apply`, `artifactStore: openspec`; `actionContext.mode: repo-local` authorizes this workspace. Resumed attempt `sha256:c303b3d32b90dec2069b2f40d17670698cba8ca17e650ba481aaad12859ad613` with acquire state `proceed`.
+
+**Completed slice:** added guarded create/edit publication routes and list links. The editor uses one Markdown source for visual/source textareas, native `selectionStart`/`setRangeText` formatting controls, local `micromark` preview with dangerous HTML/protocols disabled, and Angular's normal `[innerHTML]` sanitizer boundary—without a rich-text or state dependency. It creates through the existing visible-by-default API, edits title/source/category, exposes show/hide and soft-delete actions, and maps post-deletion mutation conflicts to a clear display message.
+
+**Files:** `frontend/src/app/{app.routes.ts,core/academy/{academy-api.service.ts,academy-markdown.ts,academy-types.ts},pages/academy/{admin-post-list.component.ts,admin-post-editor.{component,test}.ts}}`, `frontend/package.json`, and this progress record.
+
+### TDD Cycle Evidence
+
+| Task | Test file | Layer | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 24 admin post editor | `frontend/src/app/pages/academy/admin-post-editor.test.ts` | Lightweight source-contract + Markdown unit | `admin-post-list.test.ts` 2/2 | 0/1: editor absent | 1/1 after routes/API/editor | 2/2: safe escaped HTML/unsafe URL fixtures, single-source modes, native selection controls, visibility/delete APIs, and conflict message | Registered focused test; no behavioral refactor needed |
+
+**Verification:** focused `admin-post-editor.test.ts` 2/2; `pnpm --filter tew-frontend test` 55/55; `pnpm --filter tew-frontend run build` passed; `git diff --check` passed (including untracked files with `--no-index`).
+
+**Workload / PR boundary:** feature-branch-chain work unit `24-admin-post-editor`; 170 additions + deletions before this OpenSpec record, below the 400-line review budget. No commit, push, PR, deploy, sync, review, archive, formatter, or attachment mutation work was performed.
+
+**Task reconciliation:** the four broad work-unit-10 rows remain `[ ]` because their combined contracts still include deferred attachment upload/rename/delete and related failures. No task checkbox was updated in this slice; parent-owned lifecycle rows remain byte-for-byte unchanged.
+
+**Remaining exact work-unit-10 rows:**
+
+- [ ] RED — add `frontend/src/app/pages/academy/{admin-post-list,admin-post-editor}.test.ts` coverage for visible/hidden/deleted inspection, category conflict presentation, create/edit/hide/delete controls, visual/source mode hooks using one Markdown source, safe preview fixtures, upload/rename/delete controls, and responsive shell navigation. <!-- sdd-owner: implementation -->
+- [ ] GREEN — implement the two planned admin content components and typed API calls, using native textarea selection controls/local generated preview, category controls within the content workspace, and `FormData` upload without a new editor/state dependency. <!-- sdd-owner: implementation -->
+- [ ] TRIANGULATE — cover mode-switch source preservation, no trust-bypass use, deleted-post mutation rejection display, attachment limit/type/size failures, retained deleted-material inspection, and keyboard/narrow-width behavior. <!-- sdd-owner: implementation -->
+- [ ] REFACTOR — retain component-local editor state and the existing design tokens rather than adding component families or a rich-text editor; run `pnpm --filter tew-frontend test && pnpm --filter tew-frontend run build`. <!-- sdd-owner: implementation -->
+
+**Design deviations:** none.
+
 **Remaining exact unchecked rows:**
 
 - [ ] RED — add obsolete-route `404` and legacy-token-denial cases to `backend/src/routes/academy-routes.test.ts`, and adjust `backend/src/modules/storage/academy-migrations.test.ts` to prove clean initialization no longer creates/imports/queries legacy data while pre-existing legacy rows remain unchanged. <!-- sdd-owner: implementation -->

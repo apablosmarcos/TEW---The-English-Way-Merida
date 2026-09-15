@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 
 import { buildAcademyEndpoint } from './academy-endpoint';
-import type { AcademyAdminPostList, AcademyAdminUserCreated, AcademyAdminUserInput, AcademyAdminUserList, AcademyAdminUserPassword, AcademyAdminUserQuery, AcademyCategory, AcademyLogin, AcademyLoginInput, AcademyParentPostDetail, AcademyParentPostList, AcademyParentPostQuery, AcademyPasswordChangeInput, AcademyPostVisibility, AcademySession, AcademySuccess } from './academy-types';
+import type { AcademyAdminPost, AcademyAdminPostInput, AcademyAdminPostList, AcademyAdminUserCreated, AcademyAdminUserInput, AcademyAdminUserList, AcademyAdminUserPassword, AcademyAdminUserQuery, AcademyCategory, AcademyLogin, AcademyLoginInput, AcademyParentPostDetail, AcademyParentPostList, AcademyParentPostQuery, AcademyPasswordChangeInput, AcademyPostVisibility, AcademySession, AcademySuccess } from './academy-types';
 
 export class AcademyApiService {
   private readonly http: HttpClient;
@@ -40,6 +40,26 @@ export class AcademyApiService {
       headers: { Authorization: `Bearer ${token}` },
       params: new HttpParams({ fromObject: status ? { status } : {} }),
     });
+  }
+
+  getAdminPost(apiBaseUrl: string, token: string, id: string) {
+    return this.http.get<AcademySuccess<AcademyAdminPost>>(buildAcademyEndpoint(apiBaseUrl, `admin/posts/${id}`), { headers: { Authorization: `Bearer ${token}` } });
+  }
+
+  createAdminPost(apiBaseUrl: string, token: string, input: AcademyAdminPostInput) {
+    return this.http.post<AcademySuccess<AcademyAdminPost>>(buildAcademyEndpoint(apiBaseUrl, 'admin/posts'), input, { headers: { Authorization: `Bearer ${token}` } });
+  }
+
+  updateAdminPost(apiBaseUrl: string, token: string, id: string, input: AcademyAdminPostInput) {
+    return this.http.patch<AcademySuccess<AcademyAdminPost>>(buildAcademyEndpoint(apiBaseUrl, `admin/posts/${id}`), input, { headers: { Authorization: `Bearer ${token}` } });
+  }
+
+  setAdminPostVisibility(apiBaseUrl: string, token: string, id: string, action: 'show' | 'hide') {
+    return this.http.post<AcademySuccess<AcademyAdminPost>>(buildAcademyEndpoint(apiBaseUrl, `admin/posts/${id}/${action}`), null, { headers: { Authorization: `Bearer ${token}` } });
+  }
+
+  deleteAdminPost(apiBaseUrl: string, token: string, id: string) {
+    return this.http.delete<void>(buildAcademyEndpoint(apiBaseUrl, `admin/posts/${id}`), { headers: { Authorization: `Bearer ${token}` } });
   }
 
   listCategories(apiBaseUrl: string, token: string) {
