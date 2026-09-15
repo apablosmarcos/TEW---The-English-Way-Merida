@@ -261,6 +261,24 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 - [ ] TRIANGULATE — verify a database containing legacy rows keeps them byte-for-byte while academy authentication rejects old `admin_sessions` material and health plus `/api/academy` remain the only active backend surface. <!-- sdd-owner: implementation -->
 - [ ] REFACTOR — remove only orphaned backend test-script entries from `backend/package.json`, retain academy coverage, and run `pnpm --filter tew-backend test` followed by `pnpm --filter tew-backend run build`. <!-- sdd-owner: implementation -->
 
+## 27-remove-legacy-routes-only — final settlement
+
+**Status consumed:** authoritative repo-local `applyState: ready`; allowed root was this workspace. Exact active token `sha256:4ccc840c77f6988b52f4cc3fb1e0f21102208b0ef3c194b854afda1bf72d3404` was reacquired as `proceed` and settled as `complete`. No action-context warning.
+
+**Scope confirmation:** product source diff remains exactly the deletions of `backend/src/routes/{leads,admin-auth,admin-leads}.ts`; shared-auth `admin-auth.ts`, `admin-auth.test.ts`, and `admin-session-repository.ts` are byte-for-byte equal to `acf9398`. No lead-domain module/test, `admin-session-repository.test.ts`, `routes/admin.test.ts`, or task checkbox changed.
+
+### TDD Cycle Evidence
+
+| Task | Test file | Layer | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 27 route-only finalization | Existing backend suite/build | Integration/typecheck | Fresh backend suite 28/28 | Established in prior route-only correction; no new product code | Fresh suite/build passed | Fresh exact-base and two route-import checks passed | None; deletion-only finalization |
+
+**Fresh verification:** `pnpm --filter tew-backend test` 28/28; `pnpm --filter tew-backend run build`; `git diff --check`; shared-auth exact-base check; absolute and route-local import scans for the three deleted modules — all passed. Evidence SHA-256: `sha256:16854a8485584c32090f0fac8658512adeb7ce237d54996c26a07c20f8ec5da8` (`/tmp/27-remove-legacy-routes-only-verification-final.log`). Candidate accounting against `acf9398`: 225 additions + deletions, within the 400-line budget.
+
+**Native settlement:** request `routes-finalize-settlement-20260912`; outcome `passed`; token `sha256:4ccc840c77f6988b52f4cc3fb1e0f21102208b0ef3c194b854afda1bf72d3404`; remediation binding `sha256:4057b3ab73023a3b099e29aad94b7ef7a1a6ee66155ea04d9f046764ad42cdf7`; harness `reused`; returned state `complete`.
+
+**Workload / PR boundary:** finalization only for feature-branch-chain work unit `27-remove-legacy-routes-only`; no commit, push, PR, review, sync, archive, formatting, reset, or follow-on work. Remaining broader work-unit-6 checkbox rows above remain unchecked and deferred.
+
 ## 26b-disable-legacy-tests
 
 **Status consumed:** `applyState: ready`; repo-local action context; parent-selected `auto-chain` / `feature-branch-chain`. The bounded retry acquired `proceed` with token `sha256:668fa65e2e473c0c634298f53939c5cf8f0a7b4f57065a3805816fdf8e61afd9`.
@@ -274,3 +292,46 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 **Verification:** `pnpm --filter tew-backend test` 28/28; `pnpm --filter tew-backend run build` passed; `git diff --check` passed. Branch diff against `47a789d`: 328 changed lines; objective diff against `8f84e7e948b125b45b6be08d88b5785409051bc5`: 16 changed lines.
 
 **Task reconciliation:** no checkbox changed. All four broad work-unit-6 rows remain unchecked by explicit scope; the prior full-suite-failure wording is superseded for this candidate. No commit, push, PR, formatting, deployment, sync, review, archive, or source/test-file deletion occurred.
+
+## 27-remove-legacy-routes — blocked
+
+**Status consumed:** native `applyState: ready`, repo-local action context, parent-approved `auto-chain` / `feature-branch-chain`; resumed managed attempt `sha256:9d8d70072fa728cdd553efef22a036810ca1001f5cca13b4cd21527c2ee81a1b` as `proceed`.
+
+**Attempted deletion:** removed only the six requested orphan route/shared-admin files: `backend/src/routes/{leads,admin-auth,admin-leads}.ts` and `backend/src/modules/auth/{admin-auth,admin-auth.test,admin-session-repository}.ts`. No Academy, lead-domain, database, or route-integration file was changed.
+
+### TDD Cycle Evidence
+
+| Task | Test file | Layer | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 27 deletion safety | Existing backend suite | Integration | Baseline `pnpm --filter tew-backend test`: 28/28 | Deletion-safety baseline replaces new behavior tests by explicit scope | Backend suite remains 28/28 | Build exposed two retained callers outside the deletion set | None; blocked before a scope-expanding change |
+
+**Blocker:** `pnpm --filter tew-backend run build` fails because retained `backend/src/modules/auth/admin-session-repository.test.ts` and protected `backend/src/routes/admin.test.ts` import the deleted session repository. Deleting or changing either conflicts with the explicit deletion-only scope and instruction to leave route integration tests for a later slice. The textual post-delete import scan confirms exactly those two inactive-but-TypeScript-included callers; no active runtime caller exists.
+
+**Verification:** backend test 28/28 passed after deletion; backend build failed with `TS2307` for those two retained test callers; pre/post `git diff --check` passed. Current deletion diff is 295 lines before this progress record and within the 400-line budget.
+
+**Task reconciliation:** no broad work-unit-6 row was marked complete. All four remain unchecked; parent-owned rows are unchanged. A maintainer must authorize a bounded follow-up that removes or updates the two stale tests, or explicitly allow a TypeScript build exclusion, before this deletion can be completed.
+
+## 27-remove-legacy-routes-only
+
+**Status consumed:** native `applyState: ready`, `nextRecommended: apply`, `artifactStore: openspec`; `actionContext.mode: repo-local` authorizes this workspace. The maintainer-authorized narrower rescope was acquired as `proceed`.
+
+**Completed slice:** restored exactly from clean base `acf9398` the three shared-auth files mistakenly deleted by the earlier six-file attempt: `backend/src/modules/auth/{admin-auth.ts,admin-auth.test.ts,admin-session-repository.ts}`. Only `backend/src/routes/{leads.ts,admin-auth.ts,admin-leads.ts}` remain deleted. No lead module/test, `admin-session-repository.test.ts`, or `routes/admin.test.ts` was changed.
+
+### TDD Cycle Evidence
+
+| Task | Test file | Layer | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 27 route-only deletion correction | Existing backend suite/build | Integration/typecheck | Backend suite 28/28 | Build failed with the two expected `TS2307` deferred-test imports while shared-auth files were absent | Restored the three files byte-for-byte from `acf9398`; backend suite 28/28 and build passed | Exact-base `git diff --quiet acf9398` confirmed all three restored files | Structural restoration only; no refactor |
+
+**Verification:** `pnpm --filter tew-backend test` 28/28; `pnpm --filter tew-backend run build` passed; `git diff --check` passed. A route-specific import scan of `backend/src` found no imports of `routes/{leads,admin-auth,admin-leads}.ts`.
+
+**Workload / PR boundary:** feature-branch-chain work unit `27-remove-legacy-routes-only`; working-tree changed-line count is recorded after this reconciliation and remains under 400. No commit, push, PR, formatting, deployment, sync, review, archive, lead-module/test change, or protected-test change was performed.
+
+**Task reconciliation:** no broad work-unit-6 checkbox changed. The assigned narrow route-only deletion does not complete its RED/GREEN/TRIANGULATE/REFACTOR rows, which include deferred test and legacy-module work.
+
+**Remaining exact work-unit-6 rows:**
+
+- [ ] RED — add obsolete-route `404` and legacy-token-denial cases to `backend/src/routes/academy-routes.test.ts`, and adjust `backend/src/modules/storage/academy-migrations.test.ts` to prove clean initialization no longer creates/imports/queries legacy data while pre-existing legacy rows remain unchanged. <!-- sdd-owner: implementation -->
+- [ ] GREEN — remove the listed legacy lead/admin route and module files, their registrations in `backend/src/app.ts`, deprecated environment parsing in `backend/src/config/env.ts`, and legacy creation/import behavior from `backend/src/modules/storage/sqlite.ts`; retain no code path that drops historic tables. <!-- sdd-owner: implementation -->
+- [ ] TRIANGULATE — verify a database containing legacy rows keeps them byte-for-byte while academy authentication rejects old `admin_sessions` material and health plus `/api/academy` remain the only active backend surface. <!-- sdd-owner: implementation -->
+- [ ] REFACTOR — remove only orphaned backend test-script entries from `backend/package.json`, retain academy coverage, and run `pnpm --filter tew-backend test` followed by `pnpm --filter tew-backend run build`. <!-- sdd-owner: implementation -->
