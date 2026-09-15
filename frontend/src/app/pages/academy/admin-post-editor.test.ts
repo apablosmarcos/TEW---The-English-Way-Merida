@@ -30,3 +30,30 @@ test("visual and source modes preserve one safe Markdown source and reject delet
   assert.match(api, /deleteAdminPost\(apiBaseUrl: string, token: string, id: string\)/);
   assert.match(source, /Las publicaciones eliminadas no se pueden modificar\./);
 });
+
+test("administrator attachments use authenticated lifecycle calls and keep deleted materials inspectable", () => {
+  const source = readFileSync(component, "utf8");
+  assert.match(api, /uploadAdminAttachment\(apiBaseUrl: string, token: string, postId: string, form: FormData\)/);
+  assert.match(api, /renameAdminAttachment\(apiBaseUrl: string, token: string, id: string, title: string\)/);
+  assert.match(api, /deleteAdminAttachment\(apiBaseUrl: string, token: string, id: string\)/);
+  assert.match(source, /form\.append\('file', this\.attachmentFile\)/);
+  assert.match(source, /form\.append\('title', this\.attachmentTitle\)/);
+  assert.match(source, /activeAttachments/);
+  assert.match(source, /deletedAttachments/);
+  assert.match(source, /this\.api\.previewAttachment/);
+  assert.match(source, /this\.api\.downloadAttachment/);
+});
+
+test("attachment controls preserve Blob authorization and explain backend rejection states", () => {
+  const source = readFileSync(component, "utf8");
+  const template = source.split('template: `')[1].split('`,\n  styles')[0];
+  const active = template.split('<h3>Activos</h3>')[1].split('<h3>Eliminados (retenidos)</h3>')[0];
+  const retained = template.split('<h3>Eliminados (retenidos)</h3>')[1];
+  assert.match(active, /renameAttachment/);
+  assert.match(active, /deleteAttachment/);
+  assert.doesNotMatch(retained, /renameAttachment|deleteAttachment/);
+  assert.match(api, /responseType: 'blob'/);
+  assert.match(source, /URL\.createObjectURL\(blob\)/);
+  assert.match(source, /URL\.revokeObjectURL\(url\)/);
+  assert.match(source, /Esta publicación ya tiene 10 materiales\.|máximo de 20 MiB|PDF, JPEG, PNG o WebP|ya no se puede modificar/);
+});

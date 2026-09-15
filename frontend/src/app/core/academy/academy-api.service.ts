@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 
 import { buildAcademyEndpoint } from './academy-endpoint';
-import type { AcademyAdminPost, AcademyAdminPostInput, AcademyAdminPostList, AcademyAdminUserCreated, AcademyAdminUserInput, AcademyAdminUserList, AcademyAdminUserPassword, AcademyAdminUserQuery, AcademyCategory, AcademyLogin, AcademyLoginInput, AcademyParentPostDetail, AcademyParentPostList, AcademyParentPostQuery, AcademyPasswordChangeInput, AcademyPostVisibility, AcademySession, AcademySuccess } from './academy-types';
+import type { AcademyAdminAttachment, AcademyAdminPost, AcademyAdminPostInput, AcademyAdminPostList, AcademyAdminUserCreated, AcademyAdminUserInput, AcademyAdminUserList, AcademyAdminUserPassword, AcademyAdminUserQuery, AcademyCategory, AcademyLogin, AcademyLoginInput, AcademyParentPostDetail, AcademyParentPostList, AcademyParentPostQuery, AcademyPasswordChangeInput, AcademyPostVisibility, AcademySession, AcademySuccess } from './academy-types';
 
 export class AcademyApiService {
   private readonly http: HttpClient;
@@ -60,6 +60,18 @@ export class AcademyApiService {
 
   deleteAdminPost(apiBaseUrl: string, token: string, id: string) {
     return this.http.delete<void>(buildAcademyEndpoint(apiBaseUrl, `admin/posts/${id}`), { headers: { Authorization: `Bearer ${token}` } });
+  }
+
+  uploadAdminAttachment(apiBaseUrl: string, token: string, postId: string, form: FormData) {
+    return this.http.post<AcademySuccess<AcademyAdminAttachment>>(buildAcademyEndpoint(apiBaseUrl, `admin/posts/${postId}/attachments`), form, { headers: { Authorization: `Bearer ${token}` } });
+  }
+
+  renameAdminAttachment(apiBaseUrl: string, token: string, id: string, title: string) {
+    return this.http.patch<AcademySuccess<AcademyAdminAttachment>>(buildAcademyEndpoint(apiBaseUrl, `admin/attachments/${id}`), { title }, { headers: { Authorization: `Bearer ${token}` } });
+  }
+
+  deleteAdminAttachment(apiBaseUrl: string, token: string, id: string) {
+    return this.http.delete<void>(buildAcademyEndpoint(apiBaseUrl, `admin/attachments/${id}`), { headers: { Authorization: `Bearer ${token}` } });
   }
 
   listCategories(apiBaseUrl: string, token: string) {

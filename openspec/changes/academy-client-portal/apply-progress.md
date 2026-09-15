@@ -199,6 +199,26 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 
 **Design deviations:** none.
 
+## 25-admin-attachments
+
+**Status consumed:** native `applyState: ready`, `nextRecommended: apply`, `artifactStore: openspec`; repo-local action context permits this workspace. Delivery path is parent-approved `auto-chain` / `feature-branch-chain`; the managed attempt was resumed as `proceed` with token `sha256:1134feaa8db8dead5acaa6d82e616728bb3f09bb18f4b9e55f5611175694fe7a`.
+
+**Reconciled blocker:** the earlier PATH-only blocker was incorrect. Gatekeeper supplied the managed v2.9.1 executable and confirmed the active attempt was `proceed`; all runtime commands in this retry ran only after that authorization.
+
+**Completed / persisted:** marked all four work-unit-10 implementation rows `[x]`. The existing editor now lists active and retained deleted materials, uploads exactly one file with `FormData`, renames or soft-deletes only active materials, and maps attachment limit, size, type, and state failures to clear Spanish messages. Preview/download reuse the authenticated Blob API methods and short-lived object URLs; no token enters a URL. Native controls, labels, focus styles, wrapping actions, and the existing narrow-width button layout remain intact.
+
+**Files:** `frontend/src/app/core/academy/{academy-api.service.ts,academy-types.ts}`, `frontend/src/app/pages/academy/admin-post-editor.{component,test}.ts`, and this change's `tasks.md`/`apply-progress.md`. No dependency or abstraction was added; no design deviation.
+
+### TDD Cycle Evidence
+
+| Task | Test file | Layer | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 25 admin attachments | `frontend/src/app/pages/academy/admin-post-editor.test.ts` | Lightweight source-contract | 2/2 focused passed | 2/3 passed: upload lifecycle API absent | 3/3 passed after typed API, `FormData`, editor controls, active/deleted lists, and Blob actions | 3/4 passed: test range initially included component methods after the retained template; corrected to isolate rendered retained controls, then 4/4 passed for retained read-only actions, Blob URL cleanup, and limit/type/size/state messaging | No behavioral refactor needed; retained existing component-local state and tokens |
+
+**Verification:** focused editor test 4/4; `pnpm --filter tew-frontend test` 57/57; `pnpm --filter tew-frontend run build` passed; `git diff --check` passed before OpenSpec reconciliation.
+
+**Workload / PR boundary:** feature-branch-chain work unit `25-admin-attachments`; candidate diff before task reconciliation was 120 additions + deletions, below the 400-line budget. No commit, push, PR, deploy, sync, review, archive, or formatter action was taken.
+
 **Remaining exact unchecked rows:**
 
 - [ ] RED — add obsolete-route `404` and legacy-token-denial cases to `backend/src/routes/academy-routes.test.ts`, and adjust `backend/src/modules/storage/academy-migrations.test.ts` to prove clean initialization no longer creates/imports/queries legacy data while pre-existing legacy rows remain unchanged. <!-- sdd-owner: implementation -->

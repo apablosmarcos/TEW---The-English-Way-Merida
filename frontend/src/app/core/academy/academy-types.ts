@@ -29,6 +29,14 @@ export type AcademyLoginInput = { username: string; password: string };
 export type AcademyPasswordChangeInput = { currentPassword: string; newPassword: string };
 export type AcademyCategory = { id: string; displayName: string };
 export type AcademyPostVisibility = 'visible' | 'hidden' | 'deleted';
+export type AcademyAdminAttachment = {
+  id: string;
+  mimeType: 'application/pdf' | 'image/jpeg' | 'image/png' | 'image/webp';
+  visibleTitle: string | null;
+  materialOrdinal: number;
+  extension: 'pdf' | 'jpg' | 'png' | 'webp';
+  deletedAt: string | null;
+};
 export type AcademyAdminPost = {
   id: string;
   title: string;
@@ -39,6 +47,7 @@ export type AcademyAdminPost = {
   publishedAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  attachments: AcademyAdminAttachment[];
 };
 export type AcademyAdminPostList = { items: AcademyAdminPost[] };
 export type AcademyAdminPostInput = { title: string; markdownSource: string; categoryId: string | null };
