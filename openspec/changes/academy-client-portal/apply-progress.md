@@ -551,3 +551,26 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 - [ ] REFACTOR — remove only stale frontend test-script entries while retaining all academy tests, then run `pnpm --recursive test`, `pnpm --recursive run build`, and the documented clean-data-path admin → parent → forced-password-change → publication → attachment → hide/delete stale-URL smoke flow. <!-- sdd-owner: implementation -->
 
 **Workload / PR boundary:** `37-remove-legacy-admin-login` only; no commit, push, PR, review, delivery, or lifecycle command.
+
+## 38-unregister-legacy-leads-route
+
+**Status / attempt:** consumed authoritative OpenSpec `applyState: ready`, `nextRecommended: apply`, and repo-local action context. Resumed the supplied token `sha256:04184c572a153749f7cbc7d7156f631323a1f480192ccbad62449dfc2fcb735b` as `proceed`; `.pi-lens.json` is untracked and was not edited.
+
+**Completed slice:** removed the only `admin/leads` route registration and its now-unused `LeadsComponent` import. No redirect replaces the retired route; Academy route definitions were not changed. The legacy component remains deferred because this bounded route-unregistration slice does not authorize deleting its supporting UI/state files.
+
+### TDD Cycle Evidence
+
+| Slice | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- |
+| 38 route unregistration | Updated `academy-guards.test.ts`; focused test failed 1/4 because `path: 'admin/leads'` remained registered. | Removed only the route/import; focused test passed 4/4. | The test asserts absence of legacy admin/login component references and `/admin`/`/admin/leads` redirects while retaining Academy route assertions. | No refactor: two-line registration removal only. |
+
+**Verification:** focused guards test 4/4; `pnpm --filter tew-frontend test` 56/56; `pnpm --filter tew-frontend run build` passed; static route check, `git diff --check`, and `.pi-lens.json` unchanged check passed. Evidence: `sha256:a420307853e527f3eb145cc46a76237de724991d810af9d0906c188515ccb567` (`/tmp/38-unregister-legacy-leads-route-verification.log`).
+
+**Workload / PR boundary:** feature-branch-chain slice `38-unregister-legacy-leads-route`; source/test diff is 12 additions + deletions before this record, below 400. No task checkbox changed because all four broader work-unit-11 implementation rows remain incomplete; parent-owned lifecycle rows remain byte-for-byte unchanged. No commit, push, PR, review, sync, archive, deployment, or `.pi-lens.json` edit occurred.
+
+**Remaining exact implementation rows:**
+
+- [ ] RED — update `frontend/src/app/pages/home/{home-template,home-form}.test.ts` and route/template tests to expect Google Forms plus anonymous/authenticated academy navigation, no lead form/API state, no `/admin` compatibility route, and GitHub Pages academy-unavailable behavior. <!-- sdd-owner: implementation -->
+- [ ] GREEN — remove `frontend/src/app/pages/admin/**`, legacy `core/services/admin-*`/`leads-*`, `pages/home/home-form.ts`, and their registrations; update `HomeComponent`, routes, menus, proxy configuration, durable Docker Compose volume/configuration, `.gitignore`, and `README.md` for CLI bootstrap, `/api`, uploads/SQLite, proxy trust, static hosting, and rollback. <!-- sdd-owner: implementation -->
+- [ ] TRIANGULATE — verify the public Google Forms call-to-action still works without academy authentication, `/admin` and `/admin/leads` have no redirect, deprecated credential guidance is absent, uploads are ignored/persisted in deployment configuration, and non-TTY CLI smoke creates no account. <!-- sdd-owner: implementation -->
+- [ ] REFACTOR — remove only stale frontend test-script entries while retaining all academy tests, then run `pnpm --recursive test`, `pnpm --recursive run build`, and the documented clean-data-path admin → parent → forced-password-change → publication → attachment → hide/delete stale-URL smoke flow. <!-- sdd-owner: implementation -->

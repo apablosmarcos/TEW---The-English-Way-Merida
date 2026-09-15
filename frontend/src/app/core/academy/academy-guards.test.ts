@@ -25,8 +25,9 @@ test('academy routes lazy-load access, forced-change, parent, and admin shell de
   assert.match(routes, /path: 'admin\/publicaciones'[\s\S]*academyAuthenticatedGuard[\s\S]*academyAdminGuard[\s\S]*loadComponent/);
 });
 
-test('legacy admin login route and component are absent while legacy leads remain', () => {
+test('legacy admin routes and components are absent with no replacement redirect', () => {
   assert.doesNotMatch(routes, /path: 'admin'/);
-  assert.doesNotMatch(routes, /LoginComponent/);
-  assert.match(routes, /path: 'admin\/leads'/);
+  assert.doesNotMatch(routes, /path: 'admin\/leads'/);
+  assert.doesNotMatch(routes, /redirectTo: 'admin(?:\/leads)?'/);
+  assert.doesNotMatch(routes, /LoginComponent|LeadsComponent/);
 });

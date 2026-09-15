@@ -7,7 +7,6 @@ import {
   academyForcedChangeGuard,
   academyParentGuard,
 } from './core/academy/academy-guards';
-import { LeadsComponent } from './pages/admin/leads.component';
 import { HomeComponent } from './pages/home/home.component';
 import { PrivacidadComponent } from './pages/privacidad/privacidad.component';
 
@@ -15,10 +14,6 @@ export const routes: Routes = [
   {
     path: '',
     component: HomeComponent,
-  },
-  {
-    path: 'admin/leads',
-    component: LeadsComponent,
   },
   {
     path: 'privacidad',
