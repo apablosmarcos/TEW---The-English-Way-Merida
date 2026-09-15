@@ -367,3 +367,19 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 - [ ] GREEN — remove the listed legacy lead/admin route and module files, their registrations in `backend/src/app.ts`, deprecated environment parsing in `backend/src/config/env.ts`, and legacy creation/import behavior from `backend/src/modules/storage/sqlite.ts`; retain no code path that drops historic tables. <!-- sdd-owner: implementation -->
 - [ ] TRIANGULATE — verify a database containing legacy rows keeps them byte-for-byte while academy authentication rejects old `admin_sessions` material and health plus `/api/academy` remain the only active backend surface. <!-- sdd-owner: implementation -->
 - [ ] REFACTOR — remove only orphaned backend test-script entries from `backend/package.json`, retain academy coverage, and run `pnpm --filter tew-backend test` followed by `pnpm --filter tew-backend run build`. <!-- sdd-owner: implementation -->
+
+## 29-remove-legacy-lead-repository
+
+**Status / attempt:** native `applyState: ready`; parent-supplied `proceed` token `sha256:e081d74644eb43bbe6b3635583ac87d5eef8bac6e2f1d1de69351511148e18d4` was settled `complete`.
+
+**Completed:** deleted inactive `backend/src/modules/leads/{lead-repository.ts,lead-repository.test.ts}` only. `tasks.md` is unchanged; the broad work-unit-6 rows remain unchecked.
+
+| TDD cycle | Evidence |
+| --- | --- |
+| Safety net / RED | Academy routes 14/14 passed before deletion; caller scan found zero production callers and the deleted test's single direct import. |
+| GREEN | Academy routes 14/14, backend suite 28/28, and backend build passed after deletion. |
+| TRIANGULATE / REFACTOR | Skipped: structural deletion with no replacement behavior authorized. |
+
+**Verification:** `git diff --check`, deleted-module caller scan, unchanged-task check, exact-scope check, and candidate count passed; candidate is 378 changed lines against `e26bc8d`.
+
+**Boundary:** `29-remove-legacy-lead-repository` only; no other source, test, task, script, formatter, lifecycle, or delivery action.
