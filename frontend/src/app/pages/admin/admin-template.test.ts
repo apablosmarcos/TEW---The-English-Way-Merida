@@ -3,26 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
 
-const leadsPath = resolve(import.meta.dirname, 'leads.component.ts');
 const indexPath = resolve(import.meta.dirname, '../../../index.html');
-
-test('admin leads template includes delete confirmation and success feedback hooks', () => {
-  const leadsSource = readFileSync(leadsPath, 'utf8');
-
-  assert.match(leadsSource, /confirm\(/);
-  assert.match(leadsSource, /successMessage/);
-  assert.match(leadsSource, /previewMessage\(lead\.message\)/);
-  assert.match(leadsSource, /lead\.phone \? lead\.phone : formatDate\(lead\.createdAt\)/);
-  assert.match(leadsSource, /<strong class="lead-title">{{ lead\.name }}<\/strong>/);
-  assert.match(leadsSource, /Detalle de solicitud/);
-  assert.match(leadsSource, /class="lead-title"/);
-  assert.match(leadsSource, /class="meta lead-meta"/);
-  assert.match(leadsSource, /class="preview lead-preview"/);
-  assert.match(leadsSource, /Centro educativo/);
-  assert.match(leadsSource, /Curso actual/);
-  assert.match(leadsSource, /Forma de pago/);
-  assert.match(leadsSource, /Observaciones/);
-});
 
 test('index.html defines an explicit favicon to avoid runtime 404 noise', () => {
   const indexHtml = readFileSync(indexPath, 'utf8');
