@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { clearAdminSession, readAdminSessionToken, writeAdminSessionToken } from './admin-session.ts';
+const { clearAdminSession, readAdminSessionToken } = await import(
+  new URL('./admin-session.ts', import.meta.url).href,
+);
 
 function createStorage() {
   const values = new Map<string, string>();
@@ -19,10 +21,10 @@ function createStorage() {
   };
 }
 
-test('admin session token can be stored and read back', () => {
+test('admin session token can be read from storage', () => {
   const storage = createStorage();
 
-  writeAdminSessionToken(storage, 'token_123');
+  storage.setItem('tew.admin.token', 'token_123');
 
   assert.equal(readAdminSessionToken(storage), 'token_123');
 });
@@ -30,7 +32,7 @@ test('admin session token can be stored and read back', () => {
 test('admin session token can be cleared', () => {
   const storage = createStorage();
 
-  writeAdminSessionToken(storage, 'token_123');
+  storage.setItem('tew.admin.token', 'token_123');
   clearAdminSession(storage);
 
   assert.equal(readAdminSessionToken(storage), null);

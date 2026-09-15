@@ -4,7 +4,6 @@ import { Injectable, inject } from '@angular/core';
 import {
   buildAdminLeadDetailEndpoint,
   buildAdminLeadsEndpoint,
-  buildAdminLoginEndpoint,
 } from './admin-endpoint';
 
 export type AdminLeadStatus =
@@ -46,12 +45,6 @@ export type AdminLead = {
   updatedAt: string;
 };
 
-export type AdminLoginResponse = {
-  ok: true;
-  token: string;
-  expiresAt: string;
-};
-
 export type AdminLeadsResponse = {
   ok: true;
   leads: AdminLead[];
@@ -65,13 +58,6 @@ export type AdminLeadResponse = {
 @Injectable({ providedIn: 'root' })
 export class AdminApiService {
   private readonly http = inject(HttpClient);
-
-  login(apiBaseUrl: string, username: string, password: string) {
-    return this.http.post<AdminLoginResponse>(buildAdminLoginEndpoint(apiBaseUrl), {
-      username,
-      password,
-    });
-  }
 
   listLeads(apiBaseUrl: string, token: string) {
     return this.http.get<AdminLeadsResponse>(buildAdminLeadsEndpoint(apiBaseUrl), {

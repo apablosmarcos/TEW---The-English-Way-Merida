@@ -524,3 +524,30 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 **Scope / budget:** exactly the five authorized frontend paths plus this record; final diff against `02606cc` is 19 additions + 317 deletions = 336 changed lines, below 400 (product paths: 318). No task checkbox, admin UI/login/deployment cleanup, commit, push, PR, review, or lifecycle action.
 
 **Remaining tasks:** the four exact unchecked work-unit-11 implementation rows immediately above remain unchanged.
+
+## 37-remove-legacy-admin-login
+
+**Status / boundary:** authoritative `applyState: ready`; repo-local action context permits only the listed paths. Parent supplied `proceed` token `sha256:0bded7e7d9991125838647e11ddde6ec3a5953fffab4576ba8a4a9cbc457b991` and owns settlement. `auto-chain` / `feature-branch-chain`; WU-11 task rows remain unchecked.
+
+**Corrective recovery:** parent rejected the churned 790-line candidate (`sha256:a8f2652d21c1eaeaf3f9ab7157b0afc2e3ad8bb8c8085a1356e4470e7bc43e7b`). Captured current intended deletions in `/tmp/37-intended-semantic-removals-rerun.txt`; as the final mutation, raw-restored all eight retained TS files from `9e860e1` and applied only exact deletion hunks. `login.component.ts` remains deleted; exact `/admin` and `LoginComponent` are absent; `/admin/leads`, leads operations, and session read/clear remain.
+
+**Files:** `frontend/src/app/{app.routes.ts,core/{academy/academy-guards.test.ts,services/{admin-api.service.ts,admin-endpoint{,.test}.ts,admin-session{,.test}.ts}},pages/admin/{admin-template.test.ts,login.component.ts}}`, plus this record. No formatter or design deviation.
+
+### TDD Cycle Evidence
+
+| Task | Test file | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- | --- |
+| 37 corrective recovery | focused route/client contracts | parent found quote/layout churn | new route contract 3/4, failed with `/admin` and `LoginComponent` | 10/10 | proves exact `/admin`/`LoginComponent` absence and `/admin/leads` retention | none; raw base style |
+
+**Attempt 41 recovery verification:** focused route/client contracts 10/10; `pnpm --recursive test` frontend 56/56 and backend 28/28; `pnpm --filter tew-frontend run build` passed. `git diff --check 9e860e1` passed.
+
+**Fresh evidence:** `/tmp/37-remove-legacy-admin-login-recovery-tests.log` and `/tmp/37-remove-legacy-admin-login-recovery-build.log`; final parent-reproducible Git commands below report 43 additions + 323 deletions = 366 changed lines against `9e860e1`.
+
+**Remaining / reconciliation:** no persisted checkbox changed; this bounded slice does not complete broad WU-11. Parent-owned rows unchanged.
+
+- [ ] RED — update `frontend/src/app/pages/home/{home-template,home-form}.test.ts` and route/template tests to expect Google Forms plus anonymous/authenticated academy navigation, no lead form/API state, no `/admin` compatibility route, and GitHub Pages academy-unavailable behavior. <!-- sdd-owner: implementation -->
+- [ ] GREEN — remove `frontend/src/app/pages/admin/**`, legacy `core/services/admin-*`/`leads-*`, `pages/home/home-form.ts`, and their registrations; update `HomeComponent`, routes, menus, proxy configuration, durable Docker Compose volume/configuration, `.gitignore`, and `README.md` for CLI bootstrap, `/api`, uploads/SQLite, proxy trust, static hosting, and rollback. <!-- sdd-owner: implementation -->
+- [ ] TRIANGULATE — verify the public Google Forms call-to-action still works without academy authentication, `/admin` and `/admin/leads` have no redirect, deprecated credential guidance is absent, uploads are ignored/persisted in deployment configuration, and non-TTY CLI smoke creates no account. <!-- sdd-owner: implementation -->
+- [ ] REFACTOR — remove only stale frontend test-script entries while retaining all academy tests, then run `pnpm --recursive test`, `pnpm --recursive run build`, and the documented clean-data-path admin → parent → forced-password-change → publication → attachment → hide/delete stale-URL smoke flow. <!-- sdd-owner: implementation -->
+
+**Workload / PR boundary:** `37-remove-legacy-admin-login` only; no commit, push, PR, review, delivery, or lifecycle command.

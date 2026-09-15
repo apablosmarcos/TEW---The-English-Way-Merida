@@ -2,10 +2,6 @@ function normalizeApiBaseUrl(apiBaseUrl: string) {
   return apiBaseUrl.trim().replace(/\/+$/, '');
 }
 
-export function buildAdminLoginEndpoint(apiBaseUrl: string) {
-  return `${normalizeApiBaseUrl(apiBaseUrl)}/admin/login`;
-}
-
 export function buildAdminLeadsEndpoint(apiBaseUrl: string) {
   return `${normalizeApiBaseUrl(apiBaseUrl)}/admin/leads`;
 }
