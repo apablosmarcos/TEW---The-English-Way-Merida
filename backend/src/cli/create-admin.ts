@@ -5,11 +5,11 @@ import { AuditRepository } from "../modules/academy/audit-repository.ts";
 import { UserRepository } from "../modules/academy/user-repository.ts";
 import { UserService } from "../modules/academy/user-service.ts";
 import { applyAcademyMigrations } from "../modules/storage/academy-migrations.ts";
-import { ensureStorageDirectories, initializeDatabase, openDatabase } from "../modules/storage/sqlite.ts";
+import { ensureStorageDirectories, openDatabase } from "../modules/storage/sqlite.ts";
 import { readPassword as readTtyPassword } from "./tty-password.ts";
 
 type CliInput = { isTTY?: boolean };
-type CliOutput = { isTTY?: boolean; write(message: string): unknown };
+type CliOutput = { isTTY?: boolean; write(message: string): void };
 type Prompter = (prompt: string) => Promise<string>;
 
 type CreateAdminOptions = {
@@ -27,7 +27,7 @@ export async function runCreateAdmin(options: CreateAdminOptions = {}) {
   if (!input.isTTY || !output.isTTY) return failure(output, "academy:create-admin requires TTY stdin and stdout.");
 
   const ask = options.ask ?? ((prompt) => askLine(input, output, prompt));
-  const readPassword = options.readPassword ?? ((prompt) => readTtyPassword(input as NodeJS.ReadStream & { setRawMode(mode: boolean): unknown }, output, prompt));
+  const readPassword: Prompter = options.readPassword ?? (async (prompt): Promise<string> => String(await readTtyPassword(input as NodeJS.ReadStream & { setRawMode(mode: boolean): unknown }, output, prompt)));
   let displayName: string;
   let username: string;
   let password: string;
@@ -46,7 +46,6 @@ export async function runCreateAdmin(options: CreateAdminOptions = {}) {
   try {
     await (options.prepareStorage ?? ensureStorageDirectories)(options.env ?? process.env);
     database = openDatabase(options.env ?? process.env);
-    initializeDatabase(database);
     applyAcademyMigrations(database);
     await new UserService(new UserRepository(database), new AuditRepository(database)).createActiveAdministrator({ displayName, username, password });
     output.write("Administrator created.\n");

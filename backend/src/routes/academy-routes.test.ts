@@ -131,6 +131,29 @@ test("academy auth routes expose the HTTP session contract", async () => {
   }
 });
 
+test("legacy routes and sessions are unavailable while academy and health remain active", async () => {
+  const fixture = await setup([{ username: "ada", password: "correct password" }]);
+  try {
+    const database = openDatabase({ SQLITE_DB_PATH: fixture.sqliteDbPath });
+    try {
+      database.exec("CREATE TABLE admin_sessions (tokenHash TEXT PRIMARY KEY, expiresAt TEXT NOT NULL)");
+      database.prepare("INSERT INTO admin_sessions VALUES (?, ?)").run(createHash("sha256").update("legacy-token").digest("hex"), "2099-01-01T00:00:00.000Z");
+    } finally {
+      database.close();
+    }
+    await withServer(createApp(), async (baseUrl) => {
+      for (const [method, path] of [["POST", "/api/leads"], ["POST", "/api/admin/login"], ["GET", "/api/admin/leads"]] as const) {
+        assert.equal((await fetch(`${baseUrl}${path}`, { method })).status, 404);
+      }
+      assert.equal((await fetch(`${baseUrl}/api/academy/session`, { headers: { authorization: "Bearer legacy-token" } })).status, 401);
+      assert.equal((await fetch(`${baseUrl}/api/health`)).status, 200);
+      assert.equal((await login(baseUrl, "ada", "correct password")).response.status, 200);
+    });
+  } finally {
+    await fixture.close();
+  }
+});
+
 test("academy password change keeps session identity internal and revokes expired or replaced sessions", async () => {
   const fixture = await setup([{ username: "ada", password: "correct password" }]);
   try {

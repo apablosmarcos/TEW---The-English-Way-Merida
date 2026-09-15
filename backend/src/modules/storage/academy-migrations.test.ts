@@ -121,32 +121,27 @@ test("rolls back a failing migration and refuses a database newer than this bina
   );
 });
 
-test("keeps pre-existing legacy initialization working alongside academy migration", () => {
-  const database = new DatabaseSync(":memory:");
+test("clean initialization leaves legacy tables absent and preserves existing legacy bytes", () => {
+  const clean = new DatabaseSync(":memory:");
+  initializeDatabase(clean);
+  applyAcademyMigrations(clean);
+  assert.deepEqual(academyTables(clean), ["attachments", "audit_log", "categories", "posts", "sessions", "users"]);
 
+  const database = new DatabaseSync(":memory:");
   database.exec(`
     CREATE TABLE leads (id TEXT PRIMARY KEY, name TEXT NOT NULL);
     CREATE TABLE admin_sessions (tokenHash TEXT PRIMARY KEY, expiresAt TEXT NOT NULL);
     INSERT INTO leads VALUES ('lead-1', 'Existing lead');
     INSERT INTO admin_sessions VALUES ('legacy-token', '2026-01-01T00:00:00.000Z');
   `);
+  const legacyBefore = database.prepare("SELECT sql FROM sqlite_master WHERE name IN ('leads', 'admin_sessions') ORDER BY name").all();
+  const rowsBefore = [database.prepare("SELECT * FROM leads").all(), database.prepare("SELECT * FROM admin_sessions").all()];
+
   initializeDatabase(database);
   applyAcademyMigrations(database);
 
-  assert.equal(database.prepare("PRAGMA user_version").get()?.user_version, 1);
-  assert.equal(
-    database.prepare("SELECT COUNT(*) AS count FROM users").get()?.count,
-    0,
-  );
-  assert.equal(
-    database.prepare("SELECT COUNT(*) AS count FROM leads").get()?.count,
-    1,
-  );
-  assert.equal(
-    database.prepare("SELECT COUNT(*) AS count FROM admin_sessions").get()
-      ?.count,
-    1,
-  );
+  assert.deepEqual(database.prepare("SELECT sql FROM sqlite_master WHERE name IN ('leads', 'admin_sessions') ORDER BY name").all(), legacyBefore);
+  assert.deepEqual([database.prepare("SELECT * FROM leads").all(), database.prepare("SELECT * FROM admin_sessions").all()], rowsBefore);
 });
 
 test("configures foreign keys on every opened database connection", () => {

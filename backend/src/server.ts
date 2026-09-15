@@ -1,16 +1,14 @@
 import { createApp } from './app.ts';
 import { getPort } from './config/env.ts';
 import { applyAcademyMigrations } from './modules/storage/academy-migrations.ts';
-import { ensureStorageDirectories, importLegacyLeadsIfNeeded, initializeDatabase, openDatabase } from './modules/storage/sqlite.ts';
+import { ensureStorageDirectories, openDatabase } from './modules/storage/sqlite.ts';
 
 async function start() {
   await ensureStorageDirectories(process.env);
 
   const database = openDatabase(process.env);
   try {
-    initializeDatabase(database);
     applyAcademyMigrations(database);
-    importLegacyLeadsIfNeeded(database, process.env);
   } finally {
     database.close();
   }

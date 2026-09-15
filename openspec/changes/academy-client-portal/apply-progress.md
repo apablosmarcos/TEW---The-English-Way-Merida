@@ -235,3 +235,42 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 - [ ] REFACTOR — remove only stale frontend test-script entries while retaining all academy tests, then run `pnpm --recursive test`, `pnpm --recursive run build`, and the documented clean-data-path admin → parent → forced-password-change → publication → attachment → hide/delete stale-URL smoke flow. <!-- sdd-owner: implementation -->
 - [ ] At authorized apply, create the draft/no-merge `feat/academy-client-portal` tracker PR to `main`, then maintain the listed child base order and clean-diff boundaries; merge the tracker only after all 11 child PRs are reviewed and integrated. <!-- sdd-owner: parent -->
 - [ ] After an authorized apply, start or reuse bounded review for each child work unit against its linked acceptance criteria, focused command evidence, rollback boundary, dependency diagram, and 400-line changed-line budget. <!-- sdd-owner: parent -->
+
+## 26-retire-backend-runtime
+
+**Status consumed:** native `applyState: ready`, `nextRecommended: apply`, `artifactStore: openspec`; `actionContext.mode: repo-local` permits this workspace. Managed attempt `sha256:46887ab75c84aaf629924ba6d5d1be0cf7b3e2c5cc6c53568001dec2858a1e8c` was resumed as `proceed`.
+
+**Completed slice:** unregistered legacy lead/shared-admin routers, removed deprecated legacy initialization/import parsing from active storage, server, and CLI setup, while retaining the historical route/module/test files and all historic tables. Health and academy login remain active. No task checkbox changed: the four work-unit-6 rows intentionally remain unchecked until the next branch removes orphan files and stale test scripts.
+
+**Files:** `backend/src/{app.ts,server.ts,cli/create-admin.ts,modules/storage/{sqlite.ts,academy-migrations.test.ts},routes/academy-routes.test.ts}` and this progress record. No historical table or row was mutated.
+
+### TDD Cycle Evidence
+
+| Task | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- |
+| Backend legacy runtime retirement | Focused suite: 21/23; clean initialization still created legacy tables and `POST /api/leads` returned 400. | 23/23 after unregistering routes and making legacy initialization/import inert. | The focused test snapshots legacy schemas/rows, rejects an old session token, and confirms health plus academy login. | No behavioral refactor needed; retained orphan files and stale test entries for the next slice. |
+
+**Verification:** focused command passed 23/23; `pnpm --filter tew-backend run build` passed; `pnpm --filter tew-backend test` and `pnpm --recursive test` both fail only in 21 retained backend legacy tests/scripts while frontend remains 57/57; `git diff --check` passed before this record.
+
+**Workload / PR boundary:** feature-branch-chain work unit `26-retire-backend-runtime`; product/test diff is 287 additions + deletions before this record, and the complete diff remains within 400. No commit, push, PR, deploy, sync, review, archive, or formatter was run.
+
+**Remaining exact work-unit-6 rows (intentionally unchecked):**
+
+- [ ] RED — add obsolete-route `404` and legacy-token-denial cases to `backend/src/routes/academy-routes.test.ts`, and adjust `backend/src/modules/storage/academy-migrations.test.ts` to prove clean initialization no longer creates/imports/queries legacy data while pre-existing legacy rows remain unchanged. <!-- sdd-owner: implementation -->
+- [ ] GREEN — remove the listed legacy lead/admin route and module files, their registrations in `backend/src/app.ts`, deprecated environment parsing in `backend/src/config/env.ts`, and legacy creation/import behavior from `backend/src/modules/storage/sqlite.ts`; retain no code path that drops historic tables. <!-- sdd-owner: implementation -->
+- [ ] TRIANGULATE — verify a database containing legacy rows keeps them byte-for-byte while academy authentication rejects old `admin_sessions` material and health plus `/api/academy` remain the only active backend surface. <!-- sdd-owner: implementation -->
+- [ ] REFACTOR — remove only orphaned backend test-script entries from `backend/package.json`, retain academy coverage, and run `pnpm --filter tew-backend test` followed by `pnpm --filter tew-backend run build`. <!-- sdd-owner: implementation -->
+
+## 26b-disable-legacy-tests
+
+**Status consumed:** `applyState: ready`; repo-local action context; parent-selected `auto-chain` / `feature-branch-chain`. The bounded retry acquired `proceed` with token `sha256:668fa65e2e473c0c634298f53939c5cf8f0a7b4f57065a3805816fdf8e61afd9`.
+
+**Completed slice:** removed only obsolete legacy test-script entries from `backend/package.json`. `sqlite.test.ts` remains in the tree but is no longer invoked because all four of its retained assertions require the deactivated legacy initializer/importer; current app, academy-migration storage, publication, and academy-route coverage remain explicit.
+
+| TDD cycle | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- |
+| 26b legacy scripts | Retained prior 21 legacy failures; first script-only pass isolated the final 4 to `sqlite.test.ts`. | Backend suite: 28/28 after removing that obsolete entry. | N/A: no behavior changed. | No refactor; no source/test file was deleted. |
+
+**Verification:** `pnpm --filter tew-backend test` 28/28; `pnpm --filter tew-backend run build` passed; `git diff --check` passed. Branch diff against `47a789d`: 328 changed lines; objective diff against `8f84e7e948b125b45b6be08d88b5785409051bc5`: 16 changed lines.
+
+**Task reconciliation:** no checkbox changed. All four broad work-unit-6 rows remain unchecked by explicit scope; the prior full-suite-failure wording is superseded for this candidate. No commit, push, PR, formatting, deployment, sync, review, archive, or source/test-file deletion occurred.
