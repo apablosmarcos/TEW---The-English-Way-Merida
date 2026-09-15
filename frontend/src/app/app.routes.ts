@@ -46,11 +46,23 @@ export const routes: Routes = [
             path: 'admin/publicaciones',
             canActivate: [academyAuthenticatedGuard, academyAdminGuard],
             loadComponent: () => import('./pages/academy/academy-shell.component').then((module) => module.AcademyShellComponent),
+            children: [
+              {
+                path: '',
+                loadComponent: () => import('./pages/academy/admin-post-list.component').then((module) => module.AdminPostListComponent),
+              },
+            ],
           },
           {
             path: 'admin/usuarios',
             canActivate: [academyAuthenticatedGuard, academyAdminGuard],
-            loadComponent: () => import('./pages/academy/admin-users.component').then((module) => module.AdminUsersComponent),
+            loadComponent: () => import('./pages/academy/academy-shell.component').then((module) => module.AcademyShellComponent),
+            children: [
+              {
+                path: '',
+                loadComponent: () => import('./pages/academy/admin-users.component').then((module) => module.AdminUsersComponent),
+              },
+            ],
           },
           {
             path: '',

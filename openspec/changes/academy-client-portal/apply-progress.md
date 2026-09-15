@@ -148,6 +148,28 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 
 **Workload / PR boundary:** feature-branch-chain work unit `22-admin-users-lifecycle`; 120 product/test changed lines before OpenSpec records, below 400. No commit, push, PR, sync, review, archive, deployment, or other work unit was started.
 
+## 23-admin-content-list
+
+**Status consumed:** native `applyState: ready`, `nextRecommended: apply`, `artifactStore: openspec`; `actionContext.mode: repo-local` permits this root with no warnings. Active attempt `sha256:d381500abf5c06bd9bdbbbbc9a7394540bf32eb4c9c5dde24de01bd5ebc20dc5` resumed with acquire state `proceed`.
+
+**Completed slice:** guarded `/academia/admin/publicaciones` now renders an administrator list of all, visible, hidden, or deleted publications. The category workspace lists, creates, renames, and deletes categories, mapping `CATEGORY_IN_USE` to a clear Spanish conflict. The administrator users route now shares the academy shell so both administrator destinations retain navigation.
+
+**Files:** `frontend/src/app/{app.routes.ts,core/academy/{academy-api.service.ts,academy-types.ts},pages/academy/admin-post-list.{component,test}.ts}`, `frontend/package.json`, and this apply-progress record.
+
+### TDD Cycle Evidence
+
+| Task | Test file | Layer | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 23 content discovery/categories | `frontend/src/app/pages/academy/admin-post-list.test.ts` | Lightweight source-contract | API/shell 2/2 | 0/1: component absent | 1/1 after typed list/category API and component | 1/2: guarded route absent; 2/2 after nested guarded route | Registered focused test in frontend script; 53/53 frontend tests and build passed |
+
+**Verification:** focused `admin-post-list.test.ts` 2/2; `pnpm --filter tew-frontend test` 53/53; `pnpm --filter tew-frontend run build` passed; `git diff --check` passed (also checked both new files with `--no-index`).
+
+**Workload / PR boundary:** feature-branch-chain work unit `23-admin-content-list`; 175 product/test additions + deletions before this 22-line OpenSpec record, 197 total, below 400. No commit, push, PR, deploy, sync, review, archive, editor, Markdown mode/preview, or attachment mutation was started.
+
+**Task reconciliation:** no broad administrator-content checkbox is marked because each of its four exact unchecked rows also requires the intentionally deferred publication editor, Markdown mode/preview, or attachment mutations. The exact remaining rows, including deferred parent lifecycle rows, remain visibly listed unchanged below.
+
+**Design deviations:** none.
+
 **Remaining exact unchecked rows:**
 
 - [ ] RED — add obsolete-route `404` and legacy-token-denial cases to `backend/src/routes/academy-routes.test.ts`, and adjust `backend/src/modules/storage/academy-migrations.test.ts` to prove clean initialization no longer creates/imports/queries legacy data while pre-existing legacy rows remain unchanged. <!-- sdd-owner: implementation -->

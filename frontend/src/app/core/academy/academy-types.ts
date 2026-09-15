@@ -21,11 +21,23 @@ export type AcademyErrorCode =
   | 'FORBIDDEN'
   | 'VALIDATION_ERROR'
   | 'RATE_LIMITED'
-  | 'INTERNAL_ERROR';
+  | 'INTERNAL_ERROR'
+  | 'CATEGORY_IN_USE';
 export type AcademyError = { ok: false; error: { code: AcademyErrorCode; message: string } };
 export type AcademyLoginInput = { username: string; password: string };
 export type AcademyPasswordChangeInput = { currentPassword: string; newPassword: string };
 export type AcademyCategory = { id: string; displayName: string };
+export type AcademyPostVisibility = 'visible' | 'hidden' | 'deleted';
+export type AcademyAdminPost = {
+  id: string;
+  title: string;
+  category: AcademyCategory | null;
+  visibility: AcademyPostVisibility;
+  publishedAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
+export type AcademyAdminPostList = { items: AcademyAdminPost[] };
 export type AcademyParentPost = { id: string; title: string; category: AcademyCategory | null; publishedAt: string; updatedAt: string };
 export type AcademyParentAttachment = {
   id: string;
