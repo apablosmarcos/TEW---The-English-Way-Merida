@@ -60,6 +60,38 @@ test('home template uses refreshed TEW assets, copy, and full enrollment form bi
   assert.match(template, /formControlName="observations"/);
 });
 
+test('public home shows an anonymous Academy access link', () => {
+  const template = readFileSync(templatePath, 'utf8');
+
+  assert.match(template, /routerLink="\/academia\/acceso"[^>]*>Acceso academia<\//);
+});
+
+test('public home restores an existing Academy session without blocking public rendering', () => {
+  const source = readFileSync(sourcePath, 'utf8');
+
+  assert.match(source, /state\.status === 'ready' && this\.siteConfig\.apiBaseUrl && this\.academySession\.token[\s\S]*this\.academySession\.restore\(this\.siteConfig\.apiBaseUrl\)\.subscribe\(\)/);
+  assert.match(source, /else if \(!this\.siteConfig\.apiBaseUrl\) \{\s*this\.academySession\.clear\(\);/);
+});
+
+test('authenticated Academy users get a role destination and immediate logout', () => {
+  const template = readFileSync(templatePath, 'utf8');
+  const source = readFileSync(sourcePath, 'utf8');
+
+  assert.match(template, /\*ngIf="academySession\.user\(\) as user; else academyAccess"/);
+  assert.match(template, /\[routerLink\]="academyDestination\(user\)"/);
+  assert.match(template, /<button[^>]*\(click\)="logout\(\)"[^>]*>Cerrar sesión<\/button>/);
+  assert.match(source, /this\.academySession\.clear\(\)/);
+});
+
+test('Academy navigation keeps native menu and keyboard-focus semantics', () => {
+  const template = readFileSync(templatePath, 'utf8');
+  const source = readFileSync(sourcePath, 'utf8');
+
+  assert.match(template, /<nav[^>]*aria-label="Navegación principal"/);
+  assert.match(template, /<details class="academy-menu">[\s\S]*<summary>\{\{ user\.displayName \}\}<\/summary>/);
+  assert.match(source, /\.academy-menu :is\(summary, a, button\):focus-visible/);
+});
+
 test('hero point cards use white backgrounds with red titles and dark copy', () => {
   const source = readFileSync(sourcePath, 'utf8');
 

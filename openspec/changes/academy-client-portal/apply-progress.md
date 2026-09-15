@@ -465,3 +465,21 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 - [ ] REFACTOR — remove only stale frontend test-script entries while retaining all academy tests, then run `pnpm --recursive test`, `pnpm --recursive run build`, and the documented clean-data-path admin → parent → forced-password-change → publication → attachment → hide/delete stale-URL smoke flow. <!-- sdd-owner: implementation -->
 
 **Deferred parent lifecycle actions:** tracker/child-base management and bounded review remain unchanged in `tasks.md`.
+
+## 34-public-academy-navigation
+
+**Status / attempt:** authoritative `applyState: ready`, `nextRecommended: apply`, OpenSpec repo-local action context; continued only supplied `proceed` token `sha256:e16106f28ea05e8a2f0d3281b5faf0f398eef68b94f21bdd9ff029d68e0e5548`.
+
+**Completed slice:** public home now shows native-router **Acceso academia** navigation to anonymous visitors. With a token, it restores the session without awaiting public rendering; authenticated users get a native details menu with their role-appropriate `academyDestination` and immediate local logout. Empty or unavailable Academy configuration clears local Academy state while keeping the access link available. Existing Google Forms/lead behavior remains untouched by this slice.
+
+### TDD Cycle Evidence
+
+| Task | Test file | Layer | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Public Academy navigation | `frontend/src/app/pages/home/home-template.test.ts` | Template/source contract | 4/4 | 4/7: access, restore, and authenticated-menu contracts absent | 7/7 after standalone `RouterLink`, store restore, and native menu | 7/8: primary nav label absent; 8/8 after adding the labelled native nav/focus contract | Reused `academyDestination`, `AcademySessionStore`, and existing tokens; no abstraction added |
+
+**Verification:** focused home/access/session command 12/12; frontend suite 61/61; `pnpm --recursive test` frontend 61/61 + backend 28/28; frontend build; `git diff --check` all passed. Candidate scope before this record: only `frontend/src/app/pages/home/{home.component.ts,home.component.html,home-template.test.ts}`, 116 additions + deletions against `d2e59ee`.
+
+**Task reconciliation:** no work-unit-11 checkbox changed. Its four implementation rows remain incomplete beyond this bounded navigation slice; parent-owned rows are unchanged.
+
+**Workload / PR boundary:** feature-branch-chain slice `34-public-academy-navigation`, below the 400-line budget. No route, API, dependency, Google Forms, lead-form, task, formatter, commit, push, PR, review, sync, archive, reset/rescope, or deployment work was performed.

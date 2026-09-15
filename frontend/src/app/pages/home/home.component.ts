@@ -1,7 +1,10 @@
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
+import { academyDestination } from '../../core/academy/academy-guards';
+import { AcademySessionStore } from '../../core/academy/academy-session.store';
 import { LeadsApiService } from '../../core/services/leads-api.service';
 import {
   DEFAULT_SITE_CONFIG,
@@ -11,9 +14,15 @@ import {
 } from '../../core/services/site-config.service';
 import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
 
+declare global {
+  interface Window {
+    AOS?: { init: (options?: Record<string, unknown>) => void };
+  }
+}
+
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './home.component.html',
   styles: `
     :host {
@@ -131,6 +140,44 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
 
     nav a:hover::after {
       transform: scaleX(1);
+    }
+
+    .academy-menu {
+      position: relative;
+    }
+
+    .academy-menu summary {
+      cursor: pointer;
+      font-weight: 700;
+      padding: 4px 0;
+    }
+
+    .academy-menu[open] > div {
+      position: absolute;
+      right: 0;
+      display: grid;
+      gap: 4px;
+      min-width: max-content;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .academy-menu button {
+      border: 0;
+      background: none;
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+      padding: 8px 4px;
+      text-align: left;
+    }
+
+    .academy-menu :is(summary, a, button):focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
     }
 
     .hamburger {
@@ -1343,6 +1390,11 @@ import { DEMO_MODE_MESSAGE, createLeadForm, submitLeadForm } from './home-form';
         border-bottom: 0;
       }
 
+      .academy-menu[open] > div {
+        position: static;
+        margin-top: 8px;
+      }
+
       .hero,
       .overview,
       .benefits,
@@ -1426,6 +1478,8 @@ export class HomeComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly siteConfigService = inject(SiteConfigService);
   private readonly leadsApi = inject(LeadsApiService);
+  protected readonly academySession = inject(AcademySessionStore);
+  protected readonly academyDestination = academyDestination;
 
   protected readonly form = createLeadForm();
   protected readonly demoMessage = DEMO_MODE_MESSAGE;
@@ -1442,11 +1496,26 @@ export class HomeComponent implements OnInit {
       this.siteConfig = state.config;
       this.configErrorMessage = state.status === 'error' ? state.message : '';
       this.isLoadingConfig = false;
+
+      if (state.status === 'ready' && this.siteConfig.apiBaseUrl && this.academySession.token) {
+        this.academySession.restore(this.siteConfig.apiBaseUrl).subscribe();
+      } else if (!this.siteConfig.apiBaseUrl) {
+        this.academySession.clear();
+      }
     });
 
-    const aos = (window as unknown as { AOS?: { init: (options?: object) => void } }).AOS;
+    const aos = window.AOS;
     if (aos) {
       aos.init({ once: true, duration: 850, easing: 'ease-out-cubic' });
+    }
+  }
+
+  protected logout() {
+    this.menuOpen = false;
+    if (this.siteConfig.apiBaseUrl) {
+      this.academySession.logout(this.siteConfig.apiBaseUrl).subscribe();
+    } else {
+      this.academySession.clear();
     }
   }
 

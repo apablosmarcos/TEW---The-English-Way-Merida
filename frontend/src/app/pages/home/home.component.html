@@ -12,11 +12,23 @@
         </span>
       </a>
 
-      <nav [class.nav-open]="menuOpen">
+      <nav [class.nav-open]="menuOpen" aria-label="Navegación principal">
         <a href="#metodo"     (click)="scrollToSection($event, 'metodo')">Método</a>
         <a href="#clases"     (click)="scrollToSection($event, 'clases')">Clases</a>
         <a href="#contacto"   (click)="scrollToSection($event, 'contacto')">Contacto</a>
         <a href="#formulario" (click)="scrollToSection($event, 'formulario')">Matrícula</a>
+        <ng-container *ngIf="academySession.user() as user; else academyAccess">
+          <details class="academy-menu">
+            <summary>{{ user.displayName }}</summary>
+            <div>
+              <a [routerLink]="academyDestination(user)" (click)="menuOpen = false">Ir a la academia</a>
+              <button type="button" (click)="logout()">Cerrar sesión</button>
+            </div>
+          </details>
+        </ng-container>
+        <ng-template #academyAccess>
+          <a routerLink="/academia/acceso" (click)="menuOpen = false">Acceso academia</a>
+        </ng-template>
       </nav>
 
       <button
