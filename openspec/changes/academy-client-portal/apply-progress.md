@@ -430,3 +430,13 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 - [ ] GREEN — remove the listed legacy lead/admin route and module files, their registrations in `backend/src/app.ts`, deprecated environment parsing in `backend/src/config/env.ts`, and legacy creation/import behavior from `backend/src/modules/storage/sqlite.ts`; retain no code path that drops historic tables. <!-- sdd-owner: implementation -->
 - [ ] TRIANGULATE — verify a database containing legacy rows keeps them byte-for-byte while academy authentication rejects old `admin_sessions` material and health plus `/api/academy` remain the only active backend surface. <!-- sdd-owner: implementation -->
 - [ ] REFACTOR — remove only orphaned backend test-script entries from `backend/package.json`, retain academy coverage, and run `pnpm --filter tew-backend test` followed by `pnpm --filter tew-backend run build`. <!-- sdd-owner: implementation -->
+
+## 32-remove-legacy-admin-tests-a
+
+**Status / attempt:** native apply-ready; continued only token `sha256:beed8ca440be1691e22e4a9cfb3a24f76605c8d5731648cd56f55f79f38a9f25`.
+
+**Completed:** removed the first five complete stale test blocks from `backend/src/routes/admin.test.ts` (base lines 11–364, 354 deletions). Base lines 1–10 and 365–466 remain byte-identical; imports stay because the remaining tests use them. Tasks remain unchanged.
+
+**TDD evidence:** existing Academy migration/route safety stayed 22/22; backend suite stayed 28/28; backend build and `git diff --check` passed. Prefix/suffix hashes prove no formatting churn.
+
+**Boundary:** deletion-only slice A; candidate is 364/400 lines including this record. The remaining 112-line file and all four work-unit-6 checkbox reconciliations are deferred to slice B. No formatter, commit, push, PR, review, sync, archive, reset/rescope, or deployment.
