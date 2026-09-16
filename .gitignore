@@ -6,6 +6,9 @@
 docs/
 reviews/
 
+# Private backup archives
+/backups/
+
 # Node workspace artifacts
 node_modules/
 backend/.env
@@ -17,3 +20,4 @@ frontend/out-tsc/
 # Local backend data
 backend/data/*.sqlite
 backend/data/*.sqlite-*
+backend/data/uploads/
