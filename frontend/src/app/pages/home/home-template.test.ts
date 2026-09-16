@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 
 const templatePath = resolve(import.meta.dirname, 'home.component.html');
 const sourcePath = resolve(import.meta.dirname, 'home.component.ts');
+const indexPath = resolve(import.meta.dirname, '../../../index.html');
 
 test('home template keeps public TEW content and sends enrolment to the canonical Google Form', () => {
   const template = readFileSync(templatePath, 'utf8');
@@ -33,6 +34,13 @@ test('home template keeps public TEW content and sends enrolment to the canonica
   assert.match(template, /iframe/);
   assert.match(template, /id="formulario"/);
   assert.match(template, /href="https:\/\/docs\.google\.com\/forms\/d\/e\/1FAIpQLSfTpcDh-XO9lGUBH9IagbhSyZkz3PlTsra64dvHEUAEgtMWlg\/viewform"/);
+});
+
+test('index.html defines an explicit favicon to avoid runtime 404 noise', () => {
+  const indexHtml = readFileSync(indexPath, 'utf8');
+
+  assert.match(indexHtml, /rel="icon"/);
+  assert.match(indexHtml, /assets\/img\/TEW\.png/);
 });
 
 test('Google Forms enrolment opens safely in a clearly announced new tab', () => {

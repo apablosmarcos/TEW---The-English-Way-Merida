@@ -655,3 +655,21 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 - [ ] After an authorized apply, start or reuse bounded review for each child work unit against its linked acceptance criteria, focused command evidence, rollback boundary, dependency diagram, and 400-line changed-line budget. <!-- sdd-owner: parent -->
 
 **Workload / PR boundary:** feature-branch-chain `41-remove-legacy-admin-client`; six deletion paths plus package/progress, 194 product/test lines before this evidence record, below 400. No commit, push, PR, review, sync, archive, deployment, formatter, task edit, or settlement.
+
+## 42-retire-admin-test-path — corrected
+
+**Status / attempt:** consumed authoritative OpenSpec `applyState: ready`, `nextRecommended: apply`, and repo-local action context. Retried the supplied active token `sha256:6a9b1c4ac7b13d22b6b5a4d7989b191696c795dd81d323ff8a411c1f9a2a790a` with acquire state `proceed`. Per parent instruction, this attempt remains active and was not settled. `.pi-lens.json` is active, untracked, and untouched.
+
+**Correction:** the favicon contract stays in the existing `home-template.test.ts`; it reuses that file's `readFileSync` and `resolve` imports, adds the `src/index.html` path, and retains the two existing favicon assertions and test name. The legacy admin test remains deleted. `frontend/package.json` drops the stale test token without adding a replacement because `home-template.test.ts` is already registered. No new file was added.
+
+### TDD Cycle Evidence
+
+| Slice | Test file | Layer | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 42 favicon-test relocation correction | `frontend/src/app/pages/home/home-template.test.ts` | Structural test relocation | home template 10/10 | Not applicable: parent required no artificial RED and no production code changed | home template 11/11 after preserving the favicon contract in its allowed existing test file | skipped: one preserved static contract with one source document | none; minimum relocation only |
+
+**Verification:** focused home template 11/11; frontend suite 48/48; `pnpm --recursive test` frontend 48/48 and backend 28/28; `pnpm --recursive run build` passed. `git diff --check`, exact scope, no-pages-admin, stale-token, and `.pi-lens.json`-untouched checks passed.
+
+**Files:** `frontend/package.json`, `frontend/src/app/pages/home/home-template.test.ts`, deleted `frontend/src/app/pages/admin/admin-template.test.ts`, and this record. No task checkbox changed: this bounded relocation does not complete the broad work-unit-11 rows. Parent-owned rows remain byte-for-byte unchanged.
+
+**Workload / PR boundary:** feature-branch-chain `42-retire-admin-test-path`; exact four repository paths. Fresh product/test delta: 9 additions + 14 deletions = 23 lines; including this progress correction: 27 additions + 14 deletions = 41 lines. No commit, push, PR, review, sync, archive, deployment, formatter, task edit, or settlement.
