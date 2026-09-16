@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { inject } from '@angular/core';
 
 import { buildAcademyEndpoint } from './academy-endpoint';
 import type { AcademyAdminAttachment, AcademyAdminPost, AcademyAdminPostInput, AcademyAdminPostList, AcademyAdminUserCreated, AcademyAdminUserInput, AcademyAdminUserList, AcademyAdminUserPassword, AcademyAdminUserQuery, AcademyCategory, AcademyLogin, AcademyLoginInput, AcademyParentPostDetail, AcademyParentPostList, AcademyParentPostQuery, AcademyPasswordChangeInput, AcademyPostVisibility, AcademySession, AcademySuccess } from './academy-types';
@@ -165,5 +165,3 @@ function adminUserParams(query: AcademyAdminUserQuery) {
   };
   return new HttpParams({ fromObject: params });
 }
-
-Injectable({ providedIn: 'root' })(AcademyApiService);

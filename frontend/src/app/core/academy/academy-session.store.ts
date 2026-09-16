@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { inject, signal } from '@angular/core';
 import { catchError, map, of, tap } from 'rxjs';
 
 import { AcademyApiService } from './academy-api.service';
@@ -77,5 +77,3 @@ export class AcademySessionStore {
     }
   }
 }
-
-Injectable({ providedIn: 'root' })(AcademySessionStore);
