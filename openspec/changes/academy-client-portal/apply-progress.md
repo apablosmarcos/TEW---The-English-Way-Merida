@@ -630,3 +630,28 @@ Deferred parent lifecycle actions remain unchanged in `tasks.md`:
 - [ ] REFACTOR — remove only stale frontend test-script entries while retaining all academy tests, then run `pnpm --recursive test`, `pnpm --recursive run build`, and the documented clean-data-path admin → parent → forced-password-change → publication → attachment → hide/delete stale-URL smoke flow. <!-- sdd-owner: implementation -->
 - [ ] At authorized apply, create the draft/no-merge `feat/academy-client-portal` tracker PR to `main`, then maintain the listed child base order and clean-diff boundaries; merge the tracker only after all 11 child PRs are reviewed and integrated. <!-- sdd-owner: parent -->
 - [ ] After an authorized apply, start or reuse bounded review for each child work unit against its linked acceptance criteria, focused command evidence, rollback boundary, dependency diagram, and 400-line changed-line budget. <!-- sdd-owner: parent -->
+
+## 41-remove-legacy-admin-client
+
+**Status / attempt:** consumed authoritative OpenSpec `applyState: ready`, `nextRecommended: apply`, `artifactStore: openspec`, and repo-local action context. Retried the parent-supplied active token `sha256:4ba809ba2096a8f01670e4d703a8db47cb8b311b96d261be1a7299b36eee4948` with acquire state `proceed`. Per instruction, it remains active and was not settled. `.pi-lens.json` is active, untracked, and untouched.
+
+**Corrected slice:** deleted exactly six orphaned legacy client paths: `frontend/src/app/core/services/{admin-api.service.ts,admin-endpoint.ts,admin-endpoint.test.ts,admin-session.ts,admin-session.test.ts}` and `frontend/src/app/pages/admin/leads-state.ts`. `frontend/package.json` removes only the endpoint/session test tokens. The favicon test `frontend/src/app/pages/admin/admin-template.test.ts` was restored byte-for-byte from `ba8b4ee` and its token was restored in its original package-script position. With the progress record, the candidate changes eight repository paths total.
+
+### TDD Cycle Evidence
+
+| Slice | Test file | Layer | Safety net | RED | GREEN | TRIANGULATE | REFACTOR |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 41 legacy admin-client correction | `admin-template.test.ts` | Structural deletion | favicon 1/1 | Not applicable: correction only restores an accidentally removed retained test registration | frontend 48/48 after restoring the exact token | recursive frontend 48/48 plus backend 28/28; legacy-client scan is empty | `admin-template.test.ts` byte-identical to `ba8b4ee`; no formatter |
+
+**Verification:** focused favicon test passed 1/1; `pnpm --filter tew-frontend test` passed 48/48; `pnpm --recursive test` passed 76/76; `pnpm --recursive run build` passed; `git diff --check`, eight-path inventory, retained-test byte check, and legacy-client scan passed. Product/test delta: 1 addition + 193 deletions (194 lines), below 400.
+
+**Task reconciliation:** no task checkbox changed. This bounded cleanup does not complete any broad work-unit-11 row. Persisted tasks remain the four implementation rows plus the two parent lifecycle rows below.
+
+- [ ] RED — update `frontend/src/app/pages/home/{home-template,home-form}.test.ts` and route/template tests to expect Google Forms plus anonymous/authenticated academy navigation, no lead form/API state, no `/admin` compatibility route, and GitHub Pages academy-unavailable behavior. <!-- sdd-owner: implementation -->
+- [ ] GREEN — remove `frontend/src/app/pages/admin/**`, legacy `core/services/admin-*`/`leads-*`, `pages/home/home-form.ts`, and their registrations; update `HomeComponent`, routes, menus, proxy configuration, durable Docker Compose volume/configuration, `.gitignore`, and `README.md` for CLI bootstrap, `/api`, uploads/SQLite, proxy trust, static hosting, and rollback. <!-- sdd-owner: implementation -->
+- [ ] TRIANGULATE — verify the public Google Forms call-to-action still works without academy authentication, `/admin` and `/admin/leads` have no redirect, deprecated credential guidance is absent, uploads are ignored/persisted in deployment configuration, and non-TTY CLI smoke creates no account. <!-- sdd-owner: implementation -->
+- [ ] REFACTOR — remove only stale frontend test-script entries while retaining all academy tests, then run `pnpm --recursive test`, `pnpm --recursive run build`, and the documented clean-data-path admin → parent → forced-password-change → publication → attachment → hide/delete stale-URL smoke flow. <!-- sdd-owner: implementation -->
+- [ ] At authorized apply, create the draft/no-merge `feat/academy-client-portal` tracker PR to `main`, then maintain the listed child base order and clean-diff boundaries; merge the tracker only after all 11 child PRs are reviewed and integrated. <!-- sdd-owner: parent -->
+- [ ] After an authorized apply, start or reuse bounded review for each child work unit against its linked acceptance criteria, focused command evidence, rollback boundary, dependency diagram, and 400-line changed-line budget. <!-- sdd-owner: parent -->
+
+**Workload / PR boundary:** feature-branch-chain `41-remove-legacy-admin-client`; six deletion paths plus package/progress, 194 product/test lines before this evidence record, below 400. No commit, push, PR, review, sync, archive, deployment, formatter, task edit, or settlement.
