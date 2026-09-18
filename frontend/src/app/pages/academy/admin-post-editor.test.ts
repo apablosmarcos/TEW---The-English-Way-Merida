@@ -22,9 +22,10 @@ test("visual and source modes preserve one safe Markdown source and reject delet
   assert.doesNotMatch(markdown, /href="javascript:/);
   assert.match(markdown, /<strong>safe<\/strong>/);
   assert.match(readFileSync(new URL("../../core/academy/academy-markdown.ts", import.meta.url), "utf8"), /allowDangerousHtml: false, allowDangerousProtocol: false/);
-  assert.match(source, /mode: 'visual' \| 'source' = 'visual'/);
+  assert.match(source, /mode: 'visual' \| 'source' = 'source'/);
   assert.match(source, /textarea\.setRangeText/);
   assert.match(source, /\[innerHTML\]="preview"/);
+  assert.match(source, /<ng-container \*ngIf="mode === 'source'">[\s\S]*Contenido Markdown[\s\S]*<\/ng-container>/);
   assert.doesNotMatch(source, /bypassSecurityTrustHtml/);
   assert.match(api, /setAdminPostVisibility\(apiBaseUrl: string, token: string, id: string, action: 'show' \| 'hide'\)/);
   assert.match(api, /deleteAdminPost\(apiBaseUrl: string, token: string, id: string\)/);
