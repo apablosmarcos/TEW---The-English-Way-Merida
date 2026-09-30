@@ -8,19 +8,35 @@ import {
   academyParentGuard,
 } from './core/academy/academy-guards';
 import { HomeComponent } from './pages/home/home.component';
+import { NotFoundComponent } from './pages/not-found/not-found.component';
 import { PrivacidadComponent } from './pages/privacidad/privacidad.component';
 
 export const routes: Routes = [
   {
     path: '',
     component: HomeComponent,
+    title: 'The English Way · Academia de inglés en Mérida',
+    data: {
+      description: 'Academia de inglés en Mérida con metodología práctica, seguimiento real y matrícula directa.',
+      canonical: '/',
+    },
   },
   {
     path: 'privacidad',
     component: PrivacidadComponent,
+    title: 'Política de privacidad · The English Way',
+    data: {
+      description: 'Información sobre privacidad y tratamiento de datos de The English Way.',
+      canonical: '/privacidad',
+    },
   },
   {
     path: 'academia',
+    title: 'Academia · The English Way',
+    data: {
+      description: 'Área privada de familias y administración de The English Way.',
+      canonical: '/academia',
+    },
     children: [
       {
         path: 'acceso',
@@ -79,5 +95,14 @@ export const routes: Routes = [
             ],
           },
     ],
+  },
+  {
+    path: '**',
+    component: NotFoundComponent,
+    title: 'Página no encontrada · The English Way',
+    data: {
+      description: 'La página solicitada no existe o ya no está disponible.',
+      canonical: '/',
+    },
   },
 ];

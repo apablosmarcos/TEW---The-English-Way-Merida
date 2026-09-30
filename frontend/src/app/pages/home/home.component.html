@@ -1,4 +1,5 @@
 <div class="page">
+  <a class="skip-link" href="#main-content">Saltar al contenido</a>
   <header class="topbar">
     <div class="shell topbar-shell">
       <a class="brand" href="#inicio" aria-label="Ir al inicio de TEW" (click)="scrollToSection($event, 'inicio')">
@@ -12,40 +13,46 @@
         </span>
       </a>
 
-      <nav [class.nav-open]="menuOpen" aria-label="Navegación principal">
-        <a href="#metodo"     (click)="scrollToSection($event, 'metodo')">Método</a>
-        <a href="#clases"     (click)="scrollToSection($event, 'clases')">Clases</a>
-        <a href="#contacto"   (click)="scrollToSection($event, 'contacto')">Contacto</a>
-        <a href="#formulario" (click)="scrollToSection($event, 'formulario')">Matrícula</a>
+      <div class="academy-access">
         <ng-container *ngIf="academySession.user() as user; else academyAccess">
           <details class="academy-menu">
             <summary>{{ user.displayName }}</summary>
             <div>
-              <a [routerLink]="academyDestination(user)" (click)="menuOpen = false">Ir a la academia</a>
+              <a [routerLink]="academyDestination(user)" (click)="closeMenu()">Ir a la academia</a>
               <button type="button" (click)="logout()">Cerrar sesión</button>
             </div>
           </details>
         </ng-container>
         <ng-template #academyAccess>
-          <a routerLink="/academia/acceso" (click)="menuOpen = false">Acceso academia</a>
+          <a class="button primary academy-access-link" routerLink="/academia/acceso" (click)="closeMenu()">Acceso academia</a>
         </ng-template>
-      </nav>
+      </div>
 
       <button
+        #menuButton
         class="hamburger"
         type="button"
-        (click)="menuOpen = !menuOpen"
+        (click)="toggleMenu()"
+        (keydown.escape)="closeMenu(true)"
         [attr.aria-expanded]="menuOpen"
-        aria-label="Abrir menú de navegación"
+        [attr.aria-label]="menuOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'"
+        aria-controls="primary-navigation"
       >
         <span></span>
         <span></span>
         <span></span>
       </button>
+
+      <nav id="primary-navigation" [class.nav-open]="menuOpen" aria-label="Navegación principal" (keydown.escape)="closeMenu(true)">
+        <a href="#metodo"     (click)="scrollToSection($event, 'metodo')">Método</a>
+        <a href="#clases"     (click)="scrollToSection($event, 'clases')">Clases</a>
+        <a href="#contacto"   (click)="scrollToSection($event, 'contacto')">Contacto</a>
+        <a href="#formulario" (click)="scrollToSection($event, 'formulario')">Matrícula</a>
+      </nav>
     </div>
   </header>
 
-  <main>
+  <main id="main-content" tabindex="-1">
     <section class="hero shell" id="inicio">
       <article class="hero-copy" data-aos="fade-up">
         <span class="eyebrow">Make it happen</span>
@@ -74,25 +81,7 @@
       </article>
 
       <aside class="hero-stage" aria-label="Escena visual TEW" data-aos="zoom-in" data-aos-delay="120">
-        <div class="hero-stage-notes">
-          <div class="floating-note note-top">Aprendizaje + tecnología = motivación</div>
-          <div class="floating-note note-bottom">Aula digital · Seguimiento real</div>
-        </div>
-        <div class="glow glow-red"></div>
-        <div class="glow glow-blue"></div>
-        <picture>
-          <source type="image/webp" srcset="assets/img/TEW 3D Logo with Robot and Flags.webp" />
-          <img class="stage-banner" src="assets/img/TEW 3D Logo with Robot and Flags.png" alt="Banner visual principal de TEW" width="1024" height="1024" />
-        </picture>
-        <figure class="stage-card robot-card">
-          <img src="assets/img/Robot Head with TEW Logo.png" alt="Logo robot de TEW" loading="lazy" decoding="async" width="1024" height="1024" />
-        </figure>
-        <figure class="stage-card teacher-card">
-          <picture>
-            <source type="image/webp" srcset="assets/img/english%20teacher%2003.webp" />
-            <img src="assets/img/english%20teacher%2003.png" alt="Profesorado de TEW" loading="lazy" decoding="async" />
-          </picture>
-        </figure>
+        <img src="assets/img/english%20teacher%2004.png" alt="Profesorado TEW" loading="lazy" decoding="async" width="1024" height="1024" />
       </aside>
     </section>
 
@@ -236,13 +225,24 @@
       </article>
 
       <article class="tech-stack" data-aos="fade-left">
-        <div class="card classroom-card">
-          <img src="assets/img/TEW CLASSROOM LOGO.png" alt="Visual de TEW Classroom" loading="lazy" decoding="async" width="1479" height="363" />
-        </div>
-        <div class="card mini-banner-card">
-          <img src="assets/img/TEW.png" alt="Identidad oficial de TEW" loading="lazy" decoding="async" width="827" height="300" />
-        </div>
+        <figure class="classroom-banner">
+          <img src="assets/img/english%20teacher%2003.png" alt="Clase TEW" loading="lazy" decoding="async" width="1024" height="1024" />
+          <figcaption>
+            <span class="section-kicker">Clases TEW</span>
+            <h3>Así trabajamos en el aula</h3>
+            <p>Grupos reducidos, material propio y seguimiento real.</p>
+          </figcaption>
+        </figure>
       </article>
+    </section>
+
+    <section class="shell video-showcase" id="video-clases" data-aos="fade-up">
+      <div class="video-stage">
+        <video controls playsinline preload="metadata" poster="assets/img/english%20teacher%2003.png" width="1920" height="1080">
+          <source src="assets/TEW%20SS%20Ad24-25.mp4" type="video/mp4" />
+          Tu navegador no soporta la reproducción de vídeo.
+        </video>
+      </div>
     </section>
 
     <section class="shell contact" id="contacto" data-aos="fade-up">
@@ -257,7 +257,7 @@
         <div class="contact-grid">
           <div>
             <strong>Email</strong>
-            <p>secretaria.tew@gmail.com</p>
+            <p><a class="email-link" href="mailto:secretaria.tew@gmail.com">secretaria.tew@gmail.com</a></p>
           </div>
           <div>
             <strong>Telegram</strong>
@@ -270,46 +270,57 @@
         </div>
 
         <div class="map-card">
-          <iframe
-            title="Ubicación de TEW en Google Maps"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-            src="https://www.google.com/maps?q=C.%20Severo%20Ochoa%2C%2020%2C%20Local%204%2C%2006800%20M%C3%A9rida&z=16&output=embed"
-          ></iframe>
+          @if (mapLoaded) {
+            <iframe
+              title="Ubicación de TEW en Google Maps"
+              referrerpolicy="no-referrer-when-downgrade"
+              src="https://www.google.com/maps?q=C.%20Severo%20Ochoa%2C%2020%2C%20Local%204%2C%2006800%20M%C3%A9rida&z=16&output=embed"
+            ></iframe>
+          } @else {
+            <div class="map-consent">
+              <strong>C/ Severo Ochoa, 20, Local 4, 06800 Mérida</strong>
+              <p>El mapa se conecta con Google Maps únicamente cuando decides cargarlo.</p>
+              <button class="button primary" type="button" (click)="loadMap()">Cargar mapa</button>
+              <a
+                class="map-link"
+                href="https://www.google.com/maps/search/?api=1&query=C.%20Severo%20Ochoa%2C%2020%2C%20Local%204%2C%2006800%20M%C3%A9rida"
+                target="_blank"
+                rel="noopener noreferrer"
+              >Abrir ubicación en Google Maps</a>
+            </div>
+          }
         </div>
       </article>
     </section>
 
     <section class="enroll" id="formulario" data-aos="fade-up">
       <div class="shell">
-      <aside class="form-card card">
-        <span class="mode-pill">Matrícula online</span>
-        <h2>Matrícula y solicitud de información</h2>
-        <p class="copy-muted">
-          Completa la solicitud en Google Forms y te ayudaremos a encontrar el grupo, horario y seguimiento que mejor
-          encajen con vuestra situación.
-        </p>
-        <p class="helper" role="status">El formulario se abrirá en una nueva pestaña.</p>
-        <a
-          class="button primary"
-          href="https://docs.google.com/forms/d/e/1FAIpQLSfTpcDh-XO9lGUBH9IagbhSyZkz3PlTsra64dvHEUAEgtMWlg/viewform"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Abrir el formulario de matrícula en Google Forms en una nueva pestaña"
-        >
-          Solicitar matrícula en Google Forms
-        </a>
-      </aside>
+        <aside class="form-card card">
+          <span class="mode-pill">Matrícula</span>
+          <h2>Matrícula y solicitud de información</h2>
+          <p class="copy-muted">
+            Rellena el formulario de Google y te ayudaremos a encontrar el grupo, horario y seguimiento que mejor encajen
+            con vuestra situación.
+          </p>
+          <a
+            class="button primary"
+            href="https://docs.google.com/forms/d/e/1FAIpQLSfTpcDh-XO9lGUBH9IagbhSyZkz3PlTsra64dvHEUAEgtMWlg/viewform"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Ir al formulario de matrícula
+          </a>
+        </aside>
       </div>
     </section>
   </main>
 
   <footer class="shell footer">
     <img class="footer-logo" src="assets/img/TEW.png" alt="Marca oficial TEW" loading="lazy" decoding="async" width="827" height="300" />
-    <p>The English Way · secretaria.tew@gmail.com</p>
+    <p>The English Way · <a class="email-link" href="mailto:secretaria.tew@gmail.com">secretaria.tew@gmail.com</a></p>
     <p>C/ Severo Ochoa, 20, Local 4, 06800 Mérida</p>
     <p class="footer-legal">
-      © 2025 The English Way ·
+      © {{ currentYear }} The English Way ·
       <a href="/privacidad">Política de privacidad</a>
     </p>
   </footer>

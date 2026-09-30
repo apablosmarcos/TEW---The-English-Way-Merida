@@ -4,6 +4,7 @@ import { Component } from '@angular/core';
   selector: 'app-privacidad',
   template: `
     <div class="page">
+      <a class="skip-link" href="#main-content">Saltar al contenido</a>
       <header class="topbar">
         <div class="shell topbar-shell">
           <a class="brand" href="/">
@@ -17,7 +18,7 @@ import { Component } from '@angular/core';
         </div>
       </header>
 
-      <main class="shell policy">
+      <main class="shell policy" id="main-content" tabindex="-1">
         <span class="kicker">Legal</span>
         <h1>Política de privacidad</h1>
         <p class="lead">Última actualización: julio de 2025</p>
@@ -27,7 +28,7 @@ import { Component } from '@angular/core';
           <p>
             <strong>The English Way</strong><br />
             C. Severo Ochoa, 20, Local 4, 06800 Mérida (Badajoz)<br />
-            secretaria.tew&#64;gmail.com · 615 15 30 12
+            <a href="mailto:secretaria.tew@gmail.com">secretaria.tew&#64;gmail.com</a> · 615 15 30 12
           </p>
         </section>
 
@@ -75,7 +76,7 @@ import { Component } from '@angular/core';
 
         <section>
           <h2>7. Tus derechos</h2>
-          <p>Puedes ejercer en cualquier momento los siguientes derechos dirigiéndote a secretaria.tew&#64;gmail.com:</p>
+          <p>Puedes ejercer en cualquier momento los siguientes derechos dirigiéndote a <a href="mailto:secretaria.tew@gmail.com">secretaria.tew&#64;gmail.com</a>:</p>
           <ul>
             <li><strong>Acceso</strong>: conocer qué datos tenemos sobre ti.</li>
             <li><strong>Rectificación</strong>: corregir datos inexactos o incompletos.</li>
@@ -92,14 +93,14 @@ import { Component } from '@angular/core';
         <section>
           <h2>8. Cookies</h2>
           <p>
-            Esta web no utiliza cookies propias de seguimiento ni analítica de terceros. El mapa de Google Maps incrustado puede establecer cookies de terceros conforme a la política de Google.
+            Esta web no utiliza cookies propias de seguimiento ni analítica de terceros. El mapa de Google Maps solo se conecta con Google cuando la persona usuaria decide cargarlo.
           </p>
         </section>
       </main>
 
       <footer class="shell footer">
         <img class="footer-logo" src="assets/img/TEW.png" alt="The English Way" />
-        <p>The English Way · secretaria.tew&#64;gmail.com</p>
+        <p>The English Way · <a href="mailto:secretaria.tew@gmail.com">secretaria.tew&#64;gmail.com</a></p>
       </footer>
     </div>
   `,

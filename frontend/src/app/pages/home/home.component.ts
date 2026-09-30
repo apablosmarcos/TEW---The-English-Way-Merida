@@ -1,5 +1,5 @@
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { academyDestination } from '../../core/academy/academy-guards';
@@ -9,6 +9,7 @@ import {
   SiteConfigService,
   type SiteConfig,
 } from '../../core/services/site-config.service';
+import { preferredScrollBehavior } from './public-experience';
 
 declare global {
   interface Window {
@@ -50,12 +51,12 @@ declare global {
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      padding: 18px 0;
+      padding: 12px 0;
       gap: 12px;
     }
 
     :is(#inicio, #metodo, #clases, #formulario, #contacto) {
-      scroll-margin-top: 104px;
+      scroll-margin-top: 88px;
     }
 
     .brand {
@@ -68,7 +69,7 @@ declare global {
       display: block;
       width: auto;
       height: auto;
-      max-width: 85px;
+      max-width: 70px;
     }
 
     .footer-logo {
@@ -138,6 +139,22 @@ declare global {
       transform: scaleX(1);
     }
 
+    .academy-access {
+      display: flex;
+      align-items: center;
+    }
+
+    .academy-access-link {
+      min-height: 40px;
+      padding: 0 14px;
+      white-space: nowrap;
+    }
+
+    .academy-access-link:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+    }
+
     .academy-menu {
       position: relative;
     }
@@ -159,6 +176,10 @@ declare global {
       border-radius: 14px;
       background: var(--surface);
       box-shadow: var(--shadow);
+    }
+
+    .academy-menu[open] > div a {
+      padding: 8px 4px;
     }
 
     .academy-menu button {
@@ -211,10 +232,10 @@ declare global {
 
     .hero {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(420px, 640px);
-      align-items: center;
-      gap: 40px;
-      padding: 48px 0 22px;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 540px);
+      align-items: stretch;
+      gap: 20px;
+      padding: 36px 0 22px;
     }
 
     .card,
@@ -264,10 +285,6 @@ declare global {
 
     .hero-copy::after,
     .button.primary::after,
-    .glow,
-    .robot-card,
-    .teacher-card,
-    .floating-note,
     .marquee-track {
       will-change: transform;
     }
@@ -295,6 +312,10 @@ declare global {
 
     .hero-brand-robot {
       max-width: 84px;
+      padding: 6px;
+      border-radius: 50%;
+      background: #fff;
+      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
     }
 
     .hero-brand-official {
@@ -381,6 +402,11 @@ declare global {
       letter-spacing: -0.02em;
     }
 
+    .info-card > p,
+    .form-card > .copy-muted {
+      margin-top: 18px;
+    }
+
     .hero-text,
     .section-copy p,
     .tech-copy p,
@@ -444,118 +470,82 @@ declare global {
 
     .hero-stage {
       position: relative;
-      min-height: 620px;
-      padding: 26px;
+      min-height: 520px;
+      max-height: 640px;
       overflow: hidden;
-      background:
-        radial-gradient(circle at top right, rgba(126, 87, 194, 0.22), transparent 28%),
-        radial-gradient(circle at bottom left, rgba(63, 169, 245, 0.18), transparent 24%),
-        linear-gradient(180deg, #fff 0%, #f8f3f1 100%);
-      border: 1px solid rgba(17, 17, 17, 0.06);
+      border-radius: 28px;
+      background: #111111;
     }
 
-    .glow {
+    .hero-stage img {
       position: absolute;
-      border-radius: 50%;
-      filter: blur(10px);
-      opacity: 0.78;
-    }
-
-    .glow-red {
-      top: 26px;
-      right: 24px;
-      width: 170px;
-      height: 170px;
-      background: radial-gradient(circle, rgba(229, 57, 53, 0.34), rgba(229, 57, 53, 0));
-      animation: orbitFloat 9s ease-in-out infinite;
-    }
-
-    .glow-blue {
-      left: 12px;
-      bottom: 36px;
-      width: 190px;
-      height: 190px;
-      background: radial-gradient(circle, rgba(63, 169, 245, 0.25), rgba(63, 169, 245, 0));
-      animation: orbitFloat 11s ease-in-out infinite reverse;
-    }
-
-    .stage-banner {
-      position: absolute;
-      top: 26px;
-      right: 18px;
-      width: min(74%, 420px);
-      border-radius: 24px;
-      border: 1px solid rgba(17, 17, 17, 0.08);
-      box-shadow: 0 20px 40px rgba(17, 17, 17, 0.12);
-    }
-
-    .stage-card {
-      position: absolute;
-      margin: 0;
-      display: grid;
-      place-items: center;
-      background: rgba(255, 255, 255, 0.94);
-      border: 1px solid rgba(17, 17, 17, 0.08);
-      box-shadow: 0 18px 40px rgba(17, 17, 17, 0.12);
-      backdrop-filter: blur(8px);
-    }
-
-    .stage-card img {
+      inset: 0;
       display: block;
       width: 100%;
-      height: auto;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
     }
 
-    .robot-card {
-      right: 24px;
-      bottom: 18px;
-      width: min(64%, 340px);
-      padding: 18px;
-      animation: floatCard 8s ease-in-out infinite;
+    .hero-stage::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(17, 17, 17, 0.72) 0%, rgba(17, 17, 17, 0.18) 45%, transparent 70%);
+      pointer-events: none;
     }
 
-    .teacher-card {
-      left: 24px;
-      bottom: 82px;
-      width: min(42%, 220px);
-      padding: 10px;
-      border-radius: 26px;
-      animation: floatCard 10s ease-in-out infinite reverse;
-    }
-
-    .floating-note {
+    .classroom-banner {
       position: relative;
-      z-index: 2;
-      display: inline-flex;
-      max-width: none;
-      padding: 12px 14px;
-      border-radius: 18px;
-      font-size: 0.86rem;
-      font-weight: 700;
-      line-height: 1.4;
-      letter-spacing: 0.02em;
-      box-shadow: 0 18px 38px rgba(17, 17, 17, 0.1);
-    }
-
-    .note-top {
+      height: 100%;
+      min-height: 380px;
+      margin: 0;
+      overflow: hidden;
+      border-radius: 28px;
       background: #111111;
-      color: #fff;
-      animation: sway 12s ease-in-out infinite;
+      outline: 2px solid transparent;
+      box-shadow: var(--shadow);
+      transition: outline-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .note-bottom {
-      background: linear-gradient(135deg, #fff 0%, #f5f0eb 100%);
-      color: var(--text);
-      animation: sway 14s ease-in-out infinite reverse;
+    .classroom-banner:hover {
+      outline-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 4px 4px 0 var(--accent);
     }
 
-    .hero-stage-notes {
+    .classroom-banner img {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .classroom-banner figcaption {
       position: relative;
-      z-index: 3;
+      z-index: 1;
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 18px;
+      flex-direction: column;
+      justify-content: flex-end;
+      height: 100%;
+      min-height: 320px;
+      padding: 28px;
+      background: linear-gradient(0deg, rgba(17, 17, 17, 0.82) 0%, rgba(17, 17, 17, 0.2) 60%, transparent 100%);
+      color: #fff;
+    }
+
+    .classroom-banner figcaption h3 {
+      margin: 8px 0 6px;
+      font-size: 1.55rem;
+      line-height: 1.2;
+    }
+
+    .classroom-banner figcaption p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.82);
     }
 
     .hero-points,
@@ -928,7 +918,8 @@ declare global {
     }
 
     .tech-stack {
-      align-content: start;
+      align-content: stretch;
+      height: 100%;
     }
 
     .mini-banner-card {
@@ -938,7 +929,39 @@ declare global {
     }
 
     .mini-banner-card img {
-      max-width: 420px;
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 360px;
+      object-fit: contain;
+    }
+
+    .video-showcase {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .video-stage {
+      border-radius: 28px;
+      overflow: hidden;
+      background: #111111;
+      box-shadow: var(--shadow);
+      outline: 2px solid transparent;
+      aspect-ratio: 16 / 9;
+      transition: outline-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .video-stage:hover {
+      outline-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 4px 4px 0 var(--accent);
+    }
+
+    .video-stage video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     .form-card {
@@ -964,7 +987,6 @@ declare global {
     .eyebrow,
     .brand-copy strong,
     .hero-points strong,
-    .floating-note,
     .form-section-title {
       font-family: 'MV Boli', 'Comic Sans MS', var(--display-font), cursive;
       text-transform: none;
@@ -1039,6 +1061,28 @@ declare global {
       width: 100%;
       min-height: 380px;
       border: 0;
+    }
+
+    .map-consent {
+      display: grid;
+      justify-items: start;
+      gap: 14px;
+      min-height: 280px;
+      padding: 28px;
+      align-content: center;
+      background: #f5f0e8;
+    }
+
+    .map-consent p {
+      max-width: 58ch;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .map-link,
+    .email-link {
+      color: var(--accent-dark);
+      text-decoration: underline;
     }
 
     .field-note,
@@ -1332,25 +1376,55 @@ declare global {
       }
 
       .hero-stage {
-        min-height: 520px;
-      }
-
-      .stage-banner {
-        width: calc(100% - 36px);
-      }
-
-      .robot-card {
-        width: min(70%, 290px);
-      }
-
-      .teacher-card {
-        width: min(42%, 190px);
+        min-height: 420px;
+        max-height: 520px;
       }
     }
 
     @media (max-width: 640px) {
       .shell {
         width: min(1400px, calc(100% - 24px));
+      }
+
+      .topbar-shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 8px;
+      }
+
+      .brand {
+        min-width: 0;
+        gap: 8px;
+      }
+
+      .brand-logo {
+        max-width: 48px;
+      }
+
+      .brand-copy small {
+        display: none;
+      }
+
+      .brand-copy strong {
+        white-space: nowrap;
+        font-size: 0.78rem;
+      }
+
+      .academy-access {
+        min-width: 0;
+      }
+
+      .academy-access-link {
+        min-height: 38px;
+        padding: 0 10px;
+        font-size: 0.78rem;
+      }
+
+      .academy-menu summary {
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       main > section {
@@ -1363,12 +1437,13 @@ declare global {
 
       nav {
         display: none;
+        grid-column: 1 / -1;
         width: 100%;
         flex-direction: column;
         gap: 0;
         padding: 8px 0 4px;
         border-top: 1px solid rgba(17, 17, 17, 0.06);
-        order: 3;
+        order: unset;
       }
 
       nav.nav-open {
@@ -1399,10 +1474,6 @@ declare global {
         gap: 18px;
       }
 
-      .brand {
-        align-items: start;
-      }
-
       .brand-logo {
         max-width: 64px;
       }
@@ -1428,12 +1499,15 @@ declare global {
         font-size: clamp(2.2rem, 10vw, 3.15rem);
       }
 
-      .hero-stage {
-        min-height: 470px;
+      .hero-line-fixed {
+        white-space: normal;
+        overflow-wrap: anywhere;
       }
 
-      .floating-note {
-        font-size: 0.77rem;
+      .hero-stage {
+        min-height: 320px;
+        max-height: min(420px, 90vw);
+        padding: 0;
       }
 
       .overview-heading h2 {
@@ -1472,11 +1546,16 @@ declare global {
 })
 export class HomeComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
+
+  @ViewChild('menuButton')
+  private menuButton?: ElementRef<HTMLButtonElement>;
   private readonly siteConfigService = inject(SiteConfigService);
   protected readonly academySession = inject(AcademySessionStore);
   protected readonly academyDestination = academyDestination;
 
+  protected readonly currentYear = new Date().getFullYear();
   protected menuOpen = false;
+  protected mapLoaded = false;
   protected siteConfig: SiteConfig = DEFAULT_SITE_CONFIG;
 
   ngOnInit() {
@@ -1490,14 +1569,34 @@ export class HomeComponent implements OnInit {
       }
     });
 
-    const aos = window.AOS;
-    if (aos) {
+    const initializeAos = () => {
+      const aos = window.AOS;
+      if (!aos) return;
       aos.init({ once: true, duration: 850, easing: 'ease-out-cubic' });
-    }
+      this.document.documentElement.classList.add('aos-enabled');
+    };
+
+    initializeAos();
+    this.document
+      .getElementById('aos-script')
+      ?.addEventListener('load', initializeAos, { once: true });
+  }
+
+  protected toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  protected closeMenu(restoreFocus = false) {
+    this.menuOpen = false;
+    if (restoreFocus) this.menuButton?.nativeElement.focus();
+  }
+
+  protected loadMap() {
+    this.mapLoaded = true;
   }
 
   protected logout() {
-    this.menuOpen = false;
+    this.closeMenu();
     if (this.siteConfig.apiBaseUrl) {
       this.academySession.logout(this.siteConfig.apiBaseUrl).subscribe();
     } else {
@@ -1507,7 +1606,7 @@ export class HomeComponent implements OnInit {
 
   protected scrollToSection(event: Event, id: string) {
     event.preventDefault();
-    this.menuOpen = false;
+    this.closeMenu();
 
     const target = this.document.getElementById(id);
     const topbar = this.document.querySelector('.topbar');
@@ -1518,8 +1617,14 @@ export class HomeComponent implements OnInit {
 
     const topbarHeight = topbar instanceof HTMLElement ? topbar.offsetHeight : 0;
     const top = window.scrollY + target.getBoundingClientRect().top - topbarHeight - 12;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
+    target.tabIndex = -1;
+    target.focus({ preventScroll: true });
+    window.scrollTo({
+      top: Math.max(top, 0),
+      behavior: preferredScrollBehavior(reduceMotion),
+    });
   }
 
 }

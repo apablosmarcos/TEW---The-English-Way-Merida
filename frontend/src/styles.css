@@ -20,6 +20,11 @@ html {
   scroll-behavior: smooth;
 }
 
+html:not(.aos-enabled) [data-aos] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 body {
   margin: 0;
   font-family: Inter, Arial, sans-serif;
@@ -35,10 +40,63 @@ a {
   text-decoration: none;
 }
 
+.detail .content a,
+.editor .preview a {
+  color: #B71C1C;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.detail .content a:focus-visible,
+.editor .preview a:focus-visible {
+  outline: 3px solid #B71C1C;
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #111;
+  color: #fff;
+  transform: translateY(-160%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
 button,
 input,
 textarea {
   font: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  [data-aos] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+.academy-error {
+  margin-block: 12px;
+  padding: 12px 14px;
+  border-left: 4px solid #B71C1C;
+  background: #FDECEA;
+  color: #111;
 }
 
 .btn {
