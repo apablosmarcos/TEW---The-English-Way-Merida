@@ -1,10 +1,10 @@
 type PasswordInput = NodeJS.ReadStream & {
-  setRawMode(mode: boolean): unknown;
+  setRawMode(mode: boolean): void;
 };
 
-type PasswordOutput = { write(message: string): unknown };
+type PasswordOutput = { write(message: string): void };
 
-export async function readPassword(input: PasswordInput, output: PasswordOutput, prompt: string) {
+export async function readPassword(input: PasswordInput, output: PasswordOutput, prompt: string): Promise<string> {
   output.write(prompt);
   let rawMode = false;
   try {
@@ -38,6 +38,10 @@ export async function readPassword(input: PasswordInput, output: PasswordOutput,
       input.once("error", onError);
     });
   } finally {
-    if (rawMode) input.setRawMode(false);
+    try {
+      input.pause();
+    } finally {
+      if (rawMode) input.setRawMode(false);
+    }
   }
 }
