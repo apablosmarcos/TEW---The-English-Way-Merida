@@ -1,12 +1,14 @@
-import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
+import { randomBytes, randomInt, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 
 const derive = promisify(scrypt) as (password: string, salt: Buffer, keylen: number) => Promise<Buffer>;
 const saltBytes = 16;
 const keyBytes = 64;
+const temporaryPasswordAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+export const minimumPasswordLength = 10;
 
 export function generateTemporaryPassword() {
-  return randomBytes(8).toString("base64url").slice(0, 10);
+  return Array.from({ length: minimumPasswordLength }, () => temporaryPasswordAlphabet[randomInt(temporaryPasswordAlphabet.length)]).join("");
 }
 
 export async function hashPassword(password: string) {

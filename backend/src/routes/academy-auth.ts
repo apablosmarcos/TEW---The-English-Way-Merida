@@ -1,6 +1,7 @@
 import { Router, type RequestHandler } from "express";
 
 import { LoginLimiter } from "../modules/academy/login-limiter.ts";
+import { minimumPasswordLength } from "../modules/academy/password.ts";
 import type { AcademyHttpLogin, AcademyHttpSession, AcademyLogin, AcademySession } from "../modules/academy/academy-types.ts";
 import { academyAuth, academyAuthMiddleware, createAcademyAuthService, sendAcademyError, sendAcademyHttpError } from "./academy-middleware.ts";
 
@@ -85,6 +86,6 @@ function sessionView(session: AcademySession): AcademyHttpSession {
 function readPasswordInput(input: unknown) {
   if (!input || typeof input !== "object" || Array.isArray(input)) return null;
   const data = input as Record<string, unknown>;
-  if (typeof data.currentPassword !== "string" || typeof data.newPassword !== "string" || !data.newPassword) return null;
+  if (typeof data.currentPassword !== "string" || typeof data.newPassword !== "string" || data.newPassword.length < minimumPasswordLength) return null;
   return { currentPassword: data.currentPassword, newPassword: data.newPassword };
 }

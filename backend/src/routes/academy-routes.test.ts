@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createServer } from "node:http";
+import { createServer, request as httpRequest } from "node:http";
 import { createHash, randomUUID } from "node:crypto";
 import { readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -11,7 +11,7 @@ import { createApp } from "../app.ts";
 import { hashPassword } from "../modules/academy/password.ts";
 import { applyAcademyMigrations } from "../modules/storage/academy-migrations.ts";
 import { openDatabase } from "../modules/storage/sqlite.ts";
-import { academyAuthMiddleware, requireAcademyAdmin, requirePasswordChange } from "./academy-middleware.ts";
+import { academyAuthMiddleware, createAcademyAuthMiddleware, requireAcademyAdmin, requirePasswordChange } from "./academy-middleware.ts";
 
 async function setup(users: Array<{ id?: string; username: string; password: string; role?: "parent" | "admin"; mustChangePassword?: boolean }>) {
   const sqliteDbPath = join(tmpdir(), `academy-auth-${randomUUID()}.sqlite`);
@@ -55,13 +55,18 @@ async function withServer(app: express.Express, action: (baseUrl: string) => Pro
   }
 }
 
-function academyError(code: "AUTHENTICATION_REQUIRED" | "FORBIDDEN" | "INTERNAL_ERROR" | "PASSWORD_CHANGE_REQUIRED" | "RATE_LIMITED") {
+function academyError(code: "AUTHENTICATION_REQUIRED" | "FORBIDDEN" | "INTERNAL_ERROR" | "LAST_ACTIVE_ADMIN" | "PASSWORD_CHANGE_REQUIRED" | "RATE_LIMITED" | "USER_DELETED" | "USER_NOT_FOUND" | "USERNAME_TAKEN" | "VALIDATION_ERROR") {
   const messages = {
     AUTHENTICATION_REQUIRED: "Authentication is required.",
     FORBIDDEN: "You do not have permission to perform this action.",
     INTERNAL_ERROR: "An unexpected error occurred.",
+    LAST_ACTIVE_ADMIN: "The last active administrator cannot be changed.",
     PASSWORD_CHANGE_REQUIRED: "You must change your password.",
     RATE_LIMITED: "Too many login attempts. Please try again later.",
+    USER_DELETED: "The user has been deleted.",
+    USER_NOT_FOUND: "The user was not found.",
+    USERNAME_TAKEN: "The username is already in use.",
+    VALIDATION_ERROR: "The request is invalid.",
   };
   return { ok: false, error: { code, message: messages[code] } };
 }
@@ -178,10 +183,19 @@ test("academy password change keeps session identity internal and revokes expire
         error: { code: "AUTHENTICATION_REQUIRED", message: "Authentication is required." },
       });
 
+      const tooShort = await fetch(`${baseUrl}/api/academy/me/password`, {
+        method: "POST",
+        headers: { authorization: `Bearer ${signedIn.body.token}`, "content-type": "application/json" },
+        body: JSON.stringify({ currentPassword: "correct password", newPassword: "123456789" }),
+      });
+      assert.equal(tooShort.status, 400);
+      assert.deepEqual(await tooShort.json(), academyError("VALIDATION_ERROR"));
+      assert.equal((await fetch(`${baseUrl}/api/academy/session`, { headers: { authorization: `Bearer ${signedIn.body.token}` } })).status, 200);
+
       const changed = await fetch(`${baseUrl}/api/academy/me/password`, {
         method: "POST",
         headers: { authorization: `Bearer ${signedIn.body.token}`, "content-type": "application/json" },
-        body: JSON.stringify({ currentPassword: "correct password", newPassword: "new password" }),
+        body: JSON.stringify({ currentPassword: "correct password", newPassword: "1234567890" }),
       });
       assert.equal(changed.status, 204);
       assert.equal(changed.headers.get("cache-control"), "no-store");
@@ -199,21 +213,33 @@ test("academy password change keeps session identity internal and revokes expire
   }
 });
 
-test("academy storage failures return a generic safe error", async () => {
+test("academy storage failures return a generic safe error and a sanitized correlated log", async () => {
   const originalPath = process.env.SQLITE_DB_PATH;
+  const originalError = console.error;
+  const errors: unknown[][] = [];
   process.env.SQLITE_DB_PATH = tmpdir();
+  console.error = (...values: unknown[]) => { errors.push(values); };
   try {
     await withServer(createApp(), async (baseUrl) => {
       const response = await fetch(`${baseUrl}/api/academy/login`, {
         method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ username: "ada", password: "password" }),
+        headers: { "content-type": "application/json", authorization: "Bearer secret-token" },
+        body: JSON.stringify({ username: "ada@example.test", password: "secret-password" }),
       });
       assert.equal(response.status, 500);
       assert.equal(response.headers.get("cache-control"), "no-store");
       assert.deepEqual(await response.json(), academyError("INTERNAL_ERROR"));
+      const requestId = response.headers.get("x-request-id");
+      assert.match(requestId ?? "", /^[0-9a-f-]{36}$/);
+      assert.equal(errors.length, 1);
+      assert.deepEqual(JSON.parse(String(errors[0][0])), { event: "academy_request_failed", requestId, errorCode: "ERR_SQLITE_ERROR" });
+      const serialized = JSON.stringify(errors);
+      for (const sensitive of [tmpdir(), "/api/academy/login", "ada@example.test", "secret-password", "secret-token", "authorization", "body"]) {
+        assert.equal(serialized.includes(sensitive), false);
+      }
     });
   } finally {
+    console.error = originalError;
     if (originalPath === undefined) delete process.env.SQLITE_DB_PATH;
     else process.env.SQLITE_DB_PATH = originalPath;
   }
@@ -253,6 +279,46 @@ test("academy middleware blocks forced-password users and enforces administrator
   }
 });
 
+test("academy middleware closes its SQLite connection exactly once when an authenticated request aborts", async () => {
+  const fixture = await setup([{ username: "ada", password: "correct password" }]);
+  let closes = 0;
+  let closed!: () => void;
+  const closeObserved = new Promise<void>((resolve) => { closed = resolve; });
+  try {
+    const app = createApp();
+    app.get("/test/abort", createAcademyAuthMiddleware((env) => {
+      const database = openDatabase(env);
+      const close = database.close.bind(database);
+      database.close = () => {
+        closes += 1;
+        close();
+        closed();
+      };
+      return database;
+    }), (_req, res) => res.write("started"));
+
+    await withServer(app, async (baseUrl) => {
+      const signedIn = await login(baseUrl, "ada", "correct password");
+      await new Promise<void>((resolve, reject) => {
+        const request = httpRequest(`${baseUrl}/test/abort`, { headers: { authorization: `Bearer ${signedIn.body.token}` } });
+        request.once("response", (response) => response.once("data", () => {
+          response.destroy();
+          resolve();
+        }));
+        request.once("error", reject);
+        request.end();
+      });
+      await Promise.race([
+        closeObserved,
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("SQLite connection remained open after abort")), 100)),
+      ]);
+      assert.equal(closes, 1);
+    });
+  } finally {
+    await fixture.close();
+  }
+});
+
 test("academy administrator user routes enforce lifecycle boundaries and keep passwords transient", async () => {
   const adminId = randomUUID();
   const fixture = await setup([
@@ -282,20 +348,20 @@ test("academy administrator user routes enforce lifecycle boundaries and keep pa
 
       const invalidQuery = await fetch(`${baseUrl}/api/academy/admin/users?state=unknown`, { headers });
       assert.equal(invalidQuery.status, 400);
-      assert.deepEqual(await invalidQuery.json(), { ok: false, error: "VALIDATION_ERROR" });
+      assert.deepEqual(await invalidQuery.json(), academyError("VALIDATION_ERROR"));
       const invalidPagination = await fetch(`${baseUrl}/api/academy/admin/users?role=teacher&page=0&pageSize=101`, { headers });
       assert.equal(invalidPagination.status, 400);
-      assert.deepEqual(await invalidPagination.json(), { ok: false, error: "VALIDATION_ERROR" });
+      assert.deepEqual(await invalidPagination.json(), academyError("VALIDATION_ERROR"));
       const invalidId = await fetch(`${baseUrl}/api/academy/admin/users/not-a-uuid`, { headers });
       assert.equal(invalidId.status, 400);
-      assert.deepEqual(await invalidId.json(), { ok: false, error: "VALIDATION_ERROR" });
+      assert.deepEqual(await invalidId.json(), academyError("VALIDATION_ERROR"));
       const missing = await fetch(`${baseUrl}/api/academy/admin/users/${randomUUID()}`, { headers });
       assert.equal(missing.status, 404);
-      assert.deepEqual(await missing.json(), { ok: false, error: "USER_NOT_FOUND" });
+      assert.deepEqual(await missing.json(), academyError("USER_NOT_FOUND"));
 
       const invalidCreate = await fetch(`${baseUrl}/api/academy/admin/users`, { method: "POST", headers, body: JSON.stringify({ displayName: "New", username: "admin", role: "admin" }) });
       assert.equal(invalidCreate.status, 400);
-      assert.deepEqual(await invalidCreate.json(), { ok: false, error: "VALIDATION_ERROR" });
+      assert.deepEqual(await invalidCreate.json(), academyError("VALIDATION_ERROR"));
 
       const created = await fetch(`${baseUrl}/api/academy/admin/users`, { method: "POST", headers, body: JSON.stringify({ displayName: "New Parent", username: "new_parent" }) });
       assert.equal(created.status, 201);
@@ -307,7 +373,7 @@ test("academy administrator user routes enforce lifecycle boundaries and keep pa
 
       const duplicate = await fetch(`${baseUrl}/api/academy/admin/users`, { method: "POST", headers, body: JSON.stringify({ displayName: "Duplicate", username: "new_parent" }) });
       assert.equal(duplicate.status, 409);
-      assert.deepEqual(await duplicate.json(), { ok: false, error: "USERNAME_TAKEN" });
+      assert.deepEqual(await duplicate.json(), academyError("USERNAME_TAKEN"));
 
       const detail = await fetch(`${baseUrl}/api/academy/admin/users/${createdBody.data.user.id}`, { headers });
       assert.equal(detail.status, 200);
@@ -327,7 +393,7 @@ test("academy administrator user routes enforce lifecycle boundaries and keep pa
 
       const invalidDisable = await fetch(`${baseUrl}/api/academy/admin/users/${createdBody.data.user.id}`, { method: "PATCH", headers, body: JSON.stringify({ disabled: false }) });
       assert.equal(invalidDisable.status, 400);
-      assert.deepEqual(await invalidDisable.json(), { ok: false, error: "VALIDATION_ERROR" });
+      assert.deepEqual(await invalidDisable.json(), academyError("VALIDATION_ERROR"));
       const disabled = await fetch(`${baseUrl}/api/academy/admin/users/${createdBody.data.user.id}`, { method: "PATCH", headers, body: JSON.stringify({ disabled: true }) });
       assert.equal(disabled.status, 200);
       const disabledBody = await disabled.json() as { data: { state: string } };
@@ -343,11 +409,11 @@ test("academy administrator user routes enforce lifecycle boundaries and keep pa
       assert.equal(removed.status, 204);
       const deleted = await fetch(`${baseUrl}/api/academy/admin/users/${createdBody.data.user.id}/enable`, { method: "POST", headers });
       assert.equal(deleted.status, 404);
-      assert.deepEqual(await deleted.json(), { ok: false, error: "USER_DELETED" });
+      assert.deepEqual(await deleted.json(), academyError("USER_DELETED"));
 
       const lastAdmin = await fetch(`${baseUrl}/api/academy/admin/users/${adminId}`, { method: "PATCH", headers, body: JSON.stringify({ disabled: true }) });
       assert.equal(lastAdmin.status, 409);
-      assert.deepEqual(await lastAdmin.json(), { ok: false, error: "LAST_ACTIVE_ADMIN" });
+      assert.deepEqual(await lastAdmin.json(), academyError("LAST_ACTIVE_ADMIN"));
     });
   } finally {
     await fixture.close();
@@ -499,6 +565,42 @@ test("academy attachment upload streams one valid file to opaque durable storage
   } finally { await fixture.close(); }
 });
 
+test("academy image attachments support upload, rename, preview, download, soft deletion, and retained admin access", async () => {
+  const fixture = await setup([{ username: "admin", password: "password", role: "admin" }]);
+  try {
+    await withServer(createApp(), async (baseUrl) => {
+      const admin = await login(baseUrl, "admin", "password");
+      const headers = { authorization: `Bearer ${admin.body.token}`, "content-type": "application/json" };
+      const post = await fetch(`${baseUrl}/api/academy/admin/posts`, { method: "POST", headers, body: JSON.stringify({ title: "Images", markdownSource: "" }) });
+      const { data: created } = await post.json() as { data: { id: string } };
+      const images = [
+        { mime: "image/jpeg", bytes: new Uint8Array([0xff, 0xd8, 0xff, 0x00]) },
+        { mime: "image/png", bytes: new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]) },
+        { mime: "image/webp", bytes: new TextEncoder().encode("RIFF0000WEBP") },
+      ];
+
+      for (const [index, image] of images.entries()) {
+        const form = new FormData();
+        form.append("file", new Blob([image.bytes], { type: image.mime }), `client-${index}`);
+        const uploaded = await fetch(`${baseUrl}/api/academy/admin/posts/${created.id}/attachments`, { method: "POST", headers: { authorization: `Bearer ${admin.body.token}` }, body: form });
+        assert.equal(uploaded.status, 201);
+        const { data: attachment } = await uploaded.json() as { data: { id: string } };
+        const renamed = await fetch(`${baseUrl}/api/academy/admin/attachments/${attachment.id}`, { method: "PATCH", headers, body: JSON.stringify({ title: `Image ${index}` }) });
+        assert.equal(renamed.status, 200);
+        const previewUrl = `${baseUrl}/api/academy/attachments/${attachment.id}/preview`;
+        const preview = await fetch(previewUrl, { headers: { authorization: `Bearer ${admin.body.token}` } });
+        assert.equal(preview.status, 200);
+        assert.equal(preview.headers.get("content-type"), image.mime);
+        assert.deepEqual(new Uint8Array(await preview.arrayBuffer()), image.bytes);
+        assert.equal((await fetch(`${baseUrl}/api/academy/attachments/${attachment.id}/download`, { headers: { authorization: `Bearer ${admin.body.token}` } })).status, 200);
+        assert.equal((await fetch(`${baseUrl}/api/academy/admin/attachments/${attachment.id}`, { method: "DELETE", headers })).status, 204);
+        assert.equal((await fetch(previewUrl, { headers: { authorization: `Bearer ${admin.body.token}` } })).status, 200);
+      }
+      assert.equal((await readdir(fixture.fileStoragePath)).length, images.length);
+    });
+  } finally { await fixture.close(); }
+});
+
 test("academy attachment upload handles failed writes without unhandled rejections", async () => {
   const fixture = await setup([{ username: "admin", password: "password", role: "admin" }]);
   const errors: unknown[] = [], onUnhandled = (error: unknown) => errors.push(error), abort = new AbortController();
@@ -601,6 +703,39 @@ test("academy attachment streams authenticate, recheck access, and hide storage 
       const missing = await fetch(previewUrl, { headers: { authorization: `Bearer ${admin.body.token}` } });
       assert.equal(missing.status, 500);
       assert.deepEqual(await missing.json(), { ok: false, error: { code: "INTERNAL_ERROR", message: "An unexpected error occurred." } });
+    });
+  } finally { await fixture.close(); }
+});
+
+test("academy attachment filenames avoid duplicate extensions and keep the material fallback", async () => {
+  const fixture = await setup([{ username: "admin", password: "password", role: "admin" }]);
+  try {
+    await withServer(createApp(), async (baseUrl) => {
+      const admin = await login(baseUrl, "admin", "password");
+      const authorization = { authorization: `Bearer ${admin.body.token}` };
+      const post = await fetch(`${baseUrl}/api/academy/admin/posts`, {
+        method: "POST",
+        headers: { ...authorization, "content-type": "application/json" },
+        body: JSON.stringify({ title: "Post", markdownSource: "" }),
+      });
+      const { data: created } = await post.json() as { data: { id: string } };
+
+      const upload = async (title?: string) => {
+        const form = new FormData();
+        form.append("file", new Blob(["%PDF-1.7"], { type: "application/pdf" }), "client.pdf");
+        if (title) form.append("title", title);
+        const response = await fetch(`${baseUrl}/api/academy/admin/posts/${created.id}/attachments`, { method: "POST", headers: authorization, body: form });
+        return (await response.json() as { data: { id: string } }).data.id;
+      };
+
+      const titledId = await upload("Study.PDF");
+      const fallbackId = await upload();
+      const titled = await fetch(`${baseUrl}/api/academy/attachments/${titledId}/download`, { headers: authorization });
+      const fallback = await fetch(`${baseUrl}/api/academy/attachments/${fallbackId}/download`, { headers: authorization });
+      assert.equal(titled.headers.get("content-disposition"), 'attachment; filename="Study.PDF"');
+      assert.equal(fallback.headers.get("content-disposition"), 'attachment; filename="Material 2.pdf"');
+      await titled.arrayBuffer();
+      await fallback.arrayBuffer();
     });
   } finally { await fixture.close(); }
 });

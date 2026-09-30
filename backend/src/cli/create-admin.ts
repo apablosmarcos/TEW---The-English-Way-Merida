@@ -2,6 +2,7 @@ import { createInterface } from "node:readline/promises";
 
 import { AcademyUserError } from "../modules/academy/academy-errors.ts";
 import { AuditRepository } from "../modules/academy/audit-repository.ts";
+import { minimumPasswordLength } from "../modules/academy/password.ts";
 import { UserRepository } from "../modules/academy/user-repository.ts";
 import { UserService } from "../modules/academy/user-service.ts";
 import { applyAcademyMigrations } from "../modules/storage/academy-migrations.ts";
@@ -36,7 +37,7 @@ export async function runCreateAdmin(options: CreateAdminOptions = {}) {
     username = (await ask("Username: ")).trim().normalize("NFC");
     password = await readPassword("Password: ");
     const confirmation = await readPassword("Confirm password: ");
-    if (!displayName || !/^[a-z0-9._-]{4,30}$/.test(username) || !password) throw new InputError("Invalid display name, username, or password.");
+    if (!displayName || !/^[a-z0-9._-]{4,30}$/.test(username) || password.length < minimumPasswordLength) throw new InputError("Invalid display name, username, or password.");
     if (password !== confirmation) throw new InputError("Passwords do not match.");
   } catch (error) {
     return failure(output, error instanceof InputError ? error.message : "Unable to read administrator details.");

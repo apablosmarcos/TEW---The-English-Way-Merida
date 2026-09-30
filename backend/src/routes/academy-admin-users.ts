@@ -1,12 +1,12 @@
 import { Router, type Request, type Response } from "express";
 
-import { AcademyUserError } from "../modules/academy/academy-errors.ts";
+import { academyErrorBody, AcademyUserError } from "../modules/academy/academy-errors.ts";
 import { AuditRepository } from "../modules/academy/audit-repository.ts";
 import type { AcademyRole, AcademyUserState, UserListOptions } from "../modules/academy/academy-types.ts";
 import { UserRepository } from "../modules/academy/user-repository.ts";
 import { UserService } from "../modules/academy/user-service.ts";
 import { openDatabase } from "../modules/storage/sqlite.ts";
-import { academyAuth } from "./academy-middleware.ts";
+import { academyAuth, logAcademyError } from "./academy-middleware.ts";
 
 export function createAcademyAdminUsersRouter() {
   const router = Router();
@@ -113,12 +113,13 @@ function string(value: unknown) { return value === undefined ? undefined : typeo
 function roleValue(value: unknown): AcademyRole | null { return value === "parent" || value === "admin" ? value : null; }
 function stateValue(value: unknown): AcademyUserState | null { return value === "active" || value === "disabled" || value === "deleted" ? value : null; }
 function uuid(value: unknown): value is string { return typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value); }
-function validationError(res: Response) { res.status(400).json({ ok: false, error: "VALIDATION_ERROR" }); }
+function validationError(res: Response) { res.status(400).json(academyErrorBody("VALIDATION_ERROR")); }
 
 function sendUserError(res: Response, error: unknown) {
   if (error instanceof AcademyUserError) {
-    res.status(error.code === "USER_NOT_FOUND" || error.code === "USER_DELETED" ? 404 : 409).json({ ok: false, error: error.code });
+    res.status(error.code === "USER_NOT_FOUND" || error.code === "USER_DELETED" ? 404 : 409).json(academyErrorBody(error.code));
     return;
   }
-  res.status(500).json({ ok: false, error: "Internal server error" });
+  logAcademyError(res, error);
+  res.status(500).json(academyErrorBody("INTERNAL_ERROR"));
 }

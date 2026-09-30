@@ -51,6 +51,25 @@ test("rejects non-TTY before prompting or preparing storage", async () => {
   assert.match(output.value, /TTY stdin and stdout/);
 });
 
+test("rejects passwords shorter than ten characters before preparing storage", async () => {
+  for (const [password, expectedCode] of [["123456789", 1], ["1234567890", 0]] as const) {
+    let prepared = false;
+    const output = new Output();
+
+    const exitCode = await runCreateAdmin({
+      input: tty(),
+      output,
+      ask: answers(["Ada Lovelace", `ada${password.length}`]),
+      readPassword: answers([password, password]),
+      env: { SQLITE_DB_PATH: ":memory:", FILE_STORAGE_PATH: tmpdir() },
+      prepareStorage: async () => { prepared = true; },
+    });
+
+    assert.equal(exitCode, expectedCode);
+    assert.equal(prepared, password.length === 10);
+  }
+});
+
 test("creates a system active administrator after migrations without exposing secrets", async () => {
   const directory = await mkdtemp(join(tmpdir(), "academy-create-admin-"));
   const databasePath = join(directory, "academy.sqlite");
@@ -89,7 +108,7 @@ test("rejects validation, mismatch, and duplicate usernames without adding users
   const env = { SQLITE_DB_PATH: databasePath, FILE_STORAGE_PATH: join(directory, "uploads") };
 
   try {
-    for (const values of [["", "adal", "password", "password"], ["Ada", "adal", "password", "different"]]) {
+    for (const values of [["", "adal", "valid-password", "valid-password"], ["Ada", "adal", "valid-password", "different-password"]]) {
       const output = new Output();
       assert.equal(await runCreateAdmin({ input: tty(), output, ask: answers(values.slice(0, 2)), readPassword: answers(values.slice(2)), env }), 1);
       assert.match(output.value, /invalid|match/i);
@@ -101,9 +120,9 @@ test("rejects validation, mismatch, and duplicate usernames without adding users
       }
     }
 
-    assert.equal(await runCreateAdmin({ input: tty(), output: new Output(), ask: answers(["Ada", "adal"]), readPassword: answers(["password", "password"]), env }), 0);
+    assert.equal(await runCreateAdmin({ input: tty(), output: new Output(), ask: answers(["Ada", "adal"]), readPassword: answers(["valid-password", "valid-password"]), env }), 0);
     const output = new Output();
-    assert.equal(await runCreateAdmin({ input: tty(), output, ask: answers(["Other", "adal"]), readPassword: answers(["password", "password"]), env }), 1);
+    assert.equal(await runCreateAdmin({ input: tty(), output, ask: answers(["Other", "adal"]), readPassword: answers(["valid-password", "valid-password"]), env }), 1);
     assert.match(output.value, /already in use/i);
     const database = new DatabaseSync(databasePath);
     try {

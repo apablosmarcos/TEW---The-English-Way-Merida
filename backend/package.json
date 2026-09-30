@@ -6,7 +6,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "node --watch --experimental-strip-types src/server.ts",
     "academy:create-admin": "node --experimental-strip-types src/cli/create-admin.ts",
-    "test": "node --test --experimental-strip-types src/app.test.ts src/modules/storage/academy-migrations.test.ts src/modules/academy/publication-service.test.ts src/routes/academy-routes.test.ts"
+    "test": "node --test --experimental-strip-types 'src/**/*.test.ts'"
   },
   "dependencies": {
     "busboy": "^1.6.0",

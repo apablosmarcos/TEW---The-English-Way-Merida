@@ -9,7 +9,7 @@ import { AttachmentService } from "../modules/academy/attachment-service.ts";
 import { AuditRepository } from "../modules/academy/audit-repository.ts";
 import { FileStorage, MAX_ATTACHMENT_BYTES } from "../modules/academy/file-storage.ts";
 import { openDatabase, resolveFileStoragePath } from "../modules/storage/sqlite.ts";
-import { academyAuth } from "./academy-middleware.ts";
+import { academyAuth, logAcademyError } from "./academy-middleware.ts";
 import { uuid } from "./academy-posts.ts";
 
 export function createAcademyAttachmentsRouter() {
@@ -58,8 +58,8 @@ function attachmentMimeType(extension: "pdf" | "jpg" | "png" | "webp") {
 }
 
 function attachmentFilename(title: string | null, ordinal: number, extension: "pdf" | "jpg" | "png" | "webp") {
-  const safeTitle = title?.normalize("NFKD").replace(/[^\x20-\x7e]/g, "").replace(/[^A-Za-z0-9 _-]+/g, " ").replace(/\s+/g, " ").trim() || `Material ${ordinal}`;
-  return `${safeTitle}.${extension}`;
+  const safeTitle = title?.normalize("NFKD").replace(/[^\x20-\x7e]/g, "").replace(/[^A-Za-z0-9 ._-]+/g, " ").replace(/\s+/g, " ").trim() || `Material ${ordinal}`;
+  return safeTitle.toLowerCase().endsWith(`.${extension}`) ? safeTitle : `${safeTitle}.${extension}`;
 }
 
 export function createAcademyAttachmentLifecycleRouter() {
@@ -120,7 +120,7 @@ async function parseUpload(req: Request, storage: FileStorage) {
 }
 
 function sendError(res: Response, error: unknown) {
-  if (!(error instanceof AttachmentError)) { res.status(500).json(academyErrorBody("INTERNAL_ERROR")); return; }
+  if (!(error instanceof AttachmentError)) { logAcademyError(res, error); res.status(500).json(academyErrorBody("INTERNAL_ERROR")); return; }
   const status = error.code === "VALIDATION_ERROR" ? 400 : error.code === "ATTACHMENT_LIMIT" || error.code === "ATTACHMENT_DELETED" || error.code === "POST_DELETED" ? 409 : error.code === "ATTACHMENT_NOT_FOUND" || error.code === "POST_NOT_FOUND" ? 404 : error.code === "UPLOAD_TOO_LARGE" ? 413 : 415;
   res.status(status).json(academyErrorBody(error.code));
 }

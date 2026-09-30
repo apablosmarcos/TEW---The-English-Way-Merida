@@ -5,7 +5,8 @@ import { join } from "node:path";
 import test from "node:test";
 import { DatabaseSync } from "node:sqlite";
 
-import { applyAcademyMigrations } from "./academy-migrations.ts";
+import { AcademySchemaError, applyAcademyMigrations } from "./academy-migrations.ts";
+import { startupDiagnostic } from "../../startup-diagnostic.ts";
 import {
   ensureStorageDirectories,
   openDatabase,
@@ -139,6 +140,47 @@ test("clean initialization leaves legacy tables absent and preserves existing le
 
   assert.deepEqual(database.prepare("SELECT sql FROM sqlite_master WHERE name IN ('leads', 'admin_sessions') ORDER BY name").all(), legacyBefore);
   assert.deepEqual([database.prepare("SELECT * FROM leads").all(), database.prepare("SELECT * FROM admin_sessions").all()], rowsBefore);
+});
+
+test("rejects incompatible Academy schemas at versions zero and one without mutation", () => {
+  for (const version of [0, 1]) {
+    const database = new DatabaseSync(":memory:");
+    database.exec(`
+      CREATE TABLE users (id TEXT PRIMARY KEY, normalizedUsername TEXT, deletedAt TEXT);
+      INSERT INTO users VALUES ('legacy-user', 'legacy', NULL);
+    `);
+    database.exec(version === 0 ? "PRAGMA user_version = 0" : "PRAGMA user_version = 1");
+    const before = {
+      version: database.prepare("PRAGMA user_version").get(),
+      schema: database.prepare("SELECT type, name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name").all(),
+      rows: database.prepare("SELECT * FROM users").all(),
+    };
+
+    assert.throws(
+      () => applyAcademyMigrations(database),
+      /Academy database schema is incompatible/,
+    );
+    assert.deepEqual(database.prepare("PRAGMA user_version").get(), before.version);
+    assert.deepEqual(database.prepare("SELECT type, name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name").all(), before.schema);
+    assert.deepEqual(database.prepare("SELECT * FROM users").all(), before.rows);
+  }
+});
+
+test("startup preserves a safe operator diagnosis for incompatible Academy schemas", () => {
+  const diagnostic = startupDiagnostic(new AcademySchemaError());
+  assert.deepEqual(diagnostic, {
+    event: "api_startup_failed",
+    errorCode: "ACADEMY_SCHEMA_INCOMPATIBLE",
+    operatorMessage: "Academy schema is incompatible. Stop writers, create and verify a copy, inspect that copy, and obtain explicit authorization before recovery.",
+  });
+  const serialized = JSON.stringify(diagnostic);
+  for (const sensitive of ["SELECT * FROM users", "/private/academy.sqlite", "secret-password"]) {
+    assert.equal(serialized.includes(sensitive), false);
+  }
+  assert.deepEqual(startupDiagnostic(Object.assign(new Error("SELECT secret-password FROM /private/academy.sqlite"), { code: "ERR_SQLITE_ERROR" })), {
+    event: "api_startup_failed",
+    errorCode: "ERR_SQLITE_ERROR",
+  });
 });
 
 test("configures foreign keys on every opened database connection", () => {

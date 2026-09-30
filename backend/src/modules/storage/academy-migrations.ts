@@ -5,6 +5,15 @@ export type AcademyMigration = {
   sql: string;
 };
 
+export class AcademySchemaError extends Error {
+  readonly code = "ACADEMY_SCHEMA_INCOMPATIBLE";
+
+  constructor() {
+    super("Academy database schema is incompatible.");
+    this.name = "AcademySchemaError";
+  }
+}
+
 export const academyMigrations: readonly AcademyMigration[] = [
   {
     version: 1,
@@ -103,6 +112,7 @@ export function applyAcademyMigrations(database: DatabaseSync, migrations = acad
   if (currentVersion > newestVersion) {
     throw new Error(`Database version ${currentVersion} is newer than supported version ${newestVersion}.`);
   }
+  if (migrations === academyMigrations) assertCompatibleAcademySchema(database, currentVersion);
 
   for (const migration of migrations) {
     if (migration.version <= currentVersion) {
@@ -118,5 +128,32 @@ export function applyAcademyMigrations(database: DatabaseSync, migrations = acad
       database.exec('ROLLBACK');
       throw error;
     }
+  }
+}
+
+type SchemaObject = { type: string; name: string; sql: string };
+
+function schemaObjects(database: DatabaseSync) {
+  return (database.prepare("SELECT type, name, sql FROM sqlite_master WHERE type IN ('table', 'index') AND sql IS NOT NULL ORDER BY type, name").all() as SchemaObject[])
+    .map((object) => ({ ...object }));
+}
+
+function expectedAcademySchema() {
+  const database = new DatabaseSync(":memory:");
+  try {
+    database.exec(academyMigrations[0].sql);
+    return schemaObjects(database);
+  } finally {
+    database.close();
+  }
+}
+
+function assertCompatibleAcademySchema(database: DatabaseSync, currentVersion: number) {
+  const expected = expectedAcademySchema();
+  const names = new Set(expected.map(({ name }) => name));
+  const actual = schemaObjects(database).filter(({ name }) => names.has(name));
+  if (currentVersion === 0 && actual.length === 0) return;
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    throw new AcademySchemaError();
   }
 }

@@ -7,6 +7,7 @@ import type { PublicationListOptions } from "../modules/academy/academy-types.ts
 import { PublicationRepository } from "../modules/academy/publication-repository.ts";
 import { PublicationService } from "../modules/academy/publication-service.ts";
 import { openDatabase } from "../modules/storage/sqlite.ts";
+import { logAcademyError } from "./academy-middleware.ts";
 
 export function createAcademyPostsRouter() {
   const router = Router();
@@ -62,5 +63,6 @@ export function sendPublicationError(res: Response, error: unknown) {
     res.status(status).json(academyErrorBody(error.code));
     return;
   }
+  logAcademyError(res, error);
   res.status(500).json(academyErrorBody("INTERNAL_ERROR"));
 }

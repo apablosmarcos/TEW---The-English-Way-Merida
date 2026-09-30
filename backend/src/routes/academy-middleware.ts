@@ -16,25 +16,36 @@ declare global {
   }
 }
 
-export const academyAuthMiddleware: RequestHandler = (req, res, next) => {
-  const token = readBearerToken(req.headers.authorization);
-  if (!token) {
-    sendAcademyHttpError(res, 401, "AUTHENTICATION_REQUIRED");
-    return;
-  }
+export function createAcademyAuthMiddleware(open: typeof openDatabase = openDatabase): RequestHandler {
+  return (req, res, next) => {
+    const token = readBearerToken(req.headers.authorization);
+    if (!token) {
+      sendAcademyHttpError(res, 401, "AUTHENTICATION_REQUIRED");
+      return;
+    }
 
-  let database: ReturnType<typeof openDatabase> | undefined;
-  try {
-    database = openDatabase(process.env);
-    const service = new AuthService(new AuthRepository(database));
-    req.academyAuth = { service, session: service.getSession(token) };
-    res.once("finish", () => database?.close());
-    next();
-  } catch (error) {
-    database?.close();
-    sendAcademyError(res, error);
-  }
-};
+    let database: ReturnType<typeof openDatabase> | undefined;
+    let closed = false;
+    const close = () => {
+      if (!database || closed) return;
+      closed = true;
+      database.close();
+    };
+    try {
+      database = open(process.env);
+      const service = new AuthService(new AuthRepository(database));
+      req.academyAuth = { service, session: service.getSession(token) };
+      res.once("finish", close);
+      res.once("close", close);
+      next();
+    } catch (error) {
+      close();
+      sendAcademyError(res, error);
+    }
+  };
+}
+
+export const academyAuthMiddleware = createAcademyAuthMiddleware();
 
 export const requirePasswordChange: RequestHandler = (req, res, next) => {
   if (req.academyAuth?.session.mustChangePassword) {
@@ -75,5 +86,12 @@ export function sendAcademyError(res: Response, error: unknown) {
     sendAcademyHttpError(res, 401, error.code);
     return;
   }
+  logAcademyError(res, error);
   sendAcademyHttpError(res, 500, "INTERNAL_ERROR");
+}
+
+export function logAcademyError(res: Response, error: unknown) {
+  const candidate = (error as { code?: unknown } | null)?.code;
+  const errorCode = typeof candidate === "string" && /^[A-Z0-9_]{1,40}$/.test(candidate) ? candidate : "UNKNOWN";
+  console.error(JSON.stringify({ event: "academy_request_failed", requestId: res.locals.requestId ?? "unknown", errorCode }));
 }
