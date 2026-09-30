@@ -11,6 +11,7 @@ reviews/
 
 # Node workspace artifacts
 node_modules/
+.env
 backend/.env
 backend/dist/
 frontend/.angular/
