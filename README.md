@@ -1,6 +1,10 @@
 # Academy Client Portal
 
-The Academy portal gives each user an individual account. It is prepared for a future self-hosted server; it is **not deployed or production-validated**.
+The Academy portal gives each user an individual account. It is **not deployed or production-validated**.
+
+## Production topology
+
+Host Nginx and Certbot own public ports 80 and 443 and terminate TLS. They proxy only to the Compose proxy at `127.0.0.1:8080`; Compose does not expose any other service. The backend receives requests through exactly those two trusted proxies, so Compose sets `TRUST_PROXY_HOPS=2`. The proxy uses one same-origin host: `/api` goes to the backend, while `/academia` and every other SPA path go to the frontend's fallback. SQLite and uploads are the sole durable data and share the named `academy-data` volume.
 
 ## Academy paths and roles
 
@@ -11,12 +15,19 @@ The Academy portal gives each user an individual account. It is prepared for a f
 
 Administrators create individual parent accounts. There is no shared administrator login or credential environment bootstrap. The first administrator, and any recovery administrator, is created interactively with the CLI below.
 
-## Safe local Compose quickstart
+## Safe Compose start
 
-Compose is for local pre-deployment use only. It binds the proxy to `127.0.0.1:8080` and persists both SQLite and uploads in the named `academy-data` volume at `/app/backend/data`.
+After the host Nginx upstream is configured for `127.0.0.1:8080`, start and check the loopback-only stack before cutover:
 
 ```sh
 docker compose up -d --build
+docker compose ps
+curl -fsS http://127.0.0.1:8080/api/health
+```
+
+All services use `restart: unless-stopped`; proxy startup waits for the backend healthcheck and frontend start. Once the health check succeeds, create the first administrator interactively:
+
+```sh
 docker compose exec backend node backend/dist/cli/create-admin.js
 ```
 
@@ -67,7 +78,9 @@ else
 fi
 ```
 
-## Future own-server checklist
+## Production cutover and rollback
+
+Before switching host traffic, retain timestamped backups of the current Nginx site, systemd unit, deployed files, and persistent SQLite directory. Validate the Academy stack through `127.0.0.1:8080` first. If cutover fails, restore the prior host Nginx upstream, run `nginx -t`, reload Nginx, and retain the old systemd deployment and data until acceptance. Stop the Academy stack with `docker compose stop` if necessary; do not remove its volume. Restore data only into an intentionally empty fresh project/volume as described below.
 
 Before exposing this stack, complete and validate:
 
@@ -75,7 +88,7 @@ Before exposing this stack, complete and validate:
 - [ ] Firewall rules that expose only required public ports; keep backend storage and database unreachable from the network.
 - [ ] Administrator secrets and access procedures outside source control; bootstrap with the TTY CLI.
 - [ ] Tested, encrypted/off-host backups using the stopped-writer whole-data procedure and a restore drill.
-- [ ] A known reverse-proxy topology before enabling Express `trust proxy`. It is currently disabled: `req.ip` sees the proxy, so login rate limiting is shared behind that proxy. Never blanket-trust inbound `X-Forwarded-For`.
+- [x] Known reverse-proxy topology: host Nginx → loopback Compose Nginx → Express. Compose sets `TRUST_PROXY_HOPS=2`, so Express resolves the client IP through only those two hops; an absent or invalid value leaves `trust proxy` disabled. Never blanket-trust inbound `X-Forwarded-For`.
 - [ ] A production smoke test covering administrator bootstrap, parent access, publication, and attachment persistence after restart.
 
 ## Static hosting
