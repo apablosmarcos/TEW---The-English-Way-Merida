@@ -1,4 +1,5 @@
 <div class="page">
+  <a class="skip-link" href="#main-content">Saltar al contenido</a>
   <header class="topbar">
     <div class="shell topbar-shell">
       <a class="brand" href="#inicio" aria-label="Ir al inicio de TEW" (click)="scrollToSection($event, 'inicio')">
@@ -12,28 +13,46 @@
         </span>
       </a>
 
-      <nav [class.nav-open]="menuOpen">
-        <a href="#metodo"     (click)="scrollToSection($event, 'metodo')">Método</a>
-        <a href="#clases"     (click)="scrollToSection($event, 'clases')">Clases</a>
-        <a href="#contacto"   (click)="scrollToSection($event, 'contacto')">Contacto</a>
-        <a href="#formulario" (click)="scrollToSection($event, 'formulario')">Matrícula</a>
-      </nav>
+      <div class="academy-access">
+        <ng-container *ngIf="academySession.user() as user; else academyAccess">
+          <details class="academy-menu">
+            <summary>{{ user.displayName }}</summary>
+            <div>
+              <a [routerLink]="academyDestination(user)" (click)="closeMenu()">Ir a la academia</a>
+              <button type="button" (click)="logout()">Cerrar sesión</button>
+            </div>
+          </details>
+        </ng-container>
+        <ng-template #academyAccess>
+          <a class="button primary academy-access-link" routerLink="/academia/acceso" (click)="closeMenu()">Acceso academia</a>
+        </ng-template>
+      </div>
 
       <button
+        #menuButton
         class="hamburger"
         type="button"
-        (click)="menuOpen = !menuOpen"
+        (click)="toggleMenu()"
+        (keydown.escape)="closeMenu(true)"
         [attr.aria-expanded]="menuOpen"
-        aria-label="Abrir menú de navegación"
+        [attr.aria-label]="menuOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'"
+        aria-controls="primary-navigation"
       >
         <span></span>
         <span></span>
         <span></span>
       </button>
+
+      <nav id="primary-navigation" [class.nav-open]="menuOpen" aria-label="Navegación principal" (keydown.escape)="closeMenu(true)">
+        <a href="#metodo"     (click)="scrollToSection($event, 'metodo')">Método</a>
+        <a href="#clases"     (click)="scrollToSection($event, 'clases')">Clases</a>
+        <a href="#contacto"   (click)="scrollToSection($event, 'contacto')">Contacto</a>
+        <a href="#formulario" (click)="scrollToSection($event, 'formulario')">Matrícula</a>
+      </nav>
     </div>
   </header>
 
-  <main>
+  <main id="main-content" tabindex="-1">
     <section class="hero shell" id="inicio">
       <article class="hero-copy" data-aos="fade-up">
         <span class="eyebrow">Make it happen</span>
@@ -62,25 +81,7 @@
       </article>
 
       <aside class="hero-stage" aria-label="Escena visual TEW" data-aos="zoom-in" data-aos-delay="120">
-        <div class="hero-stage-notes">
-          <div class="floating-note note-top">Aprendizaje + tecnología = motivación</div>
-          <div class="floating-note note-bottom">Aula digital · Seguimiento real</div>
-        </div>
-        <div class="glow glow-red"></div>
-        <div class="glow glow-blue"></div>
-        <picture>
-          <source type="image/webp" srcset="assets/img/TEW 3D Logo with Robot and Flags.webp" />
-          <img class="stage-banner" src="assets/img/TEW 3D Logo with Robot and Flags.png" alt="Banner visual principal de TEW" width="1024" height="1024" />
-        </picture>
-        <figure class="stage-card robot-card">
-          <img src="assets/img/Robot Head with TEW Logo.png" alt="Logo robot de TEW" loading="lazy" decoding="async" width="1024" height="1024" />
-        </figure>
-        <figure class="stage-card teacher-card">
-          <picture>
-            <source type="image/webp" srcset="assets/img/english%20teacher%2003.webp" />
-            <img src="assets/img/english%20teacher%2003.png" alt="Profesorado de TEW" loading="lazy" decoding="async" />
-          </picture>
-        </figure>
+        <img src="assets/img/english%20teacher%2004.png" alt="Profesorado TEW" loading="lazy" decoding="async" width="1024" height="1024" />
       </aside>
     </section>
 
@@ -224,13 +225,24 @@
       </article>
 
       <article class="tech-stack" data-aos="fade-left">
-        <div class="card classroom-card">
-          <img src="assets/img/TEW CLASSROOM LOGO.png" alt="Visual de TEW Classroom" loading="lazy" decoding="async" width="1479" height="363" />
-        </div>
-        <div class="card mini-banner-card">
-          <img src="assets/img/TEW.png" alt="Identidad oficial de TEW" loading="lazy" decoding="async" width="827" height="300" />
-        </div>
+        <figure class="classroom-banner">
+          <img src="assets/img/english%20teacher%2003.png" alt="Clase TEW" loading="lazy" decoding="async" width="1024" height="1024" />
+          <figcaption>
+            <span class="section-kicker">Clases TEW</span>
+            <h3>Así trabajamos en el aula</h3>
+            <p>Grupos reducidos, material propio y seguimiento real.</p>
+          </figcaption>
+        </figure>
       </article>
+    </section>
+
+    <section class="shell video-showcase" id="video-clases" data-aos="fade-up">
+      <div class="video-stage">
+        <video controls playsinline preload="metadata" poster="assets/img/english%20teacher%2003.png" width="1920" height="1080">
+          <source src="assets/TEW%20SS%20Ad24-25.mp4" type="video/mp4" />
+          Tu navegador no soporta la reproducción de vídeo.
+        </video>
+      </div>
     </section>
 
     <section class="shell contact" id="contacto" data-aos="fade-up">
@@ -245,7 +257,7 @@
         <div class="contact-grid">
           <div>
             <strong>Email</strong>
-            <p>secretaria.tew@gmail.com</p>
+            <p><a class="email-link" href="mailto:secretaria.tew@gmail.com">secretaria.tew@gmail.com</a></p>
           </div>
           <div>
             <strong>Telegram</strong>
@@ -258,187 +270,57 @@
         </div>
 
         <div class="map-card">
-          <iframe
-            title="Ubicación de TEW en Google Maps"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-            src="https://www.google.com/maps?q=C.%20Severo%20Ochoa%2C%2020%2C%20Local%204%2C%2006800%20M%C3%A9rida&z=16&output=embed"
-          ></iframe>
+          @if (mapLoaded) {
+            <iframe
+              title="Ubicación de TEW en Google Maps"
+              referrerpolicy="no-referrer-when-downgrade"
+              src="https://www.google.com/maps?q=C.%20Severo%20Ochoa%2C%2020%2C%20Local%204%2C%2006800%20M%C3%A9rida&z=16&output=embed"
+            ></iframe>
+          } @else {
+            <div class="map-consent">
+              <strong>C/ Severo Ochoa, 20, Local 4, 06800 Mérida</strong>
+              <p>El mapa se conecta con Google Maps únicamente cuando decides cargarlo.</p>
+              <button class="button primary" type="button" (click)="loadMap()">Cargar mapa</button>
+              <a
+                class="map-link"
+                href="https://www.google.com/maps/search/?api=1&query=C.%20Severo%20Ochoa%2C%2020%2C%20Local%204%2C%2006800%20M%C3%A9rida"
+                target="_blank"
+                rel="noopener noreferrer"
+              >Abrir ubicación en Google Maps</a>
+            </div>
+          }
         </div>
       </article>
     </section>
 
     <section class="enroll" id="formulario" data-aos="fade-up">
       <div class="shell">
-      <aside class="form-card card">
-        <span class="mode-pill" [class.live]="!!siteConfig.apiBaseUrl && !configErrorMessage">
-          {{ configErrorMessage ? 'Configuración no disponible' : siteConfig.apiBaseUrl ? 'Formulario conectado' : 'Demo visual' }}
-        </span>
-        <h2>Matrícula y solicitud de información</h2>
-        <p class="copy-muted">
-          Completa esta ficha y te ayudaremos a encontrar el grupo, horario y seguimiento que mejor encajen con vuestra
-          situación.
-        </p>
-
-        <div class="error" *ngIf="configErrorMessage" role="alert" aria-live="assertive">
-          {{ configErrorMessage }}
-        </div>
-
-        <div class="helper" *ngIf="!siteConfig.apiBaseUrl && !configErrorMessage" role="status" aria-live="polite">
-          {{ demoMessage }}
-        </div>
-
-        <form [formGroup]="form" (ngSubmit)="submit()">
-          <section class="form-section">
-            <h3 class="form-section-title">INFORMACIÓN DEL ALUMNO</h3>
-
-            <label class="field">
-              <span>Nombre del alumno *</span>
-              <input id="student-name" name="studentName" formControlName="studentName" type="text" autocomplete="given-name" />
-            </label>
-
-            <label class="field">
-              <span>Apellidos del alumno *</span>
-              <input id="student-surname" name="studentSurname" formControlName="studentSurname" type="text" autocomplete="family-name" />
-            </label>
-
-            <label class="field">
-              <span>Fecha de nacimiento *</span>
-              <input id="birth-date" name="birthDate" formControlName="birthDate" type="date" />
-            </label>
-
-            <label class="field field-full">
-              <span>Domicilio habitual *</span>
-              <textarea id="student-address" name="address" formControlName="address" placeholder="En casos de dos domicilios, si lo desean pueden indicar ambos."></textarea>
-            </label>
-
-            <label class="field">
-              <span>Email *</span>
-              <input id="lead-email" name="email" formControlName="email" type="email" autocomplete="email" />
-            </label>
-
-            <label class="field">
-              <span>Teléfono de contacto</span>
-              <input id="lead-phone" name="phone" formControlName="phone" type="text" autocomplete="tel" />
-            </label>
-          </section>
-
-          <section class="form-section">
-            <h3 class="form-section-title">INFORMACIÓN ACADÉMICA</h3>
-
-            <label class="field">
-              <span>Centro educativo *</span>
-              <input id="student-school" name="school" formControlName="school" type="text" />
-            </label>
-
-            <label class="field">
-              <span>Curso actual *</span>
-              <input id="student-current-course" name="currentCourse" formControlName="currentCourse" type="text" placeholder="Curso en el que se encuentra actualmente matriculado" />
-            </label>
-          </section>
-
-          <section class="form-section">
-            <h3 class="form-section-title">INFORMACIÓN DE PADRE/MADRE/TUTOR</h3>
-
-            <label class="field">
-              <span>Nombre *</span>
-              <input name="primaryContactName" formControlName="primaryContactName" type="text" />
-            </label>
-
-            <label class="field">
-              <span>Apellidos *</span>
-              <input name="primaryContactSurname" formControlName="primaryContactSurname" type="text" />
-            </label>
-
-            <label class="field field-full">
-              <span>Parentesco *</span>
-              <input name="primaryContactRelationship" formControlName="primaryContactRelationship" type="text" placeholder="Madre, padre, pareja, tutor..." />
-            </label>
-
-            <label class="field">
-              <span>Nombre</span>
-              <input name="secondaryContactName" formControlName="secondaryContactName" type="text" />
-            </label>
-
-            <label class="field">
-              <span>Apellidos</span>
-              <input name="secondaryContactSurname" formControlName="secondaryContactSurname" type="text" />
-            </label>
-
-            <label class="field field-full">
-              <span>Parentesco</span>
-              <input name="secondaryContactRelationship" formControlName="secondaryContactRelationship" type="text" placeholder="Madre, padre, pareja, tutor..." />
-            </label>
-
-            <label class="field field-full">
-              <span>Nombre y apellidos del familiar</span>
-              <textarea name="pickupContact" formControlName="pickupContact" placeholder="Si en alguna ocasión vendrá algún familiar a recoger al alumno, indíquelo aquí junto a su parentesco."></textarea>
-            </label>
-          </section>
-
-          <section class="form-section">
-            <h3 class="form-section-title">CUOTA</h3>
-            <p class="copy-muted section-note">
-              No se paga matrícula. El primer mes se aplica el coste del material del curso: copias, cuadernos de trabajo y material escolar. El alumno debe contar con algún dispositivo y nosotros nos encargamos de prepararle la plataforma.
-            </p>
-
-            <label class="field field-full">
-              <span>Forma de pago *</span>
-              <select name="paymentMethod" formControlName="paymentMethod">
-                <option value="">Seleccione la forma de pago</option>
-                <option value="efectivo">Efectivo (los 5 primeros días del mes en curso)</option>
-                <option value="domiciliacion">Domiciliación bancaria</option>
-                <option value="bizum">Bizum</option>
-              </select>
-            </label>
-
-            <ng-container *ngIf="form.get('paymentMethod')?.value === 'domiciliacion'">
-              <label class="field">
-                <span>Titular</span>
-                <input name="paymentAccountHolder" formControlName="paymentAccountHolder" type="text" />
-              </label>
-
-              <label class="field">
-                <span>IBAN</span>
-                <input name="paymentIban" formControlName="paymentIban" type="text" placeholder="ES..." />
-              </label>
-            </ng-container>
-          </section>
-
-          <section class="form-section">
-            <h3 class="form-section-title">OBSERVACIONES</h3>
-            <label class="field field-full">
-              <span>Comentarios adicionales relevantes</span>
-              <textarea name="observations" formControlName="observations" placeholder="Alergias, comentarios importantes o cualquier información que quieran incluir de forma privada."></textarea>
-            </label>
-          </section>
-
-          <div class="error" *ngIf="errorMessage" role="alert" aria-live="assertive">{{ errorMessage }}</div>
-          <div class="success success-celebrate" *ngIf="successMessage" role="status" aria-live="polite">
-            <img class="success-robot" src="assets/img/Robot Head with TEW Logo.png" alt="" aria-hidden="true" loading="lazy" decoding="async" width="1024" height="1024" />
-            <span>{{ successMessage }}</span>
-          </div>
-
-          <p class="privacy-notice">
-            Al enviar este formulario aceptas el tratamiento de tus datos para la gestión de la matrícula según nuestra
-            <a href="/privacidad" target="_blank">política de privacidad</a>.
+        <aside class="form-card card">
+          <span class="mode-pill">Matrícula</span>
+          <h2>Matrícula y solicitud de información</h2>
+          <p class="copy-muted">
+            Rellena el formulario de Google y te ayudaremos a encontrar el grupo, horario y seguimiento que mejor encajen
+            con vuestra situación.
           </p>
-
-          <button class="button primary" type="submit" [disabled]="isSubmitting || isLoadingConfig || !!configErrorMessage">
-            {{ isSubmitting ? 'Enviando...' : 'Enviar matrícula' }}
-          </button>
-        </form>
-      </aside>
+          <a
+            class="button primary"
+            href="https://docs.google.com/forms/d/e/1FAIpQLSfTpcDh-XO9lGUBH9IagbhSyZkz3PlTsra64dvHEUAEgtMWlg/viewform"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Ir al formulario de matrícula
+          </a>
+        </aside>
       </div>
     </section>
   </main>
 
   <footer class="shell footer">
     <img class="footer-logo" src="assets/img/TEW.png" alt="Marca oficial TEW" loading="lazy" decoding="async" width="827" height="300" />
-    <p>The English Way · secretaria.tew@gmail.com</p>
+    <p>The English Way · <a class="email-link" href="mailto:secretaria.tew@gmail.com">secretaria.tew@gmail.com</a></p>
     <p>C/ Severo Ochoa, 20, Local 4, 06800 Mérida</p>
     <p class="footer-legal">
-      © 2025 The English Way ·
+      © {{ currentYear }} The English Way ·
       <a href="/privacidad">Política de privacidad</a>
     </p>
   </footer>

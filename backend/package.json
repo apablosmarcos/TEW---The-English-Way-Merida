@@ -5,15 +5,19 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "node --watch --experimental-strip-types src/server.ts",
-    "test": "node --test --experimental-strip-types src/app.test.ts src/modules/storage/sqlite.test.ts src/modules/auth/admin-auth.test.ts src/modules/auth/admin-session-repository.test.ts src/modules/leads/lead-repository.test.ts src/routes/leads.test.ts src/routes/admin.test.ts"
+    "academy:create-admin": "node --experimental-strip-types src/cli/create-admin.ts",
+    "test": "node --test --experimental-strip-types 'src/**/*.test.ts'"
   },
   "dependencies": {
+    "busboy": "^1.6.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
+    "micromark": "4.0.2",
     "morgan": "^1.10.1"
   },
   "devDependencies": {
+    "@types/busboy": "^1.5.4",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/morgan": "^1.9.10",

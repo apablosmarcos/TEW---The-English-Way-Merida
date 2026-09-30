@@ -20,6 +20,11 @@ html {
   scroll-behavior: smooth;
 }
 
+html:not(.aos-enabled) [data-aos] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 body {
   margin: 0;
   font-family: Inter, Arial, sans-serif;
@@ -35,8 +40,116 @@ a {
   text-decoration: none;
 }
 
+.detail .content a,
+.editor .preview a {
+  color: #B71C1C;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.detail .content a:focus-visible,
+.editor .preview a:focus-visible {
+  outline: 3px solid #B71C1C;
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #111;
+  color: #fff;
+  transform: translateY(-160%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
 button,
 input,
 textarea {
   font: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  [data-aos] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+.academy-error {
+  margin-block: 12px;
+  padding: 12px 14px;
+  border-left: 4px solid #B71C1C;
+  background: #FDECEA;
+  color: #111;
+}
+
+.btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease, border-color 150ms ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0 var(--line);
+}
+
+.btn.primary {
+  border-color: transparent;
+  background: linear-gradient(180deg, #f04843 0%, var(--accent) 100%);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(194, 11, 11, 0.22);
+}
+
+.btn.primary:hover {
+  box-shadow: 0 16px 32px rgba(194, 11, 11, 0.3);
+}
+
+.btn.danger {
+  border-color: var(--accent-dark);
+  color: var(--accent-dark);
+}
+
+.btn.danger:hover {
+  background: #fdecea;
+  box-shadow: 4px 4px 0 var(--accent-dark);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--accent-dark);
+  outline-offset: 2px;
 }
