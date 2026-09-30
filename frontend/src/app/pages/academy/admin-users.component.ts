@@ -14,17 +14,23 @@ import {
   withAdminUserPage,
   type AdminUserQuery,
 } from "./academy-list-state";
+import {
+  confirmMutation,
+  runExclusiveMutation,
+  TemporarySecretQueue,
+  type TemporarySecret,
+} from "./academy-user-mutations";
 
 @Component({
   selector: "app-admin-users",
   standalone: true,
   imports: [CommonModule, DatePipe],
   template: `<section class="users" [attr.aria-busy]="loading"><header><p class="eyebrow">Administración</p><h1>Usuarios</h1><p>Busca y revisa las cuentas de la academia.</p></header>
-    <form class="create" (submit)="$event.preventDefault(); createUser()"><h2>Crear cuenta familiar</h2><label for="user-name">Nombre<input id="user-name" [value]="createDisplayName" (input)="createDisplayName = $any($event.target).value" required [disabled]="creatingUser" /></label><label for="user-username">Usuario<input id="user-username" [value]="createUsername" (input)="createUsername = $any($event.target).value" required [disabled]="creatingUser" /></label><button type="submit" class="btn primary" [disabled]="creatingUser">{{ creatingUser ? 'Creando…' : 'Crear cuenta' }}</button><p *ngIf="createError" role="alert">{{ createError }}</p></form>
-    <aside *ngIf="temporaryPassword" class="temporary-password" role="alert"><p>Contraseña temporal para {{ temporaryPassword.username }}</p><code>{{ temporaryPassword.password }}</code><button type="button" class="btn primary" (click)="closeTemporaryPassword()">He anotado la contraseña</button></aside>
+    <form class="create" (submit)="$event.preventDefault(); createUser()"><h2>Crear cuenta familiar</h2><label for="user-name">Nombre<input id="user-name" [value]="createDisplayName" (input)="createDisplayName = $any($event.target).value" required [disabled]="creatingUser" /></label><label for="user-username">Usuario<input id="user-username" [value]="createUsername" (input)="createUsername = $any($event.target).value" required [disabled]="creatingUser" /></label><button type="submit" class="btn primary" [disabled]="creatingUser">{{ creatingUser ? 'Creando…' : 'Crear cuenta' }}</button><p *ngIf="createError" class="academy-error" role="alert">{{ createError }}</p></form>
+    <aside *ngFor="let temporaryPassword of temporarySecrets.items" class="temporary-password" role="alert"><p>Contraseña temporal para {{ temporaryPassword.username }}</p><code>{{ temporaryPassword.password }}</code><button type="button" class="btn primary" (click)="closeTemporaryPassword(temporaryPassword)">He anotado la contraseña</button></aside>
     <form class="filters" (submit)="$event.preventDefault(); applyFilters()"><label for="user-search">Buscar por nombre, usuario o UUID</label><input id="user-search" type="search" [value]="search" (input)="search = $any($event.target).value" /><div class="filter-row"><label for="user-role">Filtro de rol<select id="user-role" [value]="role ?? ''" (change)="role = roleValue($any($event.target).value)"><option value="">Todos</option><option value="parent">Familias</option><option value="admin">Administradores</option></select></label><label for="user-state">Filtro de estado<select id="user-state" [value]="state ?? ''" (change)="state = stateValue($any($event.target).value)"><option value="">Todos</option><option value="active">Activos</option><option value="disabled">Desactivados</option><option value="deleted">Eliminados</option></select></label><button type="submit" class="btn">Aplicar filtros</button></div></form>
-    <p *ngIf="loading" role="status">Cargando usuarios…</p><p *ngIf="error" role="alert">{{ error }}</p><p *ngIf="lifecycleError" role="alert">{{ lifecycleError }}</p>
-    <ng-container *ngIf="!loading && !error && users as current"><p class="count">{{ current.pagination.total }} usuarios</p><div class="list" *ngIf="current.items.length; else empty"><article *ngFor="let user of current.items"><div><h2>{{ user.displayName }}</h2><p>{{ user.username }} · {{ user.role === 'admin' ? 'Administrador' : 'Familia' }}</p></div><span [class]="'state ' + user.state">{{ stateLabel(user.state) }}</span><p class="uuid">{{ user.id }}</p><time [attr.datetime]="user.updatedAt">Actualizado {{ user.updatedAt | date:'shortDate' }}</time><div class="actions" *ngIf="user.state !== 'deleted'"><button type="button" class="btn" (click)="resetPassword(user.id, user.username)">Restablecer contraseña</button><button type="button" class="btn" *ngIf="user.state === 'active'" (click)="confirmDisableUser(user.id)">Desactivar</button><button type="button" class="btn" *ngIf="user.state === 'disabled'" (click)="enableUser(user.id)">Activar</button><button type="button" class="btn danger" (click)="confirmDeleteUser(user.id)">Eliminar</button></div></article></div><ng-template #empty><p class="empty">No hay usuarios con estos filtros.</p></ng-template><nav *ngIf="current.pagination.pageCount > 1" class="pagination" aria-label="Paginación de usuarios"><button type="button" class="btn" [disabled]="query.page === 1" (click)="goToPage(query.page - 1)">Anterior</button><span>Página {{ current.pagination.page }} de {{ current.pagination.pageCount }}</span><button type="button" class="btn" [disabled]="query.page === current.pagination.pageCount" (click)="goToPage(query.page + 1)">Siguiente</button></nav></ng-container></section>`,
+    <p *ngIf="loading" role="status">Cargando usuarios…</p><p *ngIf="error" class="academy-error" role="alert">{{ error }}</p><p *ngIf="lifecycleError" class="academy-error" role="alert">{{ lifecycleError }}</p>
+    <ng-container *ngIf="!loading && !error && users as current"><p class="count">{{ current.pagination.total }} usuarios</p><div class="list" *ngIf="current.items.length; else empty"><article *ngFor="let user of current.items"><div><h2>{{ user.displayName }}</h2><p>{{ user.username }} · {{ user.role === 'admin' ? 'Administrador' : 'Familia' }}</p></div><span [class]="'state ' + user.state">{{ stateLabel(user.state) }}</span><p class="uuid">{{ user.id }}</p><time [attr.datetime]="user.updatedAt">Actualizado {{ user.updatedAt | date:'shortDate' }}</time><p *ngIf="isUserPending(user.id)" class="pending" role="status">Operación en curso…</p><p *ngIf="userError(user.id) as accountError" class="account-error academy-error" role="alert">{{ accountError }}</p><div class="actions" *ngIf="user.state !== 'deleted'"><button type="button" class="btn" [disabled]="isUserPending(user.id)" (click)="confirmResetPassword(user.id, user.username)">Restablecer contraseña</button><button type="button" class="btn" *ngIf="user.state === 'active'" [disabled]="isUserPending(user.id)" (click)="confirmDisableUser(user.id)">Desactivar</button><button type="button" class="btn" *ngIf="user.state === 'disabled'" [disabled]="isUserPending(user.id)" (click)="enableUser(user.id)">Activar</button><button type="button" class="btn danger" [disabled]="isUserPending(user.id)" (click)="confirmDeleteUser(user.id)">Eliminar</button></div></article></div><ng-template #empty><p class="empty">No hay usuarios con estos filtros.</p></ng-template><nav *ngIf="current.pagination.pageCount > 1" class="pagination" aria-label="Paginación de usuarios"><button type="button" class="btn" [disabled]="query.page === 1" (click)="goToPage(query.page - 1)">Anterior</button><span>Página {{ current.pagination.page }} de {{ current.pagination.pageCount }}</span><button type="button" class="btn" [disabled]="query.page === current.pagination.pageCount" (click)="goToPage(query.page + 1)">Siguiente</button></nav></ng-container></section>`,
   styles: `:host{display:block}.users{max-width:920px;margin:auto}.eyebrow{color:#B71C1C;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-bottom:3px solid #E53935;padding-bottom:8px}h1,h2{font-family:var(--display-font);text-transform:uppercase}h1{font-size:clamp(2rem,6vw,4rem);margin:.25rem 0}.filters,.create,.temporary-password{margin:28px 0;padding:20px;border:1px solid #E6D9CF;background:#FFF}.filters label,.create label{display:grid;gap:6px;font-weight:700}.create{display:grid;gap:12px}.temporary-password code{display:block;margin:8px 0;font-size:1.1rem;overflow-wrap:anywhere}.filters>input{width:100%;box-sizing:border-box;margin:8px 0 16px}.filter-row{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}input,select{min-height:44px;padding:10px;border:1px solid #D8C9BD;background:#FFF;color:#111;font:inherit}.list{display:grid;gap:12px}article,.empty{display:grid;grid-template-columns:1fr auto;gap:8px;padding:18px;border:1px solid #E6D9CF;background:#FFF;box-shadow:5px 5px 0 #E6D9CF}h2,p{margin:0}.uuid,time,.count{color:#5B4F44;font-size:.85rem}.uuid{grid-column:1/-1;font-family:monospace;overflow-wrap:anywhere}.state{padding:4px 8px;height:max-content;font-size:.8rem;font-weight:700}.state.active{background:#E4F3E8}.state.disabled,.state.deleted{background:#F8E1DF}.pagination,.actions{display:flex;justify-content:center;align-items:center;gap:12px;margin:28px 0}.actions{grid-column:1/-1;justify-content:flex-start;margin:0;flex-wrap:wrap}input:focus-visible,select:focus-visible{outline:3px solid #B71C1C;outline-offset:2px}@media(max-width:640px){.filters,.create,.temporary-password{padding:16px}.filter-row{grid-template-columns:1fr}article{grid-template-columns:1fr}.pagination{justify-content:space-between;gap:8px}.actions{align-items:stretch;flex-direction:column}.actions .btn{width:100%}}`,
 })
 export class AdminUsersComponent implements OnInit, OnDestroy {
@@ -45,7 +51,9 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   createError = "";
   creatingUser = false;
   lifecycleError = "";
-  temporaryPassword?: { username: string; password: string };
+  readonly temporarySecrets = new TemporarySecretQueue();
+  private readonly pendingUsers = new Set<string>();
+  private readonly userErrors = new Map<string, string>();
   private subscription?: Subscription;
   private loadGeneration = 0;
 
@@ -62,7 +70,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   }
   ngOnDestroy() {
     this.subscription?.unsubscribe();
-    this.temporaryPassword = undefined;
+    this.temporarySecrets.clear();
   }
   applyFilters() {
     this.navigate(
@@ -72,8 +80,8 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   goToPage(page: number) {
     this.navigate(withAdminUserPage(this.query, page));
   }
-  closeTemporaryPassword() {
-    this.temporaryPassword = undefined;
+  closeTemporaryPassword(secret: TemporarySecret) {
+    this.temporarySecrets.acknowledge(secret);
   }
   async createUser() {
     this.createError = "";
@@ -83,7 +91,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       const response = await firstValueFrom(this.api.createAdminUser(apiBaseUrl, token, { displayName: this.createDisplayName, username: this.createUsername }));
       this.createDisplayName = "";
       this.createUsername = "";
-      this.temporaryPassword = { username: response.data.user.username, password: response.data.temporaryPassword };
+      this.temporarySecrets.add({ id: response.data.user.id, username: response.data.user.username, password: response.data.temporaryPassword });
       await this.load();
     } catch (error) {
       this.createError = this.message(error);
@@ -91,19 +99,20 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       this.creatingUser = false;
     }
   }
-  async resetPassword(id: string, username: string) {
-    this.lifecycleError = "";
-    try {
-      const { apiBaseUrl, token } = await this.credentials();
+  resetPassword(id: string, username: string) {
+    void this.mutate(id, async (apiBaseUrl, token) => {
       const response = await firstValueFrom(this.api.resetAdminUserPassword(apiBaseUrl, token, id));
-      this.temporaryPassword = { username, password: response.data.temporaryPassword };
-    } catch (error) {
-      this.lifecycleError = this.message(error);
-    }
+      this.temporarySecrets.add({ id, username, password: response.data.temporaryPassword });
+    });
   }
-  disableUser(id: string) { void this.mutate((apiBaseUrl, token) => this.api.disableAdminUser(apiBaseUrl, token, id)); }
-  enableUser(id: string) { void this.mutate((apiBaseUrl, token) => this.api.enableAdminUser(apiBaseUrl, token, id)); }
-  deleteUser(id: string) { void this.mutate((apiBaseUrl, token) => this.api.deleteAdminUser(apiBaseUrl, token, id)); }
+  confirmResetPassword(id: string, username: string) {
+    confirmMutation(confirm, `¿Restablecer la contraseña de «${username}»?`, () => this.resetPassword(id, username));
+  }
+  disableUser(id: string) { void this.mutate(id, (apiBaseUrl, token) => firstValueFrom(this.api.disableAdminUser(apiBaseUrl, token, id))); }
+  enableUser(id: string) { void this.mutate(id, (apiBaseUrl, token) => firstValueFrom(this.api.enableAdminUser(apiBaseUrl, token, id))); }
+  deleteUser(id: string) { void this.mutate(id, (apiBaseUrl, token) => firstValueFrom(this.api.deleteAdminUser(apiBaseUrl, token, id))); }
+  isUserPending(id: string) { return this.pendingUsers.has(id); }
+  userError(id: string) { return this.userErrors.get(id) ?? ""; }
   confirmDisableUser(id: string) {
     if (confirm("¿Desactivar esta cuenta? La familia no podrá iniciar sesión hasta que la reactives.")) this.disableUser(id);
   }
@@ -126,15 +135,20 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
         : "Eliminado";
   }
 
-  private async mutate(action: (apiBaseUrl: string, token: string) => ReturnType<AcademyApiService["enableAdminUser"]>) {
+  private async mutate(id: string, action: (apiBaseUrl: string, token: string) => Promise<unknown>) {
     this.lifecycleError = "";
-    try {
-      const { apiBaseUrl, token } = await this.credentials();
-      await firstValueFrom(action(apiBaseUrl, token));
-      await this.load();
-    } catch (error) {
-      this.lifecycleError = this.message(error);
-    }
+    this.userErrors.delete(id);
+    await runExclusiveMutation(this.pendingUsers, id, async () => {
+      try {
+        const { apiBaseUrl, token } = await this.credentials();
+        await action(apiBaseUrl, token);
+        await this.load();
+      } catch (error) {
+        const message = this.message(error);
+        this.lifecycleError = message;
+        this.userErrors.set(id, message);
+      }
+    });
   }
   private async credentials() {
     const config = await firstValueFrom(this.config.load()), token = this.session.token;
@@ -142,12 +156,11 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     return { apiBaseUrl: config.config.apiBaseUrl, token };
   }
   private message(error: unknown) {
-    return (error as { error?: { error?: string } }).error?.error === "LAST_ACTIVE_ADMIN"
+    return (error as { error?: { error?: { code?: string } } }).error?.error?.code === "LAST_ACTIVE_ADMIN"
       ? "No se puede desactivar ni eliminar al último administrador activo."
       : "No se pudo guardar el cambio.";
   }
   private navigate(query: AdminUserQuery) {
-    this.closeTemporaryPassword();
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: adminUserQueryParams(query),

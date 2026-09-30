@@ -4,6 +4,9 @@ import test from "node:test";
 
 import { micromark } from "micromark";
 
+const { ExclusiveMutation, canMutateEditor, reservePreviewWindow, runAttachmentUpload } = await import(
+  new URL("./admin-post-interactions.ts", import.meta.url).href
+);
 const component = new URL("./admin-post-editor.component.ts", import.meta.url);
 const api = readFileSync(new URL("../../core/academy/academy-api.service.ts", import.meta.url), "utf8");
 const routes = readFileSync(new URL("../../app.routes.ts", import.meta.url), "utf8");
@@ -32,17 +35,131 @@ test("visual and source modes preserve one safe Markdown source and reject delet
   assert.match(source, /Las publicaciones eliminadas no se pueden modificar\./);
 });
 
+test("editor mutations require successful hydration", () => {
+  assert.equal(canMutateEditor("loading"), false);
+  assert.equal(canMutateEditor("error"), false);
+  assert.equal(canMutateEditor("ready"), true);
+});
+
+test("one mutation gate excludes post and material writes in both directions", async () => {
+  const gate = new ExclusiveMutation();
+  let releasePost!: () => void;
+  let materialCalls = 0;
+  const post = gate.run(async () => {
+    await new Promise<void>((resolve) => { releasePost = resolve; });
+  });
+  const materialDuringPost = gate.run(async () => { materialCalls += 1; });
+
+  assert.equal(gate.active, true);
+  assert.equal(await materialDuringPost, false);
+  assert.equal(materialCalls, 0);
+  releasePost();
+  assert.equal(await post, true);
+  assert.equal(gate.active, false);
+
+  let releaseMaterial!: () => void;
+  let postCalls = 0;
+  const material = gate.run(async () => {
+    materialCalls += 1;
+    await new Promise<void>((resolve) => { releaseMaterial = resolve; });
+  });
+  const postDuringMaterial = gate.run(async () => { postCalls += 1; });
+
+  assert.equal(await postDuringMaterial, false);
+  assert.equal(postCalls, 0);
+  releaseMaterial();
+  assert.equal(await material, true);
+  assert.equal(materialCalls, 1);
+});
+
+test("async categories remain selected through Angular form binding", () => {
+  const source = readFileSync(component, "utf8");
+  assert.match(source, /imports: \[CommonModule, FormsModule, RouterLink\]/);
+  assert.match(source, /<select name="category" \[\(ngModel\)\]="categoryId"/);
+  assert.match(source, /<option \[ngValue\]="null">Sin categoría<\/option>/);
+  assert.match(source, /<option \*ngFor="let category of categories" \[ngValue\]="category\.id">/);
+  assert.doesNotMatch(source, /<select name="category" \[value\]="categoryId/);
+});
+
+test("failed uploads preserve the selected file, title, and native input while reporting the error", async () => {
+  const file = { name: "lesson.pdf" };
+  const draft = {
+    attachmentFile: file,
+    attachmentTitle: "Lesson",
+    attachmentError: "",
+    attachmentSuccess: "",
+  };
+  const input = { value: "C:\\fakepath\\lesson.pdf" };
+
+  const result = await runAttachmentUpload(
+    draft,
+    input,
+    async () => { throw new Error("upload failed"); },
+    () => "No se pudo guardar el material.",
+  );
+
+  assert.deepEqual(result, { ok: false });
+  assert.equal(draft.attachmentFile, file);
+  assert.equal(draft.attachmentTitle, "Lesson");
+  assert.equal(input.value, "C:\\fakepath\\lesson.pdf");
+  assert.equal(draft.attachmentError, "No se pudo guardar el material.");
+});
+
+test("successful uploads reset the draft and native selector while preview reserves a gesture window", async () => {
+  const input = { value: "lesson.pdf" };
+  const draft = {
+    attachmentFile: { name: "lesson.pdf" },
+    attachmentTitle: "Lesson",
+    attachmentError: "old error",
+    attachmentSuccess: "",
+  };
+  assert.deepEqual(await runAttachmentUpload(draft, input, async () => "uploaded", () => "error"), {
+    ok: true,
+    value: "uploaded",
+  });
+  assert.equal(draft.attachmentFile, null);
+  assert.equal(draft.attachmentTitle, "");
+  assert.equal(draft.attachmentError, "");
+  assert.equal(draft.attachmentSuccess, "Material subido.");
+  assert.equal(input.value, "");
+
+  let closed = false;
+  const previewWindow = {
+    opener: { source: "admin" },
+    location: { href: "about:blank" },
+    close: () => { closed = true; },
+  };
+  const reserved = reservePreviewWindow(() => previewWindow);
+  assert.equal(reserved, previewWindow);
+  assert.equal(previewWindow.opener, null);
+  reserved?.close();
+  assert.equal(closed, true);
+  assert.equal(reservePreviewWindow(() => null), null);
+});
+
 test("administrator attachments use authenticated lifecycle calls and keep deleted materials inspectable", () => {
   const source = readFileSync(component, "utf8");
   assert.match(api, /uploadAdminAttachment\(apiBaseUrl: string, token: string, postId: string, form: FormData\)/);
   assert.match(api, /renameAdminAttachment\(apiBaseUrl: string, token: string, id: string, title: string\)/);
   assert.match(api, /deleteAdminAttachment\(apiBaseUrl: string, token: string, id: string\)/);
-  assert.match(source, /form\.append\('file', this\.attachmentFile\)/);
+  assert.match(source, /const file = this\.attachmentFile[\s\S]*form\.append\('file', file\)/);
   assert.match(source, /form\.append\('title', this\.attachmentTitle\)/);
   assert.match(source, /activeAttachments/);
   assert.match(source, /deletedAttachments/);
+  assert.match(source, /\.materials article>span\{[^}]*min-width:0;overflow-wrap:anywhere/);
   assert.match(source, /this\.api\.previewAttachment/);
   assert.match(source, /this\.api\.downloadAttachment/);
+});
+
+test("editor uses the shared gate and mutually disables post and material controls", () => {
+  const source = readFileSync(component, "utf8");
+  assert.match(source, /private readonly mutations = new ExclusiveMutation\(\)/);
+  assert.match(source, /get mutationPending\(\) \{ return this\.mutations\.active; \}/);
+  assert.equal(source.match(/this\.mutations\.run\(/g)?.length, 6);
+  assert.match(source, /Subiendo…/);
+  assert.match(source, /role="status">\{\{ attachmentSuccess \}\}/);
+  assert.match(source, /\[disabled\]="mutationPending"/);
+  assert.match(source, /\[disabled\]="deleted \|\| mutationPending"/);
 });
 
 test("attachment controls preserve Blob authorization and explain backend rejection states", () => {

@@ -56,14 +56,14 @@ test("parent post detail renders only parent-safe content and manages object URL
   assert.match(source, /HttpErrorResponse && error\.status === 404/);
   assert.match(source, /private loadGeneration = 0/);
   assert.match(source, /URL\.createObjectURL/);
-  assert.match(source, /window\.open\("about:blank", "_blank"\)[\s\S]*await this\.useAttachment/);
+  assert.match(source, /window\.open\(\)[\s\S]*await this\.useAttachment/);
   assert.match(source, /const generation = this\.loadGeneration[\s\S]*generation !== this\.loadGeneration/);
   assert.match(source, /setTimeout\(\(\) => this\.releaseObjectUrl\(url\), 60_000\)/);
   assert.match(source, /ngOnDestroy\(\)[\s\S]*revokeObjectUrls/);
   assert.match(source, /aria-label[^>]*Vista previa de[\s\S]*aria-label[^>]*Descargar/);
   assert.match(
     source,
-    /visibleTitle \|\| `Material \$\{attachment\.materialOrdinal\}`/,
+    /formatAttachmentName\(attachment\.visibleTitle, attachment\.materialOrdinal, mimeExtension\(attachment\.mimeType\)\)/,
   );
   assert.doesNotMatch(
     source,

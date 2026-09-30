@@ -12,7 +12,7 @@ import { SITE_CONFIG_LOAD_ERROR_MESSAGE, SiteConfigService } from '../../core/se
   selector: 'app-password-change', standalone: true, imports: [CommonModule, ReactiveFormsModule],
   template: `<main><section class="card" [attr.aria-busy]="isLoading || isSubmitting">
     <img src="assets/img/TEW.png" alt="The English Way" /><p class="rule">Primer acceso</p><h1>Cambia tu contraseña</h1><p>Elige una contraseña de 10 a 128 caracteres.</p>
-    <p *ngIf="errorMessage" role="alert">{{ errorMessage }}</p><form [formGroup]="form" (ngSubmit)="submit()">
+    <p *ngIf="errorMessage" class="academy-error" role="alert">{{ errorMessage }}</p><form [formGroup]="form" (ngSubmit)="submit()">
       <label>Contraseña actual<input type="password" formControlName="currentPassword" autocomplete="current-password" /></label>
       <label>Nueva contraseña<input type="password" formControlName="newPassword" autocomplete="new-password" /></label>
       <label>Confirma la contraseña<input type="password" formControlName="confirmPassword" autocomplete="new-password" /></label>

@@ -5,6 +5,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
+import { retryAfterSeconds } from '../../core/academy/academy-http-policy';
 import { AcademySessionStore } from '../../core/academy/academy-session.store';
 import type { AcademyUser } from '../../core/academy/academy-types';
 import { SITE_CONFIG_LOAD_ERROR_MESSAGE, SiteConfigService } from '../../core/services/site-config.service';
@@ -18,7 +19,7 @@ export function academyDestination(user: AcademyUser) {
   selector: 'app-academy-access', standalone: true, imports: [CommonModule, ReactiveFormsModule],
   template: `<main><section class="card" [attr.aria-busy]="isLoading || isSubmitting">
     <img src="assets/img/TEW.png" alt="The English Way" /><p class="rule">Área privada</p><h1>Acceso academia</h1>
-    <p>Entra con tu usuario de TEW.</p><p *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
+    <p>Entra con tu usuario de TEW.</p><p *ngIf="errorMessage" class="academy-error" role="alert">{{ errorMessage }}</p>
     <form [formGroup]="form" (ngSubmit)="submit()">
       <label>Usuario<input formControlName="username" autocomplete="username" /></label>
       <label>Contraseña<input type="password" formControlName="password" autocomplete="current-password" /></label>
@@ -44,7 +45,18 @@ export class AccessComponent implements OnInit {
     if (this.form.invalid || this.isSubmitting) return;
     this.isSubmitting = true; this.errorMessage = '';
     try { const value = this.form.getRawValue(); const session = await firstValueFrom(this.session.login(this.apiBaseUrl, value.username, value.password)); await this.router.navigateByUrl(academyDestination(session.user)); }
-    catch (error) { this.errorMessage = error instanceof HttpErrorResponse && error.status === 401 ? 'Credenciales incorrectas.' : 'No se pudo iniciar sesión.'; }
+    catch (error) {
+      if (error instanceof HttpErrorResponse && error.status === 401) {
+        this.errorMessage = 'Credenciales incorrectas.';
+      } else if (error instanceof HttpErrorResponse && error.status === 429) {
+        const wait = retryAfterSeconds(error.headers.get('Retry-After'));
+        this.errorMessage = wait === null
+          ? 'Demasiados intentos. Espera unos momentos antes de volver a intentarlo.'
+          : `Demasiados intentos. Espera ${wait} segundos antes de volver a intentarlo.`;
+      } else {
+        this.errorMessage = 'No se pudo iniciar sesión.';
+      }
+    }
     finally { this.isSubmitting = false; }
   }
 }

@@ -14,16 +14,30 @@ export type AcademySession = {
 
 export type AcademyLogin = AcademySession & { token: string };
 export type AcademySuccess<T> = { ok: true; data: T };
-export type AcademyErrorCode =
-  | 'INVALID_CREDENTIALS'
-  | 'AUTHENTICATION_REQUIRED'
-  | 'PASSWORD_CHANGE_REQUIRED'
-  | 'FORBIDDEN'
-  | 'VALIDATION_ERROR'
-  | 'RATE_LIMITED'
-  | 'INTERNAL_ERROR'
-  | 'CATEGORY_IN_USE'
-  | 'RESOURCE_STATE_CONFLICT';
+export const ACADEMY_ERROR_CODES = [
+  'INVALID_CREDENTIALS',
+  'AUTHENTICATION_REQUIRED',
+  'PASSWORD_CHANGE_REQUIRED',
+  'FORBIDDEN',
+  'VALIDATION_ERROR',
+  'RATE_LIMITED',
+  'INTERNAL_ERROR',
+  'LAST_ACTIVE_ADMIN',
+  'USER_DELETED',
+  'USER_NOT_FOUND',
+  'USERNAME_TAKEN',
+  'CATEGORY_IN_USE',
+  'CATEGORY_NAME_TAKEN',
+  'CATEGORY_NOT_FOUND',
+  'POST_DELETED',
+  'POST_NOT_FOUND',
+  'ATTACHMENT_DELETED',
+  'ATTACHMENT_LIMIT',
+  'ATTACHMENT_NOT_FOUND',
+  'UNSUPPORTED_FILE_TYPE',
+  'UPLOAD_TOO_LARGE',
+] as const;
+export type AcademyErrorCode = (typeof ACADEMY_ERROR_CODES)[number];
 export type AcademyError = { ok: false; error: { code: AcademyErrorCode; message: string } };
 export type AcademyLoginInput = { username: string; password: string };
 export type AcademyPasswordChangeInput = { currentPassword: string; newPassword: string };
@@ -37,19 +51,21 @@ export type AcademyAdminAttachment = {
   extension: 'pdf' | 'jpg' | 'png' | 'webp';
   deletedAt: string | null;
 };
-export type AcademyAdminPost = {
+export type AcademyAdminPostSummary = {
   id: string;
   title: string;
-  markdownSource: string;
   categoryId: string | null;
   category: AcademyCategory | null;
   visibility: AcademyPostVisibility;
   publishedAt: string;
   updatedAt: string;
   deletedAt: string | null;
+};
+export type AcademyAdminPostDetail = AcademyAdminPostSummary & {
+  markdownSource: string;
   attachments: AcademyAdminAttachment[];
 };
-export type AcademyAdminPostList = { items: AcademyAdminPost[] };
+export type AcademyAdminPostList = { items: AcademyAdminPostSummary[] };
 export type AcademyAdminPostInput = { title: string; markdownSource: string; categoryId: string | null };
 export type AcademyParentPost = { id: string; title: string; category: AcademyCategory | null; publishedAt: string; updatedAt: string };
 export type AcademyParentAttachment = {

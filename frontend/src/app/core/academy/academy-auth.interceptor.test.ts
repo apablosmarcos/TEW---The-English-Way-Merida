@@ -3,20 +3,21 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const source = readFileSync(new URL('./academy-auth.interceptor.ts', import.meta.url), 'utf8');
+const { isAcademyRequest } = await import(
+  new URL('./academy-http-policy.ts', import.meta.url).href
+);
 
-test('academy interceptor scopes Bearer credentials to same-origin Academy API paths', () => {
+test('academy interceptor scopes Bearer credentials to the configured same- or cross-origin API base', () => {
   const origin = 'https://portal.example';
-  const isAcademyPath = (url: string) => {
-    const target = new URL(url, origin);
-    return target.origin === origin && target.pathname.startsWith('/api/academy/');
-  };
 
-  assert.equal(isAcademyPath('api/academy/session'), true);
-  assert.equal(isAcademyPath('https://evil.example/path/api/academy/session'), false);
-  assert.equal(isAcademyPath('/orders?next=/academy/session'), false);
-  assert.match(source, /new URL\(url, origin\)/);
-  assert.match(source, /target\.origin === origin && target\.pathname\.startsWith\('\/api\/academy\/'\)/);
-  assert.doesNotMatch(source, /includes\('\/academy\/'\)/);
+  assert.equal(isAcademyRequest('/api/academy/session', '/api', origin), true);
+  assert.equal(isAcademyRequest('https://api.example/v1/academy/session', 'https://api.example/v1', origin), true);
+  assert.equal(isAcademyRequest('https://evil.example/v1/academy/session', 'https://api.example/v1', origin), false);
+  assert.equal(isAcademyRequest('https://api.example/v1/academy-evil/session', 'https://api.example/v1', origin), false);
+  assert.equal(isAcademyRequest('/orders?next=/api/academy/session', '/api', origin), false);
+  assert.match(source, /config\.load\(\)/);
+  assert.match(source, /isAcademyRequest\(request\.url, state\.config\.apiBaseUrl\)/);
+  assert.doesNotMatch(source, /target\.pathname\.includes\('\/academy\/'\).*Authorization/);
 });
 
 test('academy interceptor clears only unauthenticated academy sessions and routes forced password changes', () => {

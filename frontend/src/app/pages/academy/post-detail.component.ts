@@ -11,15 +11,16 @@ import type {
   AcademyParentPostDetail,
 } from "../../core/academy/academy-types";
 import { SiteConfigService } from "../../core/services/site-config.service";
+import { attachmentName as formatAttachmentName } from "./attachment-name";
 
 @Component({
   selector: "app-post-detail",
   standalone: true,
   imports: [CommonModule, DatePipe, RouterLink],
-  template: `<section class="detail" [attr.aria-busy]="loading"><a routerLink="/academia" class="back">← Volver a publicaciones</a><p *ngIf="loading" role="status">Cargando publicación…</p><p *ngIf="error" role="alert">{{ error }}</p>
+  template: `<section class="detail" [attr.aria-busy]="loading"><a routerLink="/academia" class="back">← Volver a publicaciones</a><p *ngIf="loading" role="status">Cargando publicación…</p><p *ngIf="error" class="academy-error" role="alert">{{ error }}</p>
     <article *ngIf="!loading && !error && post as current"><p *ngIf="current.category" class="category">{{ current.category.displayName }}</p><h1>{{ current.title }}</h1><p class="dates"><time [attr.datetime]="current.publishedAt">Publicado {{ current.publishedAt | date:'longDate' }}</time><time [attr.datetime]="current.updatedAt">Actualizado {{ current.updatedAt | date:'longDate' }}</time></p><div class="content" [innerHTML]="current.renderedMarkdown"></div>
-      <section *ngIf="current.attachments.length" class="materials" aria-labelledby="materials-title"><h2 id="materials-title">Materiales</h2><ul><li *ngFor="let attachment of current.attachments"><span>{{ attachmentName(attachment) }}</span><div><button type="button" [attr.aria-label]="'Vista previa de ' + attachmentName(attachment)" (click)="preview(attachment)">Vista previa</button><button type="button" [attr.aria-label]="'Descargar ' + attachmentName(attachment)" (click)="download(attachment)">Descargar</button></div></li></ul></section><p *ngIf="actionError" role="alert">{{ actionError }}</p></article></section>`,
-  styles: `:host{display:block}.detail{max-width:920px;margin:auto}.back{display:inline-block;color:#B71C1C;font-weight:700;margin-bottom:22px}.category{color:#B71C1C;font-weight:700;text-transform:uppercase;letter-spacing:.08em;border-bottom:3px solid #E53935;padding-bottom:8px}h1,h2{font-family:var(--display-font);text-transform:uppercase}h1{font-size:clamp(2rem,6vw,4rem);margin:.25rem 0}.dates{display:flex;flex-wrap:wrap;gap:12px;color:#5B4F44}.content{margin-top:28px;font-size:1.05rem;line-height:1.7}.content :is(img,video){max-width:100%;height:auto}.content :is(a){color:#B71C1C;text-decoration-thickness:2px}.materials{margin-top:32px;padding:22px;border:1px solid #E6D9CF;background:#FFF;box-shadow:5px 5px 0 #E6D9CF}.materials h2{font-size:1.35rem;margin-top:0}.materials ul{list-style:none;margin:0;padding:0}.materials li{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-top:1px solid #E6D9CF}.materials div{display:flex;gap:8px}button{min-height:44px;padding:10px;border:1px solid #D8C9BD;background:#FFF;color:#111;font:inherit;cursor:pointer}button:hover{border-color:#B71C1C;color:#B71C1C}a:focus-visible,button:focus-visible{outline:3px solid #B71C1C;outline-offset:2px}@media(max-width:640px){.materials{padding:16px}.materials li{align-items:flex-start;flex-direction:column;gap:8px}}`,
+      <section *ngIf="current.attachments.length" class="materials" aria-labelledby="materials-title"><h2 id="materials-title">Materiales</h2><ul><li *ngFor="let attachment of current.attachments"><span>{{ attachmentName(attachment) }}</span><div><button type="button" [attr.aria-label]="'Vista previa de ' + attachmentName(attachment)" (click)="preview(attachment)">Vista previa</button><button type="button" [attr.aria-label]="'Descargar ' + attachmentName(attachment)" (click)="download(attachment)">Descargar</button></div></li></ul></section><p *ngIf="actionError" class="academy-error" role="alert">{{ actionError }}</p></article></section>`,
+  styles: `:host{display:block}.detail{max-width:920px;margin:auto}.back{display:inline-block;color:#B71C1C;font-weight:700;margin-bottom:22px}.category{color:#B71C1C;font-weight:700;text-transform:uppercase;letter-spacing:.08em;border-bottom:3px solid #E53935;padding-bottom:8px}h1,h2{font-family:var(--display-font);text-transform:uppercase}h1{font-size:clamp(1.8rem,4vw,3rem);margin:.25rem 0}.dates{display:flex;flex-wrap:wrap;gap:12px;color:#5B4F44}.content{margin-top:28px;font-size:1.05rem;line-height:1.7}.content :is(img,video){max-width:100%;height:auto}.materials{margin-top:32px;padding:22px;border:1px solid #E6D9CF;background:#FFF;box-shadow:5px 5px 0 #E6D9CF}.materials h2{font-size:1.35rem;margin-top:0}.materials ul{list-style:none;margin:0;padding:0}.materials li{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-top:1px solid #E6D9CF}.materials div{display:flex;gap:8px}button{min-height:44px;padding:10px;border:1px solid #D8C9BD;background:#FFF;color:#111;font:inherit;cursor:pointer}button:hover{border-color:#B71C1C;color:#B71C1C}a:focus-visible,button:focus-visible{outline:3px solid #B71C1C;outline-offset:2px}@media(max-width:640px){.materials{padding:16px}.materials li{align-items:flex-start;flex-direction:column;gap:8px}}`,
 })
 export class PostDetailComponent implements OnInit, OnDestroy {
   private readonly api = inject(AcademyApiService);
@@ -46,10 +47,10 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     this.revokeObjectUrls();
   }
   attachmentName(attachment: AcademyParentAttachment) {
-    return `${attachment.visibleTitle || `Material ${attachment.materialOrdinal}`}.${mimeExtension(attachment.mimeType)}`;
+    return formatAttachmentName(attachment.visibleTitle, attachment.materialOrdinal, mimeExtension(attachment.mimeType));
   }
   async preview(attachment: AcademyParentAttachment) {
-    const popup = window.open("about:blank", "_blank");
+    const popup = window.open();
     if (!popup) {
       this.actionError = "No se pudo abrir la vista previa.";
       return;
@@ -58,7 +59,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     await this.useAttachment(
       attachment,
       "preview",
-      (url) => popup.location.replace(url),
+      (url) => { popup.location.href = url; },
       () => popup.close(),
     );
   }

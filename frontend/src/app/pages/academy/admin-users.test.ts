@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
+const { confirmMutation, runExclusiveMutation, TemporarySecretQueue } = await import(
+  new URL("./academy-user-mutations.ts", import.meta.url).href
+);
 const {
   adminUserQuery,
   adminUserQueryParams,
@@ -63,25 +66,98 @@ test("administrator lifecycle calls use the protected user contract", () => {
   assert.match(api, /`admin\/users\/\$\{id\}\/reset-password`/);
 });
 
-test("temporary passwords are response-scoped and lifecycle conflicts stay focused", () => {
+test("password reset confirmation names the user, cancels cleanly, and confirms once", () => {
+  const messages: string[] = [];
+  let requests = 0;
+  const confirm = (answer: boolean) => (message: string) => {
+    messages.push(message);
+    return answer;
+  };
+
+  assert.equal(confirmMutation(confirm(false), "¿Restablecer la contraseña de «ana»?", () => { requests += 1; }), false);
+  assert.equal(requests, 0);
+  assert.equal(confirmMutation(confirm(true), "¿Restablecer la contraseña de «ana»?", () => { requests += 1; }), true);
+  assert.equal(requests, 1);
+  assert.deepEqual(messages, [
+    "¿Restablecer la contraseña de «ana»?",
+    "¿Restablecer la contraseña de «ana»?",
+  ]);
+});
+
+test("user mutations serialize per account while allowing different accounts", async () => {
+  const pending = new Set<string>();
+  let releaseFirst!: () => void;
+  let calls = 0;
+  const first = runExclusiveMutation(pending, "user-1", async () => {
+    calls += 1;
+    await new Promise<void>((resolve) => { releaseFirst = resolve; });
+  });
+  const duplicate = runExclusiveMutation(pending, "user-1", async () => { calls += 1; });
+  const otherUser = runExclusiveMutation(pending, "user-2", async () => { calls += 1; });
+
+  assert.equal(pending.has("user-1"), true);
+  assert.equal(await duplicate, false);
+  assert.equal(await otherUser, true);
+  releaseFirst();
+  assert.equal(await first, true);
+  assert.equal(calls, 2);
+  assert.deepEqual([...pending], []);
+});
+
+test("concurrent account resets preserve every temporary secret until explicit acknowledgement", async () => {
+  const pending = new Set<string>();
+  const secrets = new TemporarySecretQueue();
+  let releaseFirst!: () => void;
+  let releaseSecond!: () => void;
+
+  const first = runExclusiveMutation(pending, "user-1", async () => {
+    await new Promise<void>((resolve) => { releaseFirst = resolve; });
+    secrets.add({ id: "user-1", username: "ana", password: "first-secret" });
+  });
+  const second = runExclusiveMutation(pending, "user-2", async () => {
+    await new Promise<void>((resolve) => { releaseSecond = resolve; });
+    secrets.add({ id: "user-2", username: "bea", password: "second-secret" });
+  });
+
+  releaseSecond();
+  await second;
+  releaseFirst();
+  await first;
+
+  assert.deepEqual(secrets.items.map(({ id, password }: { id: string; password: string }) => ({ id, password })), [
+    { id: "user-2", password: "second-secret" },
+    { id: "user-1", password: "first-secret" },
+  ]);
+  secrets.acknowledge(secrets.items[0]);
+  assert.deepEqual(secrets.items.map(({ id }: { id: string }) => id), ["user-1"]);
+  secrets.clear();
+  assert.deepEqual(secrets.items, []);
+});
+
+test("temporary passwords are listed explicitly and lifecycle conflicts stay focused", () => {
   const source = readFileSync(component, "utf8");
-  assert.match(source, /temporaryPassword\?: \{ username: string; password: string \}/);
-  assert.match(source, /closeTemporaryPassword\(\) \{\s*this\.temporaryPassword = undefined;/);
-  assert.match(source, /ngOnDestroy\(\) \{[\s\S]*this\.temporaryPassword = undefined;/);
+  assert.match(source, /temporarySecrets = new TemporarySecretQueue\(\)/);
+  assert.match(source, /\*ngFor="let temporaryPassword of temporarySecrets\.items"/);
+  assert.match(source, /closeTemporaryPassword\(temporaryPassword\)/);
+  assert.match(source, /ngOnDestroy\(\) \{[\s\S]*this\.temporarySecrets\.clear\(\)/);
   assert.match(source, /No se puede desactivar ni eliminar al último administrador activo\./);
-  assert.match(source, /createDisplayName[\s\S]*createUsername[\s\S]*createError/);
-  assert.match(source, /Restablecer contraseña[\s\S]*Desactivar[\s\S]*Eliminar/);
+  assert.match(source, /confirmResetPassword\(user\.id, user\.username\)/);
+  assert.match(source, /\[disabled\]="isUserPending\(user\.id\)"/);
+  assert.match(source, /Operación en curso…/);
 });
 
 test("admin lifecycle retains create fields after a conflict and clears response-scoped passwords", () => {
   const source = readFileSync(component, "utf8");
-  const create = source.match(/async createUser\(\) \{[\s\S]*?\n  \}\n  async resetPassword/)?.[0] ?? "";
+  const create = source.match(/async createUser\(\) \{[\s\S]*?\n  \}\n  resetPassword/)?.[0] ?? "";
   assert.match(create, /catch \(error\) \{\s*this\.createError = this\.message\(error\);/);
   assert.doesNotMatch(create, /catch \(error\) \{[\s\S]*this\.create(DisplayName|Username) = ""/);
-  assert.match(source, /temporaryPassword = \{ username, password: response\.data\.temporaryPassword \};/);
-  assert.match(source, /closeTemporaryPassword\(\) \{\s*this\.temporaryPassword = undefined;/);
-  assert.match(source, /ngOnDestroy\(\) \{[\s\S]*this\.temporaryPassword = undefined;/);
-  assert.match(source, /private navigate\(query: AdminUserQuery\) \{\s*this\.closeTemporaryPassword\(\);/);
+  assert.match(create, /temporarySecrets\.add\(\{ id: response\.data\.user\.id, username: response\.data\.user\.username, password: response\.data\.temporaryPassword \}\);/);
+  assert.match(source, /temporarySecrets\.add\(\{ id, username, password: response\.data\.temporaryPassword \}\);/);
+  assert.equal(source.match(/temporarySecrets\.add\(/g)?.length, 2);
+  assert.match(source, /¿Restablecer la contraseña de «\$\{username\}»\?/);
+  assert.match(source, /closeTemporaryPassword\(secret: TemporarySecret\)/);
+  assert.match(source, /ngOnDestroy\(\) \{[\s\S]*this\.temporarySecrets\.clear\(\)/);
+  assert.doesNotMatch(source, /private navigate\(query: AdminUserQuery\) \{\s*this\.closeTemporaryPassword/);
 });
 
 test("admin user discovery is guarded, query-backed, and usable at narrow widths", () => {
